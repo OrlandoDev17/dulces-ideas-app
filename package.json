@@ -1,0 +1,17 @@
+{
+  "name": "dulces-ideas-app",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "bun run --filter @dulces-ideas/web dev",
+    "dev:api": "bun run --filter @dulces-ideas/api dev",
+    "install:all": "bun install",
+    "clean:ports": "taskkill /F /IM node.exe /T /FI \"STATUS eq RUNNING\""
+  },
+  "dependencies": {
+    "lucide-react": "^0.563.0"
+  }
+}
