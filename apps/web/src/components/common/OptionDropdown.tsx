@@ -1,0 +1,62 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { AnimatePresence, motion } from "motion/react";
+
+interface Props<T> {
+  isOpen: boolean;
+  setIsOpen: (value: boolean) => void;
+  onSelect: (value: T) => void;
+  options: T[];
+  // Función para extraer el nombre/label a mostrar
+  getLabel: (option: T) => string;
+  // Opcional: Función para extraer información extra (precio, descripción, etc.)
+  getExtra?: (option: T) => React.ReactNode;
+}
+
+export function OptionDropdown<T>({
+  isOpen,
+  setIsOpen,
+  onSelect,
+  options,
+  getLabel,
+  getExtra,
+}: Props<T>) {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setIsOpen(false)}
+          />
+
+          <motion.ul
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute z-20 mt-2 w-full bg-white border border-zinc-100 shadow-xl rounded-xl max-h-[500px]"
+          >
+            {options.map((option: any) => (
+              <li
+                key={option.id}
+                onClick={() => {
+                  onSelect(option);
+                  setIsOpen(false);
+                }}
+                className="flex justify-between items-center px-3 py-2.5 text-sm rounded-lg hover:bg-primary hover:text-white cursor-pointer transition-colors group"
+              >
+                <span className="font-medium">{getLabel(option)}</span>
+
+                {/* Solo renderiza la parte extra si la función existe */}
+                {getExtra && (
+                  <span className="text-xs opacity-70 group-hover:opacity-100">
+                    {getExtra(option)}
+                  </span>
+                )}
+              </li>
+            ))}
+          </motion.ul>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
