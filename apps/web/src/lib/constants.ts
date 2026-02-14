@@ -59,3 +59,11 @@ export const PRODUCT_CATEGORIES: ProductSelector[] = [
     products: BEBIDAS,
   },
 ];
+
+export const PAYMENT_METHODS = [
+  { id: "pm", label: "Bs - Pago Móvil" },
+  { id: "bs", label: "Bs - Efectivo" },
+  { id: "pv", label: "Bs - Punto de Venta" },
+  { id: "usd", label: "USD - Divisas" },
+  { id: "mx", label: "Pago Mixto" },
+];

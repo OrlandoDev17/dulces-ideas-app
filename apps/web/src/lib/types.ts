@@ -10,7 +10,7 @@ export interface NavLink {
 export interface Product {
   name: string;
   price: number;
-  currency: "USD" | "VES";
+  currency: string;
 }
 
 export interface ProductSelector {
@@ -27,4 +27,14 @@ export interface CartItem {
   price: number;
   quantity: number;
   currency: "USD" | "VES";
+}
+
+export interface Sale {
+  id: string;
+  items: CartItem[];
+  totalUSD: number;
+  totalBS: number;
+  metodo: string;
+  fecha: string;
+  delivery: boolean;
 }

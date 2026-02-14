@@ -15,10 +15,12 @@ export function Sidebar() {
   const isActive = (href: string) => path === href;
 
   return (
-    <aside className="hidden md:flex flex-col gap-12 p-4 w-72 h-screen z-100 bg-white border-r-2 border-primary">
+    <aside className="fixed left-0 top-0 hidden md:flex flex-col gap-12 p-4 w-64 2xl:w-72 h-screen z-100 bg-white border-r-2 border-primary">
       <header className="flex items-center gap-2">
-        <CakeSlice className="text-cream p-2 bg-primary rounded-xl" size={48} />
-        <h3 className="text-primary font-bold text-xl">Dulces Ideas</h3>
+        <CakeSlice className="size-10 2xl:size-12 text-cream p-2 bg-primary rounded-xl" />
+        <h3 className="text-primary font-bold text-lg 2xl:text-xl">
+          Dulces Ideas
+        </h3>
       </header>
       <nav>
         <ul className="flex flex-col gap-4">
@@ -32,8 +34,10 @@ export function Sidebar() {
                 }`}
                 href={href}
               >
-                <Icon className="size-7" />
-                <span className="text-lg font-semibold">{label}</span>
+                <Icon className="size-5 2xl:size-7" />
+                <span className="text-base 2xl:text-lg font-semibold">
+                  {label}
+                </span>
               </Link>
             </li>
           ))}

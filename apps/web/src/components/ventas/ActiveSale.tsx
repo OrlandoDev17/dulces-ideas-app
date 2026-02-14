@@ -9,48 +9,70 @@ import {
   Trash2,
   CreditCard,
   ShoppingBag,
-  Check,
   ChevronDown,
+  MapPin,
 } from "lucide-react";
 // Components
 import { OptionDropdown } from "@/components/common/OptionDropdown";
 import { MixedPaymentModal } from "./MixedPaymentModal";
+// Constants
+import { PAYMENT_METHODS } from "@/lib/constants";
 // Types
-import type { CartItem } from "@/lib/types";
+import type { CartItem, Sale } from "@/lib/types";
 import type { Payment } from "./MixedPaymentModal";
 
 interface Props {
   items: CartItem[];
   tasa: number;
   onRemoveItem: (id: string) => void;
-  onRegister: () => void;
+  onRegister: (sale: Sale) => void;
+  setCart: (cart: CartItem[]) => void;
 }
 
-const METODOS_PAGO = [
-  { id: "pm", label: "Bs - Pago Móvil" },
-  { id: "bs", label: "Bs - Efectivo" },
-  { id: "pv", label: "Bs - Punto de Venta" },
-  { id: "usd", label: "USD - Divisas" },
-  { id: "mx", label: "Pago Mixto" },
-];
-
-export function ActiveSale({ items, tasa, onRemoveItem, onRegister }: Props) {
+export function ActiveSale({
+  items,
+  tasa,
+  onRemoveItem,
+  onRegister,
+  setCart,
+}: Props) {
   const [isOpenMetodo, setIsOpenMetodo] = useState(false);
-  const [metodoSelected, setMetodoSelected] = useState(METODOS_PAGO[0]);
+  const [metodoSelected, setMetodoSelected] = useState(PAYMENT_METHODS[0]);
   const [showMixedModal, setShowMixedModal] = useState(false);
+  const [isDelivery, setIsDelivery] = useState(false);
 
   const handleRegisterClick = () => {
     if (metodoSelected.id === "mx") {
       setShowMixedModal(true);
     } else {
-      onRegister(); // Registro normal
+      onRegister({
+        id: crypto.randomUUID(),
+        items,
+        totalUSD,
+        totalBS,
+        metodo: metodoSelected.id,
+        fecha: new Date().toISOString(),
+        delivery: isDelivery,
+      });
+      setIsDelivery(false);
+      setCart([]);
     }
   };
 
   const confirmMixedPayment = (payments: Payment[]) => {
     console.log("Pagos registrados:", payments);
     setShowMixedModal(false);
-    onRegister(); // Cerramos el proceso
+    onRegister({
+      id: crypto.randomUUID(),
+      items,
+      totalUSD,
+      totalBS,
+      metodo: metodoSelected.id,
+      fecha: new Date().toISOString(),
+      delivery: isDelivery,
+    });
+    setIsDelivery(false);
+    setCart([]);
   };
 
   const totalUSD = items?.reduce(
@@ -61,7 +83,7 @@ export function ActiveSale({ items, tasa, onRemoveItem, onRegister }: Props) {
 
   // Solo renderizamos si hay items, con una animación de entrada global
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {items?.length > 0 && (
         <motion.div
           initial={{ opacity: 0, x: 20, scale: 0.95 }}
@@ -75,9 +97,9 @@ export function ActiveSale({ items, tasa, onRemoveItem, onRegister }: Props) {
               <div className="p-2 bg-primary/10 rounded-lg">
                 <ShoppingBag size={20} />
               </div>
-              <h3 className="text-lg">Orden Actual</h3>
+              <h3 className="text-base 2xl:text-lg">Orden Actual</h3>
             </div>
-            <span className="text-xs font-black uppercase tracking-tighter text-zinc-400 bg-zinc-100 px-2 py-1 rounded-md">
+            <span className="text-[10px] 2xl:text-xs font-black uppercase tracking-tighter text-zinc-400 bg-zinc-100 px-2 py-1 rounded-md">
               {items.length} Items
             </span>
           </header>
@@ -119,16 +141,16 @@ export function ActiveSale({ items, tasa, onRemoveItem, onRegister }: Props) {
           </div>
 
           {/* Totales con Diseño de Factura */}
-          <section className="mt-2 p-4 rounded-2xl bg-zinc-50/50 border border-zinc-100 relative overflow-hidden">
+          <section className="mt-2 p-4 rounded-2xl bg-zinc-50/50 border border-zinc-200 shadow-md relative overflow-hidden">
             {/* Decoración de ticket */}
             <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-primary/20 to-transparent" />
 
             <div className="flex justify-between items-end">
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-zinc-400 uppercase">
+                <span className="text-xs 2xl:text-sm font-bold text-zinc-400 uppercase">
                   Total a pagar
                 </span>
-                <span className="text-2xl font-black text-primary tracking-tight">
+                <span className="text-xl 2xl:text-2xl font-black text-primary tracking-tight">
                   Bs.{" "}
                   {totalBS?.toLocaleString("es-VE", {
                     minimumFractionDigits: 2,
@@ -150,7 +172,7 @@ export function ActiveSale({ items, tasa, onRemoveItem, onRegister }: Props) {
           <div className="relative">
             <button
               onClick={() => setIsOpenMetodo(!isOpenMetodo)}
-              className="w-full flex items-center justify-between bg-white border border-zinc-200 rounded-xl px-4 py-3 text-sm font-medium text-zinc-700 hover:border-primary transition-all cursor-pointer"
+              className="w-full flex items-center justify-between bg-white border border-primary rounded-xl px-4 py-3 text-sm font-medium text-zinc-700 hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary transition-all cursor-pointer"
             >
               <div className="flex items-center gap-2">
                 <CreditCard size={16} className="text-zinc-400" />
@@ -165,19 +187,44 @@ export function ActiveSale({ items, tasa, onRemoveItem, onRegister }: Props) {
             <OptionDropdown
               isOpen={isOpenMetodo}
               setIsOpen={setIsOpenMetodo}
-              options={METODOS_PAGO}
-              onSelect={(m) => setMetodoSelected(m)}
-              getLabel={(m) => m.label}
+              options={PAYMENT_METHODS}
+              onSelect={(m: { id: string; label: string }) =>
+                setMetodoSelected(m)
+              }
+              getLabel={(m: { id: string; label: string }) => m.label}
             />
           </div>
 
+          {/* Delivery Toggle */}
+          <button
+            onClick={() => setIsDelivery(!isDelivery)}
+            className={`w-full flex items-center justify-between border-2 rounded-xl px-4 py-3 text-sm font-bold transition-all cursor-pointer ${
+              isDelivery
+                ? "bg-green-50 border-green-500 text-green-700 shadow-md shadow-green-100"
+                : "bg-white border-zinc-100 text-zinc-400 hover:border-zinc-200"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <div
+                className={`p-1.5 rounded-lg ${isDelivery ? "bg-green-500 text-white" : "bg-zinc-100 text-zinc-400"}`}
+              >
+                <MapPin size={16} />
+              </div>
+              ¿Es para Delivery?
+            </div>
+            <div
+              className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors ${isDelivery ? "bg-green-500" : "bg-zinc-200"}`}
+            >
+              <div
+                className={`bg-white w-4 h-4 rounded-full shadow-sm transition-transform ${isDelivery ? "translate-x-4" : ""}`}
+              />
+            </div>
+          </button>
+
           <button
             onClick={handleRegisterClick}
-            className="w-full bg-primary text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-[0.98] cursor-pointer group"
+            className="w-full bg-primary text-white py-3 2xl:py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-[0.98] cursor-pointer group"
           >
-            <div className="p-1 bg-white/20 rounded-md group-hover:rotate-12 transition-transform">
-              <Check size={18} />
-            </div>
             Registrar Venta
           </button>
         </motion.div>

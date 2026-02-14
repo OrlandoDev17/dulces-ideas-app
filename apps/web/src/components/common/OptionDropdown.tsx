@@ -33,11 +33,11 @@ export function OptionDropdown<T>({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute z-20 mt-2 w-full bg-white border border-zinc-100 shadow-xl rounded-xl max-h-[500px]"
+            className="absolute z-20 mt-2 w-64 bg-white border border-zinc-100 shadow-xl rounded-xl max-h-[500px]"
           >
-            {options.map((option: any) => (
+            {options.map((option: any, index: number) => (
               <li
-                key={option.id}
+                key={option.id + index}
                 onClick={() => {
                   onSelect(option);
                   setIsOpen(false);

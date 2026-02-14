@@ -39,8 +39,8 @@ export function ProductSelector({
     <div className="flex flex-col gap-3 w-full bg-white p-4 rounded-2xl border border-zinc-100 shadow-md relative">
       {/* Cabecera del Selector */}
       <header className="flex items-center gap-2 text-primary font-bold text-lg">
-        {Icon && <Icon className="size-8" />}
-        <h3>{title}</h3>
+        {Icon && <Icon className="size-5 2xl:size-8" />}
+        <h3 className="text-sm 2xl:text-base">{title}</h3>
       </header>
 
       {/* Controles */}
@@ -51,7 +51,7 @@ export function ProductSelector({
             onClick={() => setIsOpen(!isOpen)}
             className="w-full flex items-center justify-between bg-zinc-50 border border-primary rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer transition-all duration-200 text-left"
           >
-            <span className="truncate">
+            <span className="truncate text-sm 2xl:text-base">
               {selectedProduct
                 ? `${selectedProduct.name} (${selectedProduct.price})`
                 : "-- Seleccionar --"}
