@@ -26,7 +26,7 @@ export interface CartItem {
   name: string;
   price: number;
   quantity: number;
-  currency: "USD" | "VES";
+  currency: string;
 }
 
 export interface Sale {
