@@ -33,18 +33,23 @@ export function OptionDropdown<T>({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute z-20 mt-2 w-64 bg-white border border-zinc-100 shadow-xl rounded-xl max-h-[500px]"
+            className="absolute z-20 mt-2 w-64 bg-white border border-zinc-100 shadow-lg shadow-zinc-500/20 rounded-xl max-h-[300px] overflow-y-auto"
           >
             {options.map((option: any, index: number) => (
               <li
-                key={option.id + index}
+                key={`${option.id || index}-${index}`}
                 onClick={() => {
                   onSelect(option);
                   setIsOpen(false);
                 }}
                 className="flex justify-between items-center px-3 py-2.5 text-sm rounded-lg hover:bg-primary hover:text-white cursor-pointer transition-colors group"
               >
-                <span className="font-medium">{getLabel(option)}</span>
+                <span
+                  className="font-medium truncate flex-1 min-w-0 mr-2"
+                  title={getLabel(option)}
+                >
+                  {getLabel(option)}
+                </span>
 
                 {/* Solo renderiza la parte extra si la función existe */}
                 {getExtra && (

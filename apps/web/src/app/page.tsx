@@ -27,7 +27,7 @@ export default function Home() {
     }
   }, []);
 
-  const { ultimaActualizacion, tasa } = useTasaBCV();
+  const { tasa } = useTasaBCV();
 
   const fechaHoy = formatVenezuelaDate(getVenezuelaTime());
 
@@ -73,7 +73,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col gap-2 2xl:gap-4 p-4 md:p-8 max-w-(--breakpoint-2xl) mx-auto w-full">
+    <div className="flex flex-col gap-2 2xl:gap-4 p-4">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl 2xl:text-3xl font-bold text-zinc-800">
           Panel de Ventas
@@ -83,17 +83,7 @@ export default function Home() {
         </h4>
       </header>
       <section className="flex flex-col gap-6 mt-4">
-        <header className="flex justify-between items-center bg-white/50 p-4 rounded-2xl border border-zinc-100 backdrop-blur-sm">
-          <BCVCard />
-          <div className="flex flex-col items-end">
-            <span className="text-xs font-black uppercase text-zinc-400 tracking-tighter">
-              Última Tasa
-            </span>
-            <span className="text-sm 2xl:text-base text-green-600 font-bold">
-              {ultimaActualizacion || "Cargando..."}
-            </span>
-          </div>
-        </header>
+        <BCVCard />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {PRODUCT_CATEGORIES.map((cat) => (
             <ProductSelector

@@ -29,6 +29,13 @@ export interface CartItem {
   currency: string;
 }
 
+export interface Payment {
+  id: string;
+  method: string;
+  amountBs: number;
+  amountRef: number;
+}
+
 export interface Sale {
   id: string;
   items: CartItem[];
@@ -37,4 +44,7 @@ export interface Sale {
   metodo: string;
   fecha: string;
   delivery: boolean;
+  deliveryName?: string;
+  deliveryAmount?: number;
+  payments?: Payment[];
 }

@@ -7,5 +7,5 @@
 }
 
 body {
-  @apply bg-gray-100 min-h-screen text-dark;
+  @apply bg-gray-50 min-h-screen text-dark;
 }

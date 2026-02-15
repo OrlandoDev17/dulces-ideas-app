@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 // Hooks
@@ -6,20 +7,23 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 // Icons
 import {
-  Trash2,
   CreditCard,
   ShoppingBag,
-  ChevronDown,
   MapPin,
+  User,
+  DollarSign,
 } from "lucide-react";
 // Components
 import { OptionDropdown } from "@/components/common/OptionDropdown";
 import { MixedPaymentModal } from "./MixedPaymentModal";
+import { ProductList } from "./ProductList";
+import { TotalToPay } from "./TotalToPay";
+import { DropdownButton } from "@/components/common/DropdownButton";
+import { Button } from "@/components/common/Button";
 // Constants
 import { PAYMENT_METHODS } from "@/lib/constants";
 // Types
-import type { CartItem, Sale } from "@/lib/types";
-import type { Payment } from "./MixedPaymentModal";
+import type { CartItem, Sale, Payment } from "@/lib/types";
 
 interface Props {
   items: CartItem[];
@@ -40,6 +44,8 @@ export function ActiveSale({
   const [metodoSelected, setMetodoSelected] = useState(PAYMENT_METHODS[0]);
   const [showMixedModal, setShowMixedModal] = useState(false);
   const [isDelivery, setIsDelivery] = useState(false);
+  const [deliveryName, setDeliveryName] = useState("");
+  const [deliveryAmount, setDeliveryAmount] = useState<number | "">("");
 
   const handleRegisterClick = () => {
     if (metodoSelected.id === "mx") {
@@ -53,10 +59,18 @@ export function ActiveSale({
         metodo: metodoSelected.id,
         fecha: new Date().toISOString(),
         delivery: isDelivery,
+        deliveryName: isDelivery ? deliveryName : undefined,
+        deliveryAmount: isDelivery ? Number(deliveryAmount) || 0 : undefined,
       });
-      setIsDelivery(false);
-      setCart([]);
+      resetStates();
     }
+  };
+
+  const resetStates = () => {
+    setIsDelivery(false);
+    setDeliveryName("");
+    setDeliveryAmount("");
+    setCart([]);
   };
 
   const confirmMixedPayment = (payments: Payment[]) => {
@@ -70,9 +84,11 @@ export function ActiveSale({
       metodo: metodoSelected.id,
       fecha: new Date().toISOString(),
       delivery: isDelivery,
+      deliveryName: isDelivery ? deliveryName : undefined,
+      deliveryAmount: isDelivery ? Number(deliveryAmount) || 0 : undefined,
+      payments,
     });
-    setIsDelivery(false);
-    setCart([]);
+    resetStates();
   };
 
   const totalUSD = items?.reduce(
@@ -81,153 +97,162 @@ export function ActiveSale({
   );
   const totalBS = totalUSD * tasa;
 
+  const DELIVERY_FIELDS = [
+    {
+      id: "name",
+      label: "Nombre del Delivery",
+      placeholder: "Ej. Cesar, Wouker, etc...",
+      type: "text",
+      value: deliveryName,
+      onChange: (e: any) => setDeliveryName(e.target.value),
+      icon: User,
+    },
+    {
+      id: "amount",
+      label: "Monto del Delivery",
+      placeholder: "400Bs",
+      type: "number",
+      value: deliveryAmount,
+      onChange: (e: any) =>
+        setDeliveryAmount(e.target.value === "" ? "" : Number(e.target.value)),
+      icon: DollarSign,
+    },
+  ];
+
   // Solo renderizamos si hay items, con una animación de entrada global
   return (
     <AnimatePresence mode="wait">
       {items?.length > 0 && (
-        <motion.div
+        <motion.section
           initial={{ opacity: 0, x: 20, scale: 0.95 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: 20, scale: 0.95 }}
-          className="flex flex-col gap-4 w-full bg-white p-6 rounded-3xl border border-zinc-100 shadow-2xl shadow-primary/10"
+          className="flex flex-col gap-4 w-full bg-white p-6 rounded-3xl border border-zinc-100 shadow-lg shadow-zinc-500/20"
         >
-          {/* Header Simplificado */}
+          {/* Header de la Orden */}
           <header className="flex justify-between items-center">
             <div className="flex items-center gap-2 text-primary font-bold">
-              <div className="p-2 bg-primary/10 rounded-lg">
+              <figure className="p-2 bg-primary/10 rounded-lg">
                 <ShoppingBag size={20} />
-              </div>
+              </figure>
               <h3 className="text-base 2xl:text-lg">Orden Actual</h3>
             </div>
-            <span className="text-[10px] 2xl:text-xs font-black uppercase tracking-tighter text-zinc-400 bg-zinc-100 px-2 py-1 rounded-md">
-              {items.length} Items
-            </span>
+            <output className="text-[10px] 2xl:text-xs font-black uppercase tracking-tighter text-zinc-400 bg-zinc-100 px-2.5 py-1.5 rounded-lg">
+              {items.length} {items.length === 1 ? "Item" : "Items"}
+            </output>
           </header>
 
-          {/* Lista de productos: Crece hasta un máximo y luego activa scroll */}
-          <div className="flex flex-col gap-2 overflow-hidden">
-            <AnimatePresence mode="popLayout">
-              {items.map((item) => (
-                <motion.div
-                  key={item.id}
-                  layout
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="flex justify-between items-center p-3 hover:bg-zinc-50 rounded-2xl transition-colors border border-transparent hover:border-zinc-100 group"
-                >
-                  <div className="flex flex-col">
-                    <span className="font-bold text-zinc-800 text-sm leading-tight">
-                      {item.name}
-                    </span>
-                    <span className="text-sm text-zinc-500 font-medium">
-                      {item.quantity} un. × ${item.price.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-bold text-primary text-lg">
-                      ${(item.price * item.quantity).toFixed(2)}
-                    </span>
-                    <button
-                      onClick={() => onRemoveItem(item.id)}
-                      className="opacity-0 group-hover:opacity-100 p-1.5 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all cursor-pointer"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+          {/* Lista de productos */}
+          <ProductList items={items} onRemoveItem={onRemoveItem} />
 
           {/* Totales con Diseño de Factura */}
-          <section className="mt-2 p-4 rounded-2xl bg-zinc-50/50 border border-zinc-200 shadow-md relative overflow-hidden">
-            {/* Decoración de ticket */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-primary/20 to-transparent" />
+          <TotalToPay totalBS={totalBS} totalUSD={totalUSD} tasa={tasa} />
 
-            <div className="flex justify-between items-end">
-              <div className="flex flex-col">
-                <span className="text-xs 2xl:text-sm font-bold text-zinc-400 uppercase">
-                  Total a pagar
-                </span>
-                <span className="text-xl 2xl:text-2xl font-black text-primary tracking-tight">
-                  Bs.{" "}
-                  {totalBS?.toLocaleString("es-VE", {
-                    minimumFractionDigits: 2,
-                  })}
-                </span>
-              </div>
-              <div className="text-right">
-                <span className="block text-xs font-bold text-zinc-500">
-                  ${totalUSD?.toFixed(2)} USD
-                </span>
-                <span className="text-sm text-zinc-400 font-medium">
-                  Tasa: {tasa}
-                </span>
-              </div>
-            </div>
-          </section>
-
-          {/* Selector de Pago Reutilizable */}
-          <div className="relative">
-            <button
-              onClick={() => setIsOpenMetodo(!isOpenMetodo)}
-              className="w-full flex items-center justify-between bg-white border border-primary rounded-xl px-4 py-3 text-sm font-medium text-zinc-700 hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary transition-all cursor-pointer"
-            >
-              <div className="flex items-center gap-2">
-                <CreditCard size={16} className="text-zinc-400" />
+          {/* Selectores y Opciones */}
+          <div className="flex flex-col gap-4">
+            {/* Selector de Pago */}
+            <div className="relative">
+              <label className="sr-only">Método de Pago</label>
+              <DropdownButton isOpen={isOpenMetodo} setIsOpen={setIsOpenMetodo}>
+                <CreditCard size={18} className="text-primary/60" />
                 {metodoSelected.label}
-              </div>
-              <ChevronDown
-                size={16}
-                className={`transition-transform ${isOpenMetodo ? "rotate-180" : ""}`}
-              />
-            </button>
+              </DropdownButton>
 
-            <OptionDropdown
-              isOpen={isOpenMetodo}
-              setIsOpen={setIsOpenMetodo}
-              options={PAYMENT_METHODS}
-              onSelect={(m: { id: string; label: string }) =>
-                setMetodoSelected(m)
-              }
-              getLabel={(m: { id: string; label: string }) => m.label}
-            />
+              <OptionDropdown
+                isOpen={isOpenMetodo}
+                setIsOpen={setIsOpenMetodo}
+                options={PAYMENT_METHODS}
+                onSelect={(m: { id: string; label: string }) =>
+                  setMetodoSelected(m)
+                }
+                getLabel={(m: { id: string; label: string }) => m.label}
+              />
+            </div>
+
+            {/* Delivery Toggle y Datos */}
+            <fieldset className="flex flex-col gap-3 border-none p-0 m-0">
+              <legend className="sr-only">Opciones de Delivery</legend>
+              <button
+                type="button"
+                onClick={() => setIsDelivery(!isDelivery)}
+                className={`w-full flex items-center justify-between border-2 rounded-xl px-4 py-3.5 text-sm font-black transition-all cursor-pointer ${
+                  isDelivery
+                    ? "bg-green-50 border-green-500 text-green-700 shadow-md shadow-green-100"
+                    : "bg-white border-zinc-100 text-zinc-400 hover:border-zinc-200"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`p-1.5 rounded-lg ${isDelivery ? "bg-green-500 text-white" : "bg-zinc-100 text-zinc-400"}`}
+                  >
+                    <MapPin size={16} />
+                  </div>
+                  ¿Es para Delivery?
+                </div>
+                <div
+                  className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors ${isDelivery ? "bg-green-500" : "bg-zinc-200"}`}
+                >
+                  <div
+                    className={`bg-white w-4 h-4 rounded-full shadow-sm transition-transform ${isDelivery ? "translate-x-4" : ""}`}
+                  />
+                </div>
+              </button>
+
+              <AnimatePresence>
+                {isDelivery && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex flex-col gap-3 py-1">
+                      {DELIVERY_FIELDS.map(
+                        ({
+                          id,
+                          label,
+                          icon: Icon,
+                          placeholder,
+                          onChange,
+                          type,
+                          value,
+                        }) => (
+                          <div key={id} className="flex flex-col gap-1.5">
+                            <label
+                              htmlFor={id}
+                              className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1"
+                            >
+                              {label}
+                            </label>
+                            <div className="relative">
+                              <Icon
+                                size={16}
+                                className="text-primary/60 absolute top-1/2 -translate-y-1/2 left-3"
+                              />
+                              <input
+                                id={id}
+                                type={type}
+                                value={value}
+                                onChange={onChange}
+                                placeholder={placeholder}
+                                className={`w-full bg-zinc-50 border border-zinc-200 pl-10 pr-4 py-3 rounded-xl text-sm font-bold outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500/50 transition-all ${type === "number" ? "font-mono tracking-wider" : ""}`}
+                              />
+                            </div>
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </fieldset>
           </div>
 
-          {/* Delivery Toggle */}
-          <button
-            onClick={() => setIsDelivery(!isDelivery)}
-            className={`w-full flex items-center justify-between border-2 rounded-xl px-4 py-3 text-sm font-bold transition-all cursor-pointer ${
-              isDelivery
-                ? "bg-green-50 border-green-500 text-green-700 shadow-md shadow-green-100"
-                : "bg-white border-zinc-100 text-zinc-400 hover:border-zinc-200"
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <div
-                className={`p-1.5 rounded-lg ${isDelivery ? "bg-green-500 text-white" : "bg-zinc-100 text-zinc-400"}`}
-              >
-                <MapPin size={16} />
-              </div>
-              ¿Es para Delivery?
-            </div>
-            <div
-              className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors ${isDelivery ? "bg-green-500" : "bg-zinc-200"}`}
-            >
-              <div
-                className={`bg-white w-4 h-4 rounded-full shadow-sm transition-transform ${isDelivery ? "translate-x-4" : ""}`}
-              />
-            </div>
-          </button>
-
-          <button
-            onClick={handleRegisterClick}
-            className="w-full bg-primary text-white py-3 2xl:py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-[0.98] cursor-pointer group"
-          >
+          <Button style="primary" onClick={handleRegisterClick}>
             Registrar Venta
-          </button>
-        </motion.div>
+            <ShoppingBag size={20} className="group-hover:bounce" />
+          </Button>
+        </motion.section>
       )}
 
       {showMixedModal && (

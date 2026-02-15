@@ -6,11 +6,18 @@ import { useTasaBCV } from "@/hooks/useTasaBCV";
 import { Check, Pencil, RefreshCcw } from "lucide-react";
 
 export function BCVCard() {
-  const { tasa, setTasa, loading, editando, setEditando, fetchTasa } =
-    useTasaBCV();
+  const {
+    tasa,
+    setTasa,
+    loading,
+    editando,
+    setEditando,
+    fetchTasa,
+    ultimaActualizacion,
+  } = useTasaBCV();
 
   return (
-    <article className="flex items-center gap-4 px-4 2xl:px-6 py-6 2xl:py-8 bg-white shadow-lg rounded-2xl border-l-4 border-primary">
+    <article className="flex justify-between items-center gap-4 px-4 2xl:px-6 py-6 2xl:py-8 bg-white shadow-lg shadow-zinc-500/20 rounded-2xl border-l-4 border-primary">
       <h3 className="text-lg 2xl:text-xl text-primary font-semibold">
         Tasa del Día (BCV)
       </h3>
@@ -49,6 +56,14 @@ export function BCVCard() {
           </button>
         </div>
       </label>
+      <div className="flex flex-col items-end">
+        <span className="text-xs font-black uppercase text-zinc-400 tracking-tighter">
+          Última Tasa
+        </span>
+        <span className="text-sm 2xl:text-base text-green-600 font-bold">
+          {ultimaActualizacion || "Cargando..."}
+        </span>
+      </div>
     </article>
   );
 }

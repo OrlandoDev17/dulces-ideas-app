@@ -11,6 +11,7 @@ import type {
   ProductSelector as ProductSelectorType,
   Product,
 } from "@/lib/types";
+import { DropdownButton } from "../common/DropdownButton";
 
 interface Props extends ProductSelectorType {
   onAddToCart: (product: Product, quantity: number) => void;
@@ -36,7 +37,7 @@ export function ProductSelector({
   };
 
   return (
-    <div className="flex flex-col gap-3 w-full bg-white p-4 rounded-2xl border border-zinc-100 shadow-md relative">
+    <div className="flex flex-col gap-3 w-full bg-white p-3 sm:p-4 rounded-2xl border border-zinc-100 shadow-lg shadow-zinc-500/20 relative isolate">
       {/* Cabecera del Selector */}
       <header className="flex items-center gap-2 text-primary font-bold text-lg">
         {Icon && <Icon className="size-5 2xl:size-8" />}
@@ -44,23 +45,19 @@ export function ProductSelector({
       </header>
 
       {/* Controles */}
-      <div className="flex gap-2 items-center">
+      <div className="flex gap-1.5 sm:gap-2 items-center w-full min-w-0">
         {/* Dropdown Personalizado */}
-        <div className="relative flex-1">
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="w-full flex items-center justify-between bg-zinc-50 border border-primary rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer transition-all duration-200 text-left"
-          >
-            <span className="truncate text-sm 2xl:text-base">
+        <div className="relative flex-1 min-w-0">
+          <DropdownButton isOpen={isOpen} setIsOpen={setIsOpen}>
+            <span
+              className="truncate text-xs 2xl:text-base flex-1 min-w-0 mr-2"
+              title={selectedProduct ? selectedProduct.name : ""}
+            >
               {selectedProduct
                 ? `${selectedProduct.name} (${selectedProduct.price})`
                 : "-- Seleccionar --"}
             </span>
-            <ChevronDown
-              size={18}
-              className={`text-primary transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
-            />
-          </button>
+          </DropdownButton>
 
           {/* Lista de Opciones Estilizada */}
           <OptionDropdown
@@ -81,7 +78,7 @@ export function ProductSelector({
           onChange={(e) =>
             setQuantity(Math.max(1, parseInt(e.target.value) || 1))
           }
-          className="w-14 bg-white border border-primary rounded-xl px-2 py-2.5 text-center text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200"
+          className="w-10 sm:w-14 bg-white border border-primary rounded-xl px-1 sm:px-2 py-2.5 text-center text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200"
         />
 
         {/* Botón Añadir */}
