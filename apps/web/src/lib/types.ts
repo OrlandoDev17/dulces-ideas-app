@@ -48,3 +48,9 @@ export interface Sale {
   deliveryAmount?: number;
   payments?: Payment[];
 }
+
+export interface Cierre {
+  id: string;
+  monto: number;
+  fecha: string;
+}

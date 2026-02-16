@@ -5,13 +5,13 @@ import { useState } from "react";
 // Components
 import { OptionDropdown } from "@/components/common/OptionDropdown";
 // Icons
-import { Plus, ChevronDown } from "lucide-react";
+import { Plus } from "lucide-react";
 // Types
 import type {
   ProductSelector as ProductSelectorType,
   Product,
 } from "@/lib/types";
-import { DropdownButton } from "../common/DropdownButton";
+import { DropdownButton } from "@/components/common/DropdownButton";
 
 interface Props extends ProductSelectorType {
   onAddToCart: (product: Product, quantity: number) => void;
@@ -37,7 +37,9 @@ export function ProductSelector({
   };
 
   return (
-    <div className="flex flex-col gap-3 w-full bg-white p-3 sm:p-4 rounded-2xl border border-zinc-100 shadow-lg shadow-zinc-500/20 relative isolate">
+    <div
+      className={`flex flex-col gap-3 w-full bg-white p-3 sm:p-4 rounded-2xl border border-zinc-100 shadow-lg shadow-zinc-500/20 relative ${isOpen ? "z-30" : "z-10"}`}
+    >
       {/* Cabecera del Selector */}
       <header className="flex items-center gap-2 text-primary font-bold text-lg">
         {Icon && <Icon className="size-5 2xl:size-8" />}
@@ -47,7 +49,7 @@ export function ProductSelector({
       {/* Controles */}
       <div className="flex gap-1.5 sm:gap-2 items-center w-full min-w-0">
         {/* Dropdown Personalizado */}
-        <div className="relative flex-1 min-w-0">
+        <div className={`relative flex-1 min-w-0`}>
           <DropdownButton isOpen={isOpen} setIsOpen={setIsOpen}>
             <span
               className="truncate text-xs 2xl:text-base flex-1 min-w-0 mr-2"

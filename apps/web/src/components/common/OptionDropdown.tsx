@@ -25,7 +25,7 @@ export function OptionDropdown<T>({
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 z-10"
+            className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
 
@@ -33,7 +33,7 @@ export function OptionDropdown<T>({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute z-20 mt-2 w-64 bg-white border border-zinc-100 shadow-lg shadow-zinc-500/20 rounded-xl max-h-[300px] overflow-y-auto"
+            className="absolute z-50 mt-2 w-64 bg-white border border-zinc-100 shadow-lg shadow-zinc-500/20 rounded-xl max-h-[300px] overflow-y-auto"
           >
             {options.map((option: any, index: number) => (
               <li

@@ -10,21 +10,28 @@ import { getVenezuelaTime, formatVenezuelaDate } from "@/services/FechaYHora";
 import { BCVCard } from "@/components/ventas/BCVCard";
 import { ProductSelector } from "@/components/ventas/ProductSelector";
 import { ActiveSale } from "@/components/ventas/ActiveSale";
+import { FinancialSummary } from "@/components/ventas/recent-sales/FinancialSummary";
+import { AddCierreModal } from "@/components/ventas/recent-sales/AddCierreModal";
+import { AnimatePresence } from "motion/react";
+
 // Constants
 import { PRODUCT_CATEGORIES } from "@/lib/constants";
-import { CartItem, Product, Sale } from "@/lib/types";
+import { CartItem, Cierre, Product, Sale } from "@/lib/types";
 import { RecentSales } from "@/components/ventas/RecentSales";
 
 export default function Home() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
+  const [cierres, setCierres] = useState<Cierre[]>([]);
+  const [showCierreModal, setShowCierreModal] = useState(false);
 
   useEffect(() => {
-    // Actualizar y guardar ventas en localStorage
+    // Actualizar y guardar ventas y cierres en localStorage
     const storedSales = localStorage.getItem("sales");
-    if (storedSales) {
-      setSales(JSON.parse(storedSales));
-    }
+    const storedCierres = localStorage.getItem("cierres");
+
+    if (storedSales) setSales(JSON.parse(storedSales));
+    if (storedCierres) setCierres(JSON.parse(storedCierres));
   }, []);
 
   const { tasa } = useTasaBCV();
@@ -53,6 +60,16 @@ export default function Home() {
     });
   };
 
+  const updateSale = (updatedSale: Sale) => {
+    setSales((prev) => {
+      const newSales = prev.map((s) =>
+        s.id === updatedSale.id ? updatedSale : s,
+      );
+      localStorage.setItem("sales", JSON.stringify(newSales));
+      return newSales;
+    });
+  };
+
   const deleteSale = (id: string) => {
     setSales((prev) => {
       const newSales = prev.filter((s) => s.id !== id);
@@ -64,12 +81,27 @@ export default function Home() {
   const clearSales = () => {
     if (
       confirm(
-        "¿Estás seguro de que deseas limpiar todo el historial de ventas?",
+        "¿Estás seguro de que deseas limpiar todo el historial de ventas y cierres?",
       )
     ) {
       setSales([]);
+      setCierres([]);
       localStorage.removeItem("sales");
+      localStorage.removeItem("cierres");
     }
+  };
+
+  const addCierre = (monto: number) => {
+    const nuevoCierre: Cierre = {
+      id: crypto.randomUUID(),
+      monto,
+      fecha: new Date().toISOString(),
+    };
+    setCierres((prev) => {
+      const newCierres = [...prev, nuevoCierre];
+      localStorage.setItem("cierres", JSON.stringify(newCierres));
+      return newCierres;
+    });
   };
 
   return (
@@ -82,8 +114,12 @@ export default function Home() {
           {fechaHoy}
         </h4>
       </header>
-      <section className="flex flex-col gap-6 mt-4">
-        <BCVCard />
+      <section className="flex flex-col gap-8 mt-4">
+        {/* Sección: Tasa de Cambio y Control de Divisas */}
+        <div className="w-full">
+          <BCVCard />
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {PRODUCT_CATEGORIES.map((cat) => (
             <ProductSelector
@@ -106,12 +142,34 @@ export default function Home() {
             setCart={setCart}
           />
         )}
+
+        {/* Sección: Resumen Financiero del Día (Ingresos y Cierres) */}
+        <div className="w-full">
+          <FinancialSummary
+            sales={sales}
+            cierres={cierres}
+            onAddCierre={() => setShowCierreModal(true)}
+          />
+        </div>
       </section>
+
       <RecentSales
         sales={sales}
+        cierres={cierres}
         onDeleteSale={deleteSale}
+        onUpdateSale={updateSale}
         onClearAll={clearSales}
       />
+
+      {/* Modal para agregar cierres */}
+      <AnimatePresence>
+        {showCierreModal && (
+          <AddCierreModal
+            onClose={() => setShowCierreModal(false)}
+            onConfirm={addCierre}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

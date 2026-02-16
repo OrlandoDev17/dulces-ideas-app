@@ -124,10 +124,11 @@ export function ActiveSale({
     <AnimatePresence mode="wait">
       {items?.length > 0 && (
         <motion.section
+          key="active-sale-main-content"
           initial={{ opacity: 0, x: 20, scale: 0.95 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: 20, scale: 0.95 }}
-          className="flex flex-col gap-4 w-full bg-white p-6 rounded-3xl border border-zinc-100 shadow-lg shadow-zinc-500/20"
+          className={`flex flex-col gap-4 w-full bg-white p-6 rounded-3xl border border-zinc-100 shadow-lg shadow-zinc-500/20 relative ${isOpenMetodo ? "z-20" : "z-10"}`}
         >
           {/* Header de la Orden */}
           <header className="flex justify-between items-center">
@@ -151,7 +152,7 @@ export function ActiveSale({
           {/* Selectores y Opciones */}
           <div className="flex flex-col gap-4">
             {/* Selector de Pago */}
-            <div className="relative">
+            <div className={`relative ${isOpenMetodo ? "z-30" : "z-10"}`}>
               <label className="sr-only">Método de Pago</label>
               <DropdownButton isOpen={isOpenMetodo} setIsOpen={setIsOpenMetodo}>
                 <CreditCard size={18} className="text-primary/60" />
@@ -201,6 +202,7 @@ export function ActiveSale({
               <AnimatePresence>
                 {isDelivery && (
                   <motion.div
+                    key="delivery-form"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
@@ -208,16 +210,22 @@ export function ActiveSale({
                   >
                     <div className="flex flex-col gap-3 py-1">
                       {DELIVERY_FIELDS.map(
-                        ({
-                          id,
-                          label,
-                          icon: Icon,
-                          placeholder,
-                          onChange,
-                          type,
-                          value,
-                        }) => (
-                          <div key={id} className="flex flex-col gap-1.5">
+                        (
+                          {
+                            id,
+                            label,
+                            icon: Icon,
+                            placeholder,
+                            onChange,
+                            type,
+                            value,
+                          },
+                          index,
+                        ) => (
+                          <div
+                            key={`${id}-${index}`}
+                            className="flex flex-col gap-1.5"
+                          >
                             <label
                               htmlFor={id}
                               className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1"
@@ -257,6 +265,7 @@ export function ActiveSale({
 
       {showMixedModal && (
         <MixedPaymentModal
+          key="mixed-payment-modal"
           totalToPayBs={totalBS}
           tasa={tasa}
           onClose={() => setShowMixedModal(false)}

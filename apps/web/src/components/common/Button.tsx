@@ -8,6 +8,7 @@ interface ButtonProps {
   onClick?: () => void;
   disabled?: boolean;
   className?: string;
+  type?: "button" | "submit" | "reset";
 }
 
 export function Button({
@@ -18,6 +19,7 @@ export function Button({
   onClick,
   disabled = false,
   className,
+  type = "button",
 }: ButtonProps) {
   const commonClasses =
     "flex items-center justify-center gap-2 px-4 py-3 text-sm 2xl:text-base font-medium rounded-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
@@ -40,6 +42,7 @@ export function Button({
       onClick={onClick}
       disabled={disabled}
       form={form}
+      type={type}
     >
       {children}
     </button>
