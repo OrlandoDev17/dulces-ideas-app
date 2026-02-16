@@ -91,11 +91,19 @@ export function ActiveSale({
     resetStates();
   };
 
-  const totalUSD = items?.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0,
-  );
-  const totalBS = totalUSD * tasa;
+  const totalUSD = items?.reduce((acc, item) => {
+    if (item.currency === "VES") {
+      return acc + item.price / tasa;
+    }
+    return acc + item.price * item.quantity;
+  }, 0);
+
+  const totalBS = items?.reduce((acc, item) => {
+    if (item.currency === "VES") {
+      return acc + item.price;
+    }
+    return acc + item.price * item.quantity * tasa;
+  }, 0);
 
   const DELIVERY_FIELDS = [
     {
