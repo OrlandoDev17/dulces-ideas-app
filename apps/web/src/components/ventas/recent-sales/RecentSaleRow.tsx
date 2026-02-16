@@ -142,7 +142,7 @@ export function RecentSaleRow({
               <MapPin size={18} />
             </div>
             {sale.deliveryName && (
-              <span className="text-[9px] font-bold text-zinc-500 text-center leading-none max-w-[80px] truncate">
+              <span className="text-[9px] font-bold text-zinc-800 text-center leading-none max-w-[80px] truncate">
                 {sale.deliveryName}
               </span>
             )}
@@ -180,14 +180,14 @@ export function RecentSaleRow({
           <>
             <button
               onClick={onStartEdit}
-              className="p-2 text-zinc-300 hover:text-primary hover:bg-primary/5 rounded-lg transition-all md:opacity-0 group-hover:opacity-100 cursor-pointer"
+              className="p-2 text-zinc-700 hover:text-primary hover:bg-primary/5 rounded-lg transition-all cursor-pointer"
               title="Editar precio"
             >
               <Pencil size={18} />
             </button>
             <button
               onClick={onDelete}
-              className="p-2 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all md:opacity-0 group-hover:opacity-100 cursor-pointer"
+              className="p-2 text-zinc-700 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all cursor-pointer"
               aria-label="Eliminar venta"
             >
               <Trash2 size={18} />

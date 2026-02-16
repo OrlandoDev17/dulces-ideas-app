@@ -162,7 +162,7 @@ export function FinancialSummary({ sales, cierres, onAddCierre }: Props) {
 
       {/* Panel de Cuentas x Pagar (Deliverys) */}
       <article className="bg-white rounded-3xl p-6 border-l-4 border-l-red-500 shadow-xl border border-zinc-100 flex flex-col gap-4 relative overflow-hidden">
-        <header className="flex items-center gap-2 border-b border-zinc-100 pb-3">
+        <header className="flex items-center gap-2 border-b border-zinc-300 pb-3">
           <Bike size={20} className="text-zinc-600" />
           <h3 className="text-lg font-bold text-zinc-800 tracking-tight">
             Cuentas x Pagar
@@ -192,7 +192,7 @@ export function FinancialSummary({ sales, cierres, onAddCierre }: Props) {
                 ))}
             </ul>
           ) : (
-            <div className="flex flex-col items-center justify-center py-6 text-zinc-300 gap-1 opacity-50">
+            <div className="flex flex-col items-center justify-center py-6 text-zinc-500 gap-1">
               <Info size={24} />
               <span className="text-xs font-bold uppercase">
                 No hay deudas de delivery
