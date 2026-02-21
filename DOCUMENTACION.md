@@ -1,99 +1,58 @@
-# Documentación Técnica - Dulces Ideas App 🍪
+# 📖 Documentación Técnica: Sistema de Encargos
 
-Esta documentación detalla la arquitectura, estructura y funcionamiento de los módulos del sistema de ventas.
-
-## 🏗️ Estructura de Carpetas (`/apps/web/src`)
-
-```text
-src/
-├── app/                # Enrutamiento y páginas principales (Next.js App Router)
-├── components/         # Componentes de la interfaz de usuario
-│   ├── common/         # Componentes reutilizables (Botones, Dropdowns, etc.)
-│   └── ventas/         # Componentes específicos del módulo de ventas
-│       ├── mixed-payment/  # Sub-módulo para pagos múltiples
-│       └── recent-sales/   # Sub-módulo para historial y reportes
-├── hooks/              # Lógica de estado y efectos reutilizables
-├── lib/                # Utilidades, tipos y constantes globales
-└── services/           # Servicios externos y lógica de negocio (PDF, Fechas)
-```
+He refactorizado el sistema de encargos siguiendo los estándares de **Vercel React Best Practices**. Ahora el código es más modular, fácil de mantener y con una separación clara de responsabilidades.
 
 ---
 
-## 💻 Páginas (`/app`)
+## 🏗️ Arquitectura del Proyecto
 
-### `page.tsx` (Panel de Ventas)
+La lógica de la aplicación se ha dividido en cuatro capas principales:
 
-Es el orquestador principal. Gestiona el estado global de:
+### 1. ⚙️ Servicios (`services/`)
 
-- **Carrito**: Productos seleccionados actualmente.
-- **Ventas**: Historial cargado desde `localStorage`.
-- **Cierres**: Registros manuales de fin de caja.
-- **Tasa**: Valor actual del dólar (BCV).
+Los servicios son responsables de la **persistencia y lógica de negocio pura**. No tienen ninguna relación con la interfaz.
 
----
+- **`orders.service.ts`**: Centraliza todas las operaciones de los encargos.
+  - **Persistencia**: Guarda y lee de `localStorage`.
+  - **Sincronización**: Al registrar un pago de un encargo, crea automáticamente un registro en el historial de **Ventas**.
+  - **Cálculos**: Gestiona el cambio de estado (Espera -> Parcial -> Pagado) basado en el total abonado.
 
-## 🧩 Componentes Críticos (`/components/ventas`)
+### 2. 🪝 Hooks Personalizados (`hooks/`)
 
-### 1. `FinancialSummary.tsx`
+Los hooks actúan como un **puente** entre los servicios y los componentes de React, manejando el estado de la UI.
 
-Muestra el resumen financiero en tiempo real.
+- **`useOrders.ts`**: Proporciona a la página de encargos todo lo que necesita (lista filtrada, funciones para agregar, eliminar y pagar).
+- **`useCurrencyConverter.ts`**: Encapsula la lógica de conversión de moneda. Detecta si un pago es en Bs o USD y calcula sus equivalencias y cobertura automáticamente.
+- **`useTasaBCV.ts`**: (Existente) Provee la tasa actual del dólar.
 
-- **Ingresos**: Desglose por método (Pago Móvil, Punto, Efectivo) en Bolívares y Divisas.
-- **Cuentas x Pagar**: Listado automático de deudas de Delivery.
-- **Cierres**: Historial visual de los cierres realizados en el día.
+### 3. 📚 Librerías y Utilidades (`lib/`)
 
-### 2. `ActiveSale.tsx`
+Contiene funciones puras y definiciones que se usan en todo el proyecto.
 
-Gestiona la venta en curso. Permite:
+- **`formatters.ts`**: Centraliza el formato de visualización usando la API nativa `Intl`.
+  - `formatDate`: Fechas consistentes (Ej: 20 feb).
+  - `formatBS`: Formato de moneda venezolana.
+  - `formatUSD`: Formato de moneda americana.
+- **`types.ts`**: Definiciones de interfaces de TypeScript para asegurar que no haya errores de datos.
 
-- Ver items en el carrito.
-- Seleccionar método de pago (Simple o Mixto).
-- Marcar como delivery y asignar repartidor.
-- Registrar la venta definitiva.
+### 4. 🧩 Componentes (`components/orders/`)
 
-### 3. `MixedPaymentModal.tsx`
+Ahora los componentes son "tontos", es decir, se encargan solo de **mostrar información y recibir eventos**.
 
-Modal complejo para segmentar un pago en múltiples partes.
-
-- **Sub-componentes**: `PaymentForm`, `PaymentList`, `PaymentSummary`.
-- **Lógica**: Calcula montos restantes en Bs y $ simultáneamente.
-
-### 4. `RecentSales.tsx`
-
-Sección de historial dividida en:
-
-- `RecentSalesHeader`: Acciones de exportación PDF y limpieza.
-- `RecentSalesTable`: Listado con soporte para **edición de precios** inline y eliminación.
+- **`OrderCard.tsx`**: Visualiza la información del encargo con diseño premium. Delegó sus cálculos pesados a las utilerías de formateo.
+- **`AddOrderModal.tsx`**: Formulario semántico complejo que usa `useCurrencyConverter` para manejar los pagos iniciales de forma fluida.
+- **`RecordPaymentModal.tsx`**: Modal dedicado exclusivamente a registrar nuevos abonos, mostrando el saldo pendiente con claridad.
 
 ---
 
-## ⚓ Hooks Personalizados (`/hooks`)
+## 🔝 Mejores Prácticas Aplicadas
 
-| Hook                 | Responsabilidad                                         |
-| :------------------- | :------------------------------------------------------ |
-| `useTasaBCV`         | Fetching y sincronización de la tasa del dólar oficial. |
-| `useMixedPayment`    | Cálculos de balance y validación de pagos múltiples.    |
-| `useRecentSalesEdit` | Maneja el estado de edición (inputs) de ventas pasadas. |
-
----
-
-## 🛠️ Servicios (`/services`)
-
-### `pdfService.ts`
-
-Genera el **Reporte de Cierre de Caja** profesional usando `jsPDF`.
-
-- Diseña tablas automáticas con colores corporativos (Marrón `#8B6D61`).
-- Agrupa deudas de delivery y cierres manuales.
-
-### `FechaYHora.ts`
-
-Normaliza el manejo de zonas horarias para asegurar que los reportes siempre usen la hora de **Venezuela (UTC-4)**.
+1.  **Semántica HTML5**: Uso de etiquetas como `<article>`, `<section>`, `<time>`, `<fieldset>` y `<legend>` para mejor accesibilidad y SEO técnico.
+2.  **Accesibilidad (ARIA)**: Implementación de roles (`role="dialog"`, `role="progressbar"`) y etiquetas descriptivas (`aria-label`) para lectores de pantalla.
+3.  **Separación de Preocupaciones (SoC)**: Los componentes no saben _cómo_ se guardan los datos, solo llaman a una función del hook.
+4.  **DRY (Don't Repeat Yourself)**: La lógica de conversión de moneda se escribió una sola vez en un hook y se reutiliza en ambos modales.
+5.  **Internacionalización**: Uso de `Intl` para que las fechas y números sigan el estándar local de Venezuela.
 
 ---
 
-## 🔧 Tipos Globales (`/lib/types.ts`)
-
-- `Sale`: Representa una transacción completa.
-- `Cierre`: Registro manual de monto recolectado.
-- `Payment`: Desglose de un pago individual (usado en pagos mixtos).
+_Desarrollado con ✨ por Antigravity (Advanced Agentic Coding)._

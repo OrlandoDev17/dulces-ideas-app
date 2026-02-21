@@ -153,7 +153,13 @@ export function ActiveSale({
           <ProductList items={items} onRemoveItem={onRemoveItem} />
 
           {/* Totales con Diseño de Factura */}
-          <TotalToPay totalBS={totalBS} totalUSD={totalUSD} tasa={tasa} />
+          <TotalToPay
+            totalBS={totalBS}
+            totalUSD={totalUSD}
+            tasa={tasa}
+            isDelivery={isDelivery}
+            deliveryAmount={Number(deliveryAmount) || 0}
+          />
 
           {/* Selectores y Opciones */}
           <div className="flex flex-col gap-4">
@@ -274,7 +280,9 @@ export function ActiveSale({
       {showMixedModal && (
         <MixedPaymentModal
           key="mixed-payment-modal"
-          totalToPayBs={totalBS}
+          totalToPayBs={
+            totalBS + (isDelivery ? Number(deliveryAmount) || 0 : 0)
+          }
           tasa={tasa}
           onClose={() => setShowMixedModal(false)}
           onConfirm={confirmMixedPayment}

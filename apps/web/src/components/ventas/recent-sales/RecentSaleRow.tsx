@@ -56,16 +56,27 @@ export function RecentSaleRow({
       </div>
 
       {/* Columna: Productos resumen */}
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-1.5 min-w-0">
+        {sale.type === "order_payment" && (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary text-white text-[8px] font-black uppercase tracking-widest mb-1 shadow-sm">
+            Encargo
+          </span>
+        )}
         {sale.items.map((item, i) => (
           <span
             key={`${sale.id}-item-${i}`}
-            className="inline-flex items-center px-2.5 py-1 rounded-lg bg-zinc-100 text-zinc-700 text-[10px] 2xl:text-xs font-bold border border-zinc-200/50"
+            className="inline-flex items-center px-2.5 py-1 rounded-lg bg-zinc-100 text-zinc-700 text-[10px] 2xl:text-xs font-bold border border-zinc-200/50 truncate max-w-full"
+            title={item.name}
           >
             <span className="text-primary mr-1">{item.quantity}x</span>{" "}
             {item.name}
           </span>
         ))}
+        {sale.description && (
+          <p className="text-[9px] font-bold text-zinc-400 italic w-full truncate">
+            {sale.description}
+          </p>
+        )}
       </div>
 
       {/* Columna: Totales (Con soporte para edición) */}

@@ -47,6 +47,33 @@ export interface Sale {
   deliveryName?: string;
   deliveryAmount?: number;
   payments?: Payment[];
+  type?: "regular" | "order_payment";
+  description?: string;
+  orderId?: string;
+}
+
+export interface OrderPayment {
+  id: string;
+  amountBs: number;
+  amountRef: number;
+  method: string;
+  fecha: string;
+}
+
+export type OrderStatus = "espera" | "parcial" | "pagado" | "entregado";
+
+export interface Order {
+  id: string;
+  clienteNombre: string;
+  clienteTelefono: string;
+  productoNombre: string;
+  totalUSD: number;
+  totalBS: number;
+  fechaInicio: string;
+  fechaEntrega: string;
+  delivery: boolean;
+  pagos: OrderPayment[];
+  estado: OrderStatus;
 }
 
 export interface Cierre {

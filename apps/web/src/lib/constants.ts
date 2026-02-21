@@ -17,16 +17,16 @@ export const NAV_LINKS: NavLink[] = [
     icon: Store,
   },
   {
-    id: "admin",
-    label: "Administración",
-    href: "/admin",
-    icon: LayoutDashboard,
-  },
-  {
     id: "encargos",
     label: "Encargos",
     href: "/orders",
     icon: Cake,
+  },
+  {
+    id: "admin",
+    label: "Administración",
+    href: "/admin",
+    icon: LayoutDashboard,
   },
   {
     id: "reportes",
