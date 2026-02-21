@@ -93,14 +93,14 @@ export function ActiveSale({
 
   const totalUSD = items?.reduce((acc, item) => {
     if (item.currency === "VES") {
-      return acc + item.price / tasa;
+      return acc + (item.price * item.quantity) / tasa;
     }
     return acc + item.price * item.quantity;
   }, 0);
 
   const totalBS = items?.reduce((acc, item) => {
     if (item.currency === "VES") {
-      return acc + item.price;
+      return acc + item.price * item.quantity;
     }
     return acc + item.price * item.quantity * tasa;
   }, 0);
