@@ -2,6 +2,7 @@ import { Sale } from "@/lib/types";
 import { RecentSaleRow } from "./RecentSaleRow";
 import { useRecentSalesEdit } from "@/hooks/useRecentSalesEdit";
 import { ShoppingBag } from "lucide-react";
+import { useMemo } from "react";
 
 interface Props {
   sales: Sale[];
@@ -24,6 +25,8 @@ export function RecentSalesTable({ sales, onDeleteSale, onUpdateSale }: Props) {
     saveEdit,
     cancelEdit,
   } = useRecentSalesEdit(onUpdateSale);
+
+  const reversedSales = useMemo(() => [...sales].reverse(), [sales]);
 
   if (sales.length === 0) {
     return (
@@ -66,7 +69,7 @@ export function RecentSalesTable({ sales, onDeleteSale, onUpdateSale }: Props) {
         </div>
 
         <div className="flex flex-col gap-3" role="rowgroup">
-          {[...sales].reverse().map((sale) => (
+          {reversedSales.map((sale) => (
             <RecentSaleRow
               key={sale.id}
               sale={sale}

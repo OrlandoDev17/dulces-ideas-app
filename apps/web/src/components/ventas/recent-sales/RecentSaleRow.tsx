@@ -21,6 +21,10 @@ interface Props {
   onDelete: () => void;
 }
 
+const getMethodLabel = (id: string) => {
+  return PAYMENT_METHODS.find((m) => m.id === id)?.label || id;
+};
+
 /**
  * Componente que renderiza una fila individual en la tabla de ventas.
  * Incluye la lógica visual para el modo edición de precios.
@@ -35,19 +39,15 @@ export function RecentSaleRow({
   onCancel,
   onDelete,
 }: Props) {
-  const getMethodLabel = (id: string) => {
-    return PAYMENT_METHODS.find((m) => m.id === id)?.label || id;
-  };
-
   return (
     <div
       role="row"
       className="grid grid-cols-[100px_1fr_150px_220px_100px_100px] gap-4 px-6 py-5 items-center bg-white hover:bg-zinc-50/50 rounded-2xl transition-all border border-zinc-100 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 group"
     >
       {/* Columna: Hora */}
-      <div className="flex items-center gap-2 text-zinc-600 font-bold text-sm">
+      <div className="flex items-center gap-2 text-zinc-600 font-bold text-sm tabular-nums">
         <div className="p-1.5 bg-zinc-100 rounded-lg text-zinc-400">
-          <Clock size={14} />
+          <Clock size={14} aria-hidden="true" />
         </div>
         {new Date(sale.fecha).toLocaleTimeString("es-VE", {
           hour: "2-digit",
@@ -93,13 +93,13 @@ export function RecentSaleRow({
           </div>
         ) : (
           <>
-            <span className="text-primary font-black text-sm 2xl:text-base tracking-tight">
+            <span className="text-primary font-black text-sm 2xl:text-base tracking-tight tabular-nums">
               Bs.{" "}
               {sale.totalBS.toLocaleString("es-VE", {
                 minimumFractionDigits: 2,
               })}
             </span>
-            <span className="text-zinc-400 font-bold text-[10px] 2xl:text-xs tracking-tighter">
+            <span className="text-zinc-400 font-bold text-[10px] 2xl:text-xs tracking-tighter tabular-nums">
               ${sale.totalUSD.toFixed(2)} USD
             </span>
           </>
@@ -118,7 +118,7 @@ export function RecentSaleRow({
                 <span className="font-bold text-zinc-500 uppercase tracking-tighter">
                   {p.method}
                 </span>
-                <span className="font-black text-primary">
+                <span className="font-black text-primary tabular-nums">
                   {p.method === "usd"
                     ? `$${p.amountRef.toFixed(2)}`
                     : `Bs. ${p.amountBs.toFixed(2)}`}
@@ -127,8 +127,8 @@ export function RecentSaleRow({
             ))}
           </div>
         ) : (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/5 text-primary text-[10px] 2xl:text-xs font-black border border-primary/10 shadow-sm w-fit">
-            <CreditCard size={12} />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/5 text-primary text-[10px] 2xl:text-xs font-black border border-primary/10 shadow-sm w-fit uppercase tracking-tight">
+            <CreditCard size={12} aria-hidden="true" />
             {getMethodLabel(sale.metodo)}
           </span>
         )}
@@ -139,7 +139,7 @@ export function RecentSaleRow({
         {sale.delivery ? (
           <>
             <div className="p-2 bg-green-50 text-green-600 rounded-xl border border-green-100 shadow-sm">
-              <MapPin size={18} />
+              <MapPin size={18} aria-hidden="true" />
             </div>
             {sale.deliveryName && (
               <span className="text-[9px] font-bold text-zinc-500 text-center leading-none max-w-[80px] truncate">
@@ -147,7 +147,7 @@ export function RecentSaleRow({
               </span>
             )}
             {sale.deliveryAmount !== undefined && sale.deliveryAmount > 0 && (
-              <span className="text-[9px] font-black text-green-600">
+              <span className="text-[9px] font-black text-green-600 tabular-nums">
                 ${sale.deliveryAmount.toFixed(2)}
               </span>
             )}
@@ -165,32 +165,35 @@ export function RecentSaleRow({
           <>
             <button
               onClick={onSave}
-              className="p-2 text-green-500 hover:bg-green-50 rounded-lg transition-all cursor-pointer"
+              aria-label="Guardar cambios de precio"
+              className="p-2 text-green-500 hover:bg-green-50 rounded-lg transition-all cursor-pointer active:scale-90"
             >
-              <Check size={18} />
+              <Check size={18} aria-hidden="true" />
             </button>
             <button
               onClick={onCancel}
-              className="p-2 text-zinc-400 hover:bg-zinc-100 rounded-lg transition-all cursor-pointer"
+              aria-label="Cancelar edición"
+              className="p-2 text-zinc-400 hover:bg-zinc-100 rounded-lg transition-all cursor-pointer active:scale-90"
             >
-              <X size={18} />
+              <X size={18} aria-hidden="true" />
             </button>
           </>
         ) : (
           <>
             <button
               onClick={onStartEdit}
-              className="p-2 text-zinc-300 hover:text-primary hover:bg-primary/5 rounded-lg transition-all md:opacity-0 group-hover:opacity-100 cursor-pointer"
+              className="p-2 text-zinc-300 hover:text-primary hover:bg-primary/5 rounded-lg transition-all md:opacity-0 group-hover:opacity-100 cursor-pointer active:scale-90"
+              aria-label="Editar precio de esta venta"
               title="Editar precio"
             >
-              <Pencil size={18} />
+              <Pencil size={18} aria-hidden="true" />
             </button>
             <button
               onClick={onDelete}
-              className="p-2 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all md:opacity-0 group-hover:opacity-100 cursor-pointer"
-              aria-label="Eliminar venta"
+              className="p-2 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all md:opacity-0 group-hover:opacity-100 cursor-pointer active:scale-90"
+              aria-label="Eliminar esta venta definitivamente"
             >
-              <Trash2 size={18} />
+              <Trash2 size={18} aria-hidden="true" />
             </button>
           </>
         )}

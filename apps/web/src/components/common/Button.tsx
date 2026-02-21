@@ -22,12 +22,12 @@ export function Button({
   type = "button",
 }: ButtonProps) {
   const commonClasses =
-    "flex items-center justify-center gap-2 px-4 py-3 text-sm 2xl:text-base font-medium rounded-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
+    "flex items-center justify-center gap-2 px-4 py-3 text-sm 2xl:text-base font-bold rounded-xl hover:-translate-y-1 active:scale-95 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none";
 
   const styleClasses =
     style === "primary"
-      ? "border-2 border-primary text-primary shadow-lg shadow-primary/10 hover:bg-primary hover:text-white hover:shadow-primary/30"
-      : "border-2 border-zinc-300 text-zinc-300 hover:bg-zinc-300 hover:text-white hover:shadow-zinc-300/30";
+      ? "bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary-dark hover:shadow-primary/40 border-2 border-transparent"
+      : "bg-white border-2 border-zinc-200 text-zinc-600 hover:border-primary hover:text-primary hover:shadow-premium";
 
   return href ? (
     <Link

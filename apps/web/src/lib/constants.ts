@@ -25,13 +25,13 @@ export const NAV_LINKS: NavLink[] = [
   {
     id: "encargos",
     label: "Encargos",
-    href: "/encargos",
+    href: "/orders",
     icon: Cake,
   },
   {
     id: "reportes",
     label: "Reportes",
-    href: "/reportes",
+    href: "/reports",
     icon: BarChart3,
   },
 ];

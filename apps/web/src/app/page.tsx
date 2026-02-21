@@ -1,8 +1,7 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 //Hooks
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTasaBCV } from "@/hooks/useTasaBCV";
 // Services
 import { getVenezuelaTime, formatVenezuelaDate } from "@/services/FechaYHora";
@@ -16,23 +15,30 @@ import { AnimatePresence } from "motion/react";
 
 // Constants
 import { PRODUCT_CATEGORIES } from "@/lib/constants";
-import { CartItem, Cierre, Product, Sale } from "@/lib/types";
+import type { CartItem, Cierre, Product, Sale } from "@/lib/types";
 import { RecentSales } from "@/components/ventas/RecentSales";
 
-export default function Home() {
+export default function VentasPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [sales, setSales] = useState<Sale[]>([]);
-  const [cierres, setCierres] = useState<Cierre[]>([]);
+
+  // Rule 5.10: Use Lazy State Initialization
+  const [sales, setSales] = useState<Sale[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("sales");
+      return stored ? JSON.parse(stored) : [];
+    }
+    return [];
+  });
+
+  const [cierres, setCierres] = useState<Cierre[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("cierres");
+      return stored ? JSON.parse(stored) : [];
+    }
+    return [];
+  });
+
   const [showCierreModal, setShowCierreModal] = useState(false);
-
-  useEffect(() => {
-    // Actualizar y guardar ventas y cierres en localStorage
-    const storedSales = localStorage.getItem("sales");
-    const storedCierres = localStorage.getItem("cierres");
-
-    if (storedSales) setSales(JSON.parse(storedSales));
-    if (storedCierres) setCierres(JSON.parse(storedCierres));
-  }, []);
 
   const { tasa } = useTasaBCV();
 
@@ -107,12 +113,12 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-2 2xl:gap-4 p-4">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl 2xl:text-3xl font-bold text-zinc-800">
+        <h1 className="text-2xl 2xl:text-4xl font-black text-zinc-800 tracking-tight">
           Panel de Ventas
         </h1>
-        <h4 className="text-sm 2xl:text-base text-zinc-500 font-medium">
+        <h2 className="text-sm 2xl:text-lg text-zinc-400 font-bold uppercase tracking-widest tabular-nums">
           {fechaHoy}
-        </h4>
+        </h2>
       </header>
       <section className="flex flex-col gap-8 mt-4">
         {/* Sección: Tasa de Cambio y Control de Divisas */}

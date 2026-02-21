@@ -20,8 +20,10 @@ export function FinancialSummary({ sales, cierres, onAddCierre }: Props) {
     let efBs = 0;
     let usdTotal = 0;
     let deliveryTotal = 0;
+    const deliverySales: Sale[] = [];
 
     sales.forEach((sale) => {
+      // Ingresos
       if (sale.payments && sale.payments.length > 0) {
         sale.payments.forEach((p) => {
           if (p.method === "pm") pmBs += p.amountBs;
@@ -35,7 +37,12 @@ export function FinancialSummary({ sales, cierres, onAddCierre }: Props) {
         if (sale.metodo === "bs") efBs += sale.totalBS;
         if (sale.metodo === "usd") usdTotal += sale.totalUSD;
       }
-      if (sale.deliveryAmount) deliveryTotal += sale.deliveryAmount;
+
+      // Delivery
+      if (sale.delivery) {
+        deliverySales.push(sale);
+        if (sale.deliveryAmount) deliveryTotal += sale.deliveryAmount;
+      }
     });
 
     return {
@@ -44,6 +51,7 @@ export function FinancialSummary({ sales, cierres, onAddCierre }: Props) {
       efBs,
       usdTotal,
       deliveryTotal,
+      deliverySales,
       totalBs: pmBs + pvBs + efBs,
     };
   }, [sales]);
@@ -58,36 +66,36 @@ export function FinancialSummary({ sales, cierres, onAddCierre }: Props) {
         </div>
 
         <header className="flex items-center gap-2 border-b border-white/20 pb-3">
-          <Calculator size={20} />
-          <h3 className="text-lg font-bold">Ventas (Ingresos)</h3>
+          <Calculator size={20} aria-hidden="true" />
+          <h3 className="text-lg font-black">Ventas (Ingresos)</h3>
         </header>
 
         <div className="grid grid-cols-2 gap-6 relative z-10">
           {/* Columna Bolívares */}
           <section className="flex flex-col gap-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-white/60">
+            <span className="text-[10px] font-black uppercase tracking-widest text-white/90 bg-black/10 px-2 py-0.5 rounded w-fit">
               Caja Bolívares
             </span>
             <div className="flex flex-col gap-1.5">
               <div className="flex justify-between text-sm font-medium">
-                <span className="text-white/80">Pago Móvil:</span>
-                <span className="font-bold">
+                <span className="text-white/90">Pago Móvil:</span>
+                <span className="font-black tabular-nums">
                   {totals.pmBs.toLocaleString("es-VE", {
                     minimumFractionDigits: 2,
                   })}
                 </span>
               </div>
               <div className="flex justify-between text-sm font-medium">
-                <span className="text-white/80">Punto:</span>
-                <span className="font-bold">
+                <span className="text-white/90">Punto:</span>
+                <span className="font-black tabular-nums">
                   {totals.pvBs.toLocaleString("es-VE", {
                     minimumFractionDigits: 2,
                   })}
                 </span>
               </div>
               <div className="flex justify-between text-sm font-medium">
-                <span className="text-white/80">Efectivo:</span>
-                <span className="font-bold">
+                <span className="text-white/90">Efectivo:</span>
+                <span className="font-black tabular-nums">
                   {totals.efBs.toLocaleString("es-VE", {
                     minimumFractionDigits: 2,
                   })}
@@ -98,11 +106,11 @@ export function FinancialSummary({ sales, cierres, onAddCierre }: Props) {
 
           {/* Columna Divisas */}
           <section className="flex flex-col gap-2 border-l border-white/20 pl-6">
-            <span className="text-[10px] font-black uppercase tracking-widest text-white/60">
+            <span className="text-[10px] font-black uppercase tracking-widest text-white/90 bg-black/10 px-2 py-0.5 rounded w-fit">
               Caja Divisas
             </span>
             <div className="flex flex-col">
-              <span className="text-4xl font-black">
+              <span className="text-4xl font-black tabular-nums">
                 ${totals.usdTotal.toFixed(2)}
               </span>
             </div>
@@ -115,7 +123,7 @@ export function FinancialSummary({ sales, cierres, onAddCierre }: Props) {
               <span className="text-[10px] font-bold uppercase tracking-tighter text-white/60">
                 Total Recaudado
               </span>
-              <span className="text-2xl font-black">
+              <span className="text-2xl font-black tabular-nums">
                 Bs.{" "}
                 {totals.totalBs.toLocaleString("es-VE", {
                   minimumFractionDigits: 0,
@@ -125,7 +133,8 @@ export function FinancialSummary({ sales, cierres, onAddCierre }: Props) {
 
             <button
               onClick={onAddCierre}
-              className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tight transition-all border border-white/20 cursor-pointer backdrop-blur-sm"
+              aria-label="Registrar un nuevo cierre de caja"
+              className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tight transition-all border border-white/20 cursor-pointer backdrop-blur-sm active:scale-95"
             >
               Agregar Cierre
             </button>
@@ -134,8 +143,9 @@ export function FinancialSummary({ sales, cierres, onAddCierre }: Props) {
           {/* Sección de Cierres Registrados */}
           {cierres.length > 0 && (
             <div className="bg-black/10 rounded-2xl p-3 flex flex-col gap-2">
-              <span className="text-[9px] font-black uppercase flex items-center gap-1.5 text-white/50">
-                <History size={10} /> Historial de Cierres de Hoy
+              <span className="text-[9px] font-black uppercase flex items-center gap-1.5 text-white/70">
+                <History size={10} aria-hidden="true" /> Historial de Cierres de
+                Hoy
               </span>
               <div className="flex flex-wrap gap-2">
                 {cierres.map((c) => (
@@ -143,10 +153,10 @@ export function FinancialSummary({ sales, cierres, onAddCierre }: Props) {
                     key={c.id}
                     className="bg-white/10 px-2.5 py-1 rounded-lg flex items-center gap-2 border border-white/5"
                   >
-                    <span className="text-[10px] font-black">
+                    <span className="text-[10px] font-black tabular-nums text-white">
                       Bs. {c.monto.toLocaleString("es-VE")}
                     </span>
-                    <span className="text-[8px] font-bold text-white/40">
+                    <span className="text-[8px] font-bold text-white/60 tabular-nums uppercase">
                       {new Date(c.fecha).toLocaleTimeString("es-VE", {
                         hour: "2-digit",
                         minute: "2-digit",
@@ -163,38 +173,36 @@ export function FinancialSummary({ sales, cierres, onAddCierre }: Props) {
       {/* Panel de Cuentas x Pagar (Deliverys) */}
       <article className="bg-white rounded-3xl p-6 border-l-4 border-l-red-500 shadow-xl border border-zinc-100 flex flex-col gap-4 relative overflow-hidden">
         <header className="flex items-center gap-2 border-b border-zinc-100 pb-3">
-          <Bike size={20} className="text-zinc-600" />
-          <h3 className="text-lg font-bold text-zinc-800 tracking-tight">
+          <Bike size={20} className="text-zinc-600" aria-hidden="true" />
+          <h3 className="text-lg font-black text-zinc-800 tracking-tight">
             Cuentas x Pagar
           </h3>
         </header>
 
         <div className="flex flex-col gap-3 min-h-[100px]">
-          {sales.filter((s) => s.delivery).length > 0 ? (
+          {totals.deliverySales.length > 0 ? (
             <ul className="flex flex-col gap-2">
-              {sales
-                .filter((s) => s.delivery)
-                .map((sale) => (
-                  <li
-                    key={sale.id}
-                    className="flex justify-between items-center text-sm"
-                  >
-                    <span className="text-zinc-500 font-bold">
-                      {sale.deliveryName || "Delivery s/n"}
-                    </span>
-                    <span className="font-black text-zinc-700">
-                      Bs.{" "}
-                      {(sale.deliveryAmount || 0).toLocaleString("es-VE", {
-                        minimumFractionDigits: 2,
-                      })}
-                    </span>
-                  </li>
-                ))}
+              {totals.deliverySales.map((sale) => (
+                <li
+                  key={sale.id}
+                  className="flex justify-between items-center text-sm"
+                >
+                  <span className="text-zinc-500 font-bold">
+                    {sale.deliveryName || "Delivery s/n"}
+                  </span>
+                  <span className="font-black text-zinc-700 tabular-nums">
+                    Bs.{" "}
+                    {(sale.deliveryAmount || 0).toLocaleString("es-VE", {
+                      minimumFractionDigits: 2,
+                    })}
+                  </span>
+                </li>
+              ))}
             </ul>
           ) : (
-            <div className="flex flex-col items-center justify-center py-6 text-zinc-300 gap-1 opacity-50">
-              <Info size={24} />
-              <span className="text-xs font-bold uppercase">
+            <div className="flex flex-col items-center justify-center py-6 text-zinc-400 gap-1 opacity-80">
+              <Info size={24} aria-hidden="true" />
+              <span className="text-xs font-black uppercase tracking-tight">
                 No hay deudas de delivery
               </span>
             </div>
@@ -206,7 +214,7 @@ export function FinancialSummary({ sales, cierres, onAddCierre }: Props) {
             <span className="text-lg font-black text-zinc-800">
               Total Deuda:
             </span>
-            <span className="text-lg font-black text-zinc-800">
+            <span className="text-lg font-black text-zinc-800 tabular-nums">
               Bs.{" "}
               {totals.deliveryTotal.toLocaleString("es-VE", {
                 minimumFractionDigits: 2,

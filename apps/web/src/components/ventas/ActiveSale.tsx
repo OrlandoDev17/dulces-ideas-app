@@ -2,7 +2,7 @@
 "use client";
 
 // Hooks
-import { useState } from "react";
+import { useState, useMemo } from "react";
 // Motion
 import { motion, AnimatePresence } from "motion/react";
 // Icons
@@ -97,27 +97,33 @@ export function ActiveSale({
   );
   const totalBS = totalUSD * tasa;
 
-  const DELIVERY_FIELDS = [
-    {
-      id: "name",
-      label: "Nombre del Delivery",
-      placeholder: "Ej. Cesar, Wouker, etc...",
-      type: "text",
-      value: deliveryName,
-      onChange: (e: any) => setDeliveryName(e.target.value),
-      icon: User,
-    },
-    {
-      id: "amount",
-      label: "Monto del Delivery",
-      placeholder: "400Bs",
-      type: "number",
-      value: deliveryAmount,
-      onChange: (e: any) =>
-        setDeliveryAmount(e.target.value === "" ? "" : Number(e.target.value)),
-      icon: DollarSign,
-    },
-  ];
+  // Rule 5.5/5.11: Memoize constant object creation in render
+  const DELIVERY_FIELDS = useMemo(
+    () => [
+      {
+        id: "name",
+        label: "Nombre del Delivery",
+        placeholder: "Ej. Cesar, Wouker, etc…",
+        type: "text",
+        value: deliveryName,
+        onChange: (e: any) => setDeliveryName(e.target.value),
+        icon: User,
+      },
+      {
+        id: "amount",
+        label: "Monto del Delivery",
+        placeholder: "400Bs",
+        type: "number",
+        value: deliveryAmount,
+        onChange: (e: any) =>
+          setDeliveryAmount(
+            e.target.value === "" ? "" : Number(e.target.value),
+          ),
+        icon: DollarSign,
+      },
+    ],
+    [deliveryName, deliveryAmount],
+  );
 
   // Solo renderizamos si hay items, con una animación de entrada global
   return (
@@ -134,11 +140,11 @@ export function ActiveSale({
           <header className="flex justify-between items-center">
             <div className="flex items-center gap-2 text-primary font-bold">
               <figure className="p-2 bg-primary/10 rounded-lg">
-                <ShoppingBag size={20} />
+                <ShoppingBag size={20} aria-hidden="true" />
               </figure>
               <h3 className="text-base 2xl:text-lg">Orden Actual</h3>
             </div>
-            <output className="text-[10px] 2xl:text-xs font-black uppercase tracking-tighter text-zinc-400 bg-zinc-100 px-2.5 py-1.5 rounded-lg">
+            <output className="text-[10px] 2xl:text-xs font-black uppercase tracking-tighter text-zinc-400 bg-zinc-100 px-2.5 py-1.5 rounded-lg tabular-nums">
               {items.length} {items.length === 1 ? "Item" : "Items"}
             </output>
           </header>
@@ -236,6 +242,7 @@ export function ActiveSale({
                               <Icon
                                 size={16}
                                 className="text-primary/60 absolute top-1/2 -translate-y-1/2 left-3"
+                                aria-hidden="true"
                               />
                               <input
                                 id={id}
@@ -243,7 +250,8 @@ export function ActiveSale({
                                 value={value}
                                 onChange={onChange}
                                 placeholder={placeholder}
-                                className={`w-full bg-zinc-50 border border-zinc-200 pl-10 pr-4 py-3 rounded-xl text-sm font-bold outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500/50 transition-all ${type === "number" ? "font-mono tracking-wider" : ""}`}
+                                spellCheck={false}
+                                className={`w-full bg-zinc-50 border border-zinc-200 pl-10 pr-4 py-3 rounded-xl text-sm font-bold outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500/50 transition-all ${type === "number" ? "font-mono tracking-wider tabular-nums" : ""}`}
                               />
                             </div>
                           </div>

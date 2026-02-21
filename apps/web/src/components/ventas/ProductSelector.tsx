@@ -42,7 +42,7 @@ export function ProductSelector({
     >
       {/* Cabecera del Selector */}
       <header className="flex items-center gap-2 text-primary font-bold text-lg">
-        {Icon && <Icon className="size-5 2xl:size-8" />}
+        {Icon && <Icon className="size-5 2xl:size-8" aria-hidden="true" />}
         <h3 className="text-sm 2xl:text-base">{title}</h3>
       </header>
 
@@ -57,7 +57,7 @@ export function ProductSelector({
             >
               {selectedProduct
                 ? `${selectedProduct.name} (${selectedProduct.price})`
-                : "-- Seleccionar --"}
+                : "Seleccionar…"}
             </span>
           </DropdownButton>
 
@@ -77,19 +77,21 @@ export function ProductSelector({
           type="number"
           value={quantity}
           min={1}
+          aria-label={`Cantidad para ${title}`}
           onChange={(e) =>
             setQuantity(Math.max(1, parseInt(e.target.value) || 1))
           }
-          className="w-10 sm:w-14 bg-white border border-primary rounded-xl px-1 sm:px-2 py-2.5 text-center text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200"
+          className="w-10 sm:w-14 bg-white border border-primary rounded-xl px-1 sm:px-2 py-2.5 text-center text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-200 tabular-nums"
         />
 
         {/* Botón Añadir */}
         <button
           onClick={handleAdd}
           disabled={!selectedProduct}
-          className="bg-slate-100 p-2.5 rounded-xl text-slate-600 hover:bg-primary hover:text-white transition-colors cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label={`Añadir ${selectedProduct?.name || "producto"} al carrito`}
+          className="bg-slate-100 p-2.5 rounded-xl text-slate-600 hover:bg-primary hover:text-white transition-colors cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-transparent hover:shadow-lg hover:shadow-primary/20"
         >
-          <Plus size={20} />
+          <Plus size={20} aria-hidden="true" />
         </button>
       </div>
     </div>
