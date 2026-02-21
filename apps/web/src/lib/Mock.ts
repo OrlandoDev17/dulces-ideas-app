@@ -9,8 +9,10 @@ export const POSTRES = [
   { id: 8, name: "Marquesa de Chocolate", price: 5, currency: "USD" },
   { id: 9, name: "Selva Negra", price: 5, currency: "USD" },
   { id: 10, name: "Oreo", price: 5, currency: "USD" },
-  { id: 11, name: "Malteada", price: 7, currency: "USD" },
-  { id: 12, name: "Waffle", price: 7, currency: "USD" },
+  { id: 11, name: "Brownie Sencillo", price: 4, currency: "USD" },
+  { id: 12, name: "Brownie Decorado", price: 6, currency: "USD" },
+  { id: 13, name: "Malteada", price: 7, currency: "USD" },
+  { id: 14, name: "Waffle", price: 7, currency: "USD" },
 ];
 
 export const TORTAS_COMPLETAS = [

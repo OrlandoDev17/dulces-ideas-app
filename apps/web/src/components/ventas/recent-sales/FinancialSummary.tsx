@@ -172,9 +172,15 @@ export function FinancialSummary({ sales, cierres, onAddCierre }: Props) {
 
       {/* Panel de Cuentas x Pagar (Deliverys) */}
       <article className="bg-white rounded-3xl p-6 border-l-4 border-l-red-500 shadow-xl border border-zinc-100 flex flex-col gap-4 relative overflow-hidden">
+<<<<<<< HEAD
         <header className="flex items-center gap-2 border-b border-zinc-100 pb-3">
           <Bike size={20} className="text-zinc-600" aria-hidden="true" />
           <h3 className="text-lg font-black text-zinc-800 tracking-tight">
+=======
+        <header className="flex items-center gap-2 border-b border-zinc-300 pb-3">
+          <Bike size={20} className="text-zinc-600" />
+          <h3 className="text-lg font-bold text-zinc-800 tracking-tight">
+>>>>>>> 46380ceda7b14c721b2d68418d6616abc5f89a16
             Cuentas x Pagar
           </h3>
         </header>
@@ -200,9 +206,15 @@ export function FinancialSummary({ sales, cierres, onAddCierre }: Props) {
               ))}
             </ul>
           ) : (
+<<<<<<< HEAD
             <div className="flex flex-col items-center justify-center py-6 text-zinc-400 gap-1 opacity-80">
               <Info size={24} aria-hidden="true" />
               <span className="text-xs font-black uppercase tracking-tight">
+=======
+            <div className="flex flex-col items-center justify-center py-6 text-zinc-500 gap-1">
+              <Info size={24} />
+              <span className="text-xs font-bold uppercase">
+>>>>>>> 46380ceda7b14c721b2d68418d6616abc5f89a16
                 No hay deudas de delivery
               </span>
             </div>

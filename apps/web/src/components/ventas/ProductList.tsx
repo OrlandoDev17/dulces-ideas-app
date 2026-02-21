@@ -29,12 +29,18 @@ export function ProductList({ items, onRemoveItem }: Props) {
                   {item.name}
                 </strong>
                 <small className="text-sm text-zinc-500 font-medium italic">
-                  {item.quantity} un. × ${item.price.toFixed(2)}
+                  {item.currency === "VES" ? "" : `${item.quantity} un. × `}
+                  {item.currency === "VES" ? "Bs. " : "$"}
+                  {item.price.toFixed(2)}
                 </small>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-bold text-primary text-lg">
-                  ${(item.price * item.quantity).toFixed(2)}
+                <span className="font-bold text-primary text-lg text-right min-w-[80px]">
+                  {item.currency === "VES" ? "Bs. " : "$"}
+                  {(item.currency === "VES"
+                    ? item.price
+                    : item.price * item.quantity
+                  ).toFixed(2)}
                 </span>
                 <button
                   onClick={() => onRemoveItem(item.id)}

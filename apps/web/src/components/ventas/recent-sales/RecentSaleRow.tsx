@@ -153,7 +153,7 @@ export function RecentSaleRow({
               <MapPin size={18} aria-hidden="true" />
             </div>
             {sale.deliveryName && (
-              <span className="text-[9px] font-bold text-zinc-500 text-center leading-none max-w-[80px] truncate">
+              <span className="text-[9px] font-bold text-zinc-800 text-center leading-none max-w-[80px] truncate">
                 {sale.deliveryName}
               </span>
             )}
@@ -193,16 +193,25 @@ export function RecentSaleRow({
           <>
             <button
               onClick={onStartEdit}
+<<<<<<< HEAD
               className="p-2 text-zinc-300 hover:text-primary hover:bg-primary/5 rounded-lg transition-all md:opacity-0 group-hover:opacity-100 cursor-pointer active:scale-90"
               aria-label="Editar precio de esta venta"
+=======
+              className="p-2 text-zinc-700 hover:text-primary hover:bg-primary/5 rounded-lg transition-all cursor-pointer"
+>>>>>>> 46380ceda7b14c721b2d68418d6616abc5f89a16
               title="Editar precio"
             >
               <Pencil size={18} aria-hidden="true" />
             </button>
             <button
               onClick={onDelete}
+<<<<<<< HEAD
               className="p-2 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all md:opacity-0 group-hover:opacity-100 cursor-pointer active:scale-90"
               aria-label="Eliminar esta venta definitivamente"
+=======
+              className="p-2 text-zinc-700 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all cursor-pointer"
+              aria-label="Eliminar venta"
+>>>>>>> 46380ceda7b14c721b2d68418d6616abc5f89a16
             >
               <Trash2 size={18} aria-hidden="true" />
             </button>

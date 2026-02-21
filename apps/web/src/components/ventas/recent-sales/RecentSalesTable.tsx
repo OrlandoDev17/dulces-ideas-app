@@ -53,7 +53,7 @@ export function RecentSalesTable({ sales, onDeleteSale, onUpdateSale }: Props) {
       >
         {/* Encabezado de la tabla usando CSS Grid para alineación perfecta */}
         <div
-          className="grid grid-cols-[100px_1fr_150px_220px_100px_100px] gap-4 px-6 py-3 bg-zinc-50 rounded-2xl mb-4 text-[10px] 2xl:text-xs font-black uppercase tracking-wider text-zinc-400 border border-zinc-100"
+          className="grid grid-cols-[100px_1fr_150px_220px_100px_100px] gap-4 px-6 py-3 bg-zinc-50 rounded-2xl mb-4 text-[10px] 2xl:text-xs font-black uppercase tracking-wider text-zinc-700 border border-zinc-100"
           role="row"
         >
           <div role="columnheader">Hora</div>
