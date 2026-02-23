@@ -11,17 +11,17 @@ import { ProductSelector } from "@/components/ventas/ProductSelector";
 import { ActiveSale } from "@/components/ventas/ActiveSale";
 import { FinancialSummary } from "@/components/ventas/recent-sales/FinancialSummary";
 import { AddCierreModal } from "@/components/ventas/recent-sales/AddCierreModal";
-import { AnimatePresence } from "motion/react";
-
+import { RecentSales } from "@/components/ventas/RecentSales";
 // Constants
 import { PRODUCT_CATEGORIES } from "@/lib/constants";
+// Types
 import type { CartItem, Cierre, Product, Sale } from "@/lib/types";
-import { RecentSales } from "@/components/ventas/RecentSales";
 
 export default function VentasPage() {
+  // Estado del carrito
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  // Rule 5.10: Use Lazy State Initialization
+  // Rule 5.10: Usar inicialización perezosa para el estado de ventas
   const [sales, setSales] = useState<Sale[]>(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("sales");
@@ -30,6 +30,7 @@ export default function VentasPage() {
     return [];
   });
 
+  // Rule 5.10: Usar inicialización perezosa para el estado de cierres
   const [cierres, setCierres] = useState<Cierre[]>(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("cierres");
@@ -44,8 +45,10 @@ export default function VentasPage() {
 
   const fechaHoy = formatVenezuelaDate(getVenezuelaTime());
 
+  // Funcion para añadir productos al carrito
   const addToCart = (product: Product, quantity: number) => {
     setCart((prev) => {
+      // Si existe el producto en el carrito, aumentar la cantidad
       const existing = prev.find((item) => item.name === product.name);
       if (existing) {
         return prev.map((item) =>
@@ -58,6 +61,7 @@ export default function VentasPage() {
     });
   };
 
+  // Funcion para registrar ventas
   const registerSale = (sale: Sale) => {
     setSales((prev) => {
       const newSales = [...prev, sale];
@@ -66,6 +70,7 @@ export default function VentasPage() {
     });
   };
 
+  // Funcion para actualizar ventas
   const updateSale = (updatedSale: Sale) => {
     setSales((prev) => {
       const newSales = prev.map((s) =>
@@ -76,6 +81,7 @@ export default function VentasPage() {
     });
   };
 
+  // Funcion para eliminar ventas
   const deleteSale = (id: string) => {
     setSales((prev) => {
       const newSales = prev.filter((s) => s.id !== id);
@@ -84,6 +90,7 @@ export default function VentasPage() {
     });
   };
 
+  // Funcion para limpiar todo el historial de ventas y cierres
   const clearSales = () => {
     if (
       confirm(
@@ -97,6 +104,7 @@ export default function VentasPage() {
     }
   };
 
+  // Funcion para agregar cierres
   const addCierre = (monto: number) => {
     const nuevoCierre: Cierre = {
       id: crypto.randomUUID(),
@@ -110,13 +118,33 @@ export default function VentasPage() {
     });
   };
 
+  // Funcion para actualizar cierres
+  const updateCierre = (updatedCierre: Cierre) => {
+    setCierres((prev) => {
+      const newCierres = prev.map((c) =>
+        c.id === updatedCierre.id ? updatedCierre : c,
+      );
+      localStorage.setItem("cierres", JSON.stringify(newCierres));
+      return newCierres;
+    });
+  };
+
+  // Funcion para eliminar cierres
+  const deleteCierre = (id: string) => {
+    setCierres((prev) => {
+      const newCierres = prev.filter((c) => c.id !== id);
+      localStorage.setItem("cierres", JSON.stringify(newCierres));
+      return newCierres;
+    });
+  };
+
   return (
     <div className="flex flex-col gap-2 2xl:gap-4 p-4">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl 2xl:text-4xl font-black text-zinc-800 tracking-tight">
+        <h1 className="text-2xl 2xl:text-3xl font-bold text-primary-800 tracking-tight">
           Panel de Ventas
         </h1>
-        <h2 className="text-sm 2xl:text-lg text-zinc-400 font-bold uppercase tracking-widest tabular-nums">
+        <h2 className="text-sm 2xl:text-base text-primary-300 font-bold uppercase">
           {fechaHoy}
         </h2>
       </header>
@@ -126,6 +154,7 @@ export default function VentasPage() {
           <BCVCard />
         </div>
 
+        {/* Lista de categorias de productos */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {PRODUCT_CATEGORIES.map((cat) => (
             <ProductSelector
@@ -155,6 +184,8 @@ export default function VentasPage() {
             sales={sales}
             cierres={cierres}
             onAddCierre={() => setShowCierreModal(true)}
+            onUpdateCierre={updateCierre}
+            onDeleteCierre={deleteCierre}
           />
         </div>
       </section>
@@ -168,14 +199,11 @@ export default function VentasPage() {
       />
 
       {/* Modal para agregar cierres */}
-      <AnimatePresence>
-        {showCierreModal && (
-          <AddCierreModal
-            onClose={() => setShowCierreModal(false)}
-            onConfirm={addCierre}
-          />
-        )}
-      </AnimatePresence>
+      <AddCierreModal
+        isOpen={showCierreModal}
+        onClose={() => setShowCierreModal(false)}
+        onConfirm={addCierre}
+      />
     </div>
   );
 }

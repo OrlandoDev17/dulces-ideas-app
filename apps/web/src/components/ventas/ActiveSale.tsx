@@ -1,18 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 // Hooks
-import { useState, useMemo } from "react";
+import { useState, useMemo, ChangeEvent } from "react";
 // Motion
 import { motion, AnimatePresence } from "motion/react";
 // Icons
-import {
-  CreditCard,
-  ShoppingBag,
-  MapPin,
-  User,
-  DollarSign,
-} from "lucide-react";
+import { CreditCard, ShoppingBag, User, DollarSign } from "lucide-react";
 // Components
 import { OptionDropdown } from "@/components/common/OptionDropdown";
 import { MixedPaymentModal } from "./MixedPaymentModal";
@@ -20,6 +13,7 @@ import { ProductList } from "./ProductList";
 import { TotalToPay } from "./TotalToPay";
 import { DropdownButton } from "@/components/common/DropdownButton";
 import { Button } from "@/components/common/Button";
+import { DeliveryToggle } from "./DeliveryToggle";
 // Constants
 import { PAYMENT_METHODS } from "@/lib/constants";
 // Types
@@ -40,6 +34,7 @@ export function ActiveSale({
   onRegister,
   setCart,
 }: Props) {
+  // Estados
   const [isOpenMetodo, setIsOpenMetodo] = useState(false);
   const [metodoSelected, setMetodoSelected] = useState(PAYMENT_METHODS[0]);
   const [showMixedModal, setShowMixedModal] = useState(false);
@@ -47,6 +42,7 @@ export function ActiveSale({
   const [deliveryName, setDeliveryName] = useState("");
   const [deliveryAmount, setDeliveryAmount] = useState<number | "">("");
 
+  // Funcion para registrar la venta
   const handleRegisterClick = () => {
     if (metodoSelected.id === "mx") {
       setShowMixedModal(true);
@@ -66,6 +62,7 @@ export function ActiveSale({
     }
   };
 
+  // Funcion para resetear los estados
   const resetStates = () => {
     setIsDelivery(false);
     setDeliveryName("");
@@ -73,6 +70,7 @@ export function ActiveSale({
     setCart([]);
   };
 
+  // Funcion para confirmar el pago mixto
   const confirmMixedPayment = (payments: Payment[]) => {
     console.log("Pagos registrados:", payments);
     setShowMixedModal(false);
@@ -91,6 +89,7 @@ export function ActiveSale({
     resetStates();
   };
 
+  // Calculo del total en USD
   const totalUSD = items?.reduce((acc, item) => {
     if (item.currency === "VES") {
       return acc + (item.price * item.quantity) / tasa;
@@ -98,6 +97,7 @@ export function ActiveSale({
     return acc + item.price * item.quantity;
   }, 0);
 
+  // Calculo del total en BS
   const totalBS = items?.reduce((acc, item) => {
     if (item.currency === "VES") {
       return acc + item.price * item.quantity;
@@ -105,7 +105,9 @@ export function ActiveSale({
     return acc + item.price * item.quantity * tasa;
   }, 0);
 
-  // Rule 5.5/5.11: Memoize constant object creation in render
+  const totalBSRounded = Math.round(totalBS * 100) / 100;
+
+  // Rule 5.5/5.11: Memorizar la creacion del objeto
   const DELIVERY_FIELDS = useMemo(
     () => [
       {
@@ -114,7 +116,8 @@ export function ActiveSale({
         placeholder: "Ej. Cesar, Wouker, etc…",
         type: "text",
         value: deliveryName,
-        onChange: (e: any) => setDeliveryName(e.target.value),
+        onChange: (e: ChangeEvent<HTMLInputElement>) =>
+          setDeliveryName(e.target.value),
         icon: User,
       },
       {
@@ -123,10 +126,12 @@ export function ActiveSale({
         placeholder: "400Bs",
         type: "number",
         value: deliveryAmount,
-        onChange: (e: any) =>
+        onChange: (e: ChangeEvent<HTMLInputElement>) => {
+          const val = e.target.value === "" ? "" : Number(e.target.value);
           setDeliveryAmount(
-            e.target.value === "" ? "" : Number(e.target.value),
-          ),
+            typeof val === "number" ? Math.round(val * 100) / 100 : "",
+          );
+        },
         icon: DollarSign,
       },
     ],
@@ -142,12 +147,12 @@ export function ActiveSale({
           initial={{ opacity: 0, x: 20, scale: 0.95 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: 20, scale: 0.95 }}
-          className={`flex flex-col gap-4 w-full bg-white p-6 rounded-3xl border border-zinc-100 shadow-lg shadow-zinc-500/20 relative ${isOpenMetodo ? "z-20" : "z-10"}`}
+          className={`flex flex-col gap-4 w-full bg-white p-6 rounded-3xl border border-zinc-200 shadow-lg shadow-primary-500/20 relative ${isOpenMetodo ? "z-20" : "z-10"}`}
         >
           {/* Header de la Orden */}
           <header className="flex justify-between items-center">
-            <div className="flex items-center gap-2 text-primary font-bold">
-              <figure className="p-2 bg-primary/10 rounded-lg">
+            <div className="flex items-center gap-2 text-primary-500 font-bold">
+              <figure className="p-2 bg-primary-500/10 rounded-lg">
                 <ShoppingBag size={20} aria-hidden="true" />
               </figure>
               <h3 className="text-base 2xl:text-lg">Orden Actual</h3>
@@ -162,7 +167,7 @@ export function ActiveSale({
 
           {/* Totales con Diseño de Factura */}
           <TotalToPay
-            totalBS={totalBS}
+            totalBS={totalBSRounded}
             totalUSD={totalUSD}
             tasa={tasa}
             isDelivery={isDelivery}
@@ -173,9 +178,8 @@ export function ActiveSale({
           <div className="flex flex-col gap-4">
             {/* Selector de Pago */}
             <div className={`relative ${isOpenMetodo ? "z-30" : "z-10"}`}>
-              <label className="sr-only">Método de Pago</label>
               <DropdownButton isOpen={isOpenMetodo} setIsOpen={setIsOpenMetodo}>
-                <CreditCard size={18} className="text-primary/60" />
+                <CreditCard size={18} className="text-primary-500" />
                 {metodoSelected.label}
               </DropdownButton>
 
@@ -191,91 +195,11 @@ export function ActiveSale({
             </div>
 
             {/* Delivery Toggle y Datos */}
-            <fieldset className="flex flex-col gap-3 border-none p-0 m-0">
-              <legend className="sr-only">Opciones de Delivery</legend>
-              <button
-                type="button"
-                onClick={() => setIsDelivery(!isDelivery)}
-                className={`w-full flex items-center justify-between border-2 rounded-xl px-4 py-3.5 text-sm font-black transition-all cursor-pointer ${
-                  isDelivery
-                    ? "bg-green-50 border-green-500 text-green-700 shadow-md shadow-green-100"
-                    : "bg-white border-zinc-100 text-zinc-400 hover:border-zinc-200"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`p-1.5 rounded-lg ${isDelivery ? "bg-green-500 text-white" : "bg-zinc-100 text-zinc-400"}`}
-                  >
-                    <MapPin size={16} />
-                  </div>
-                  ¿Es para Delivery?
-                </div>
-                <div
-                  className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors ${isDelivery ? "bg-green-500" : "bg-zinc-200"}`}
-                >
-                  <div
-                    className={`bg-white w-4 h-4 rounded-full shadow-sm transition-transform ${isDelivery ? "translate-x-4" : ""}`}
-                  />
-                </div>
-              </button>
-
-              <AnimatePresence>
-                {isDelivery && (
-                  <motion.div
-                    key="delivery-form"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="flex flex-col gap-3 py-1">
-                      {DELIVERY_FIELDS.map(
-                        (
-                          {
-                            id,
-                            label,
-                            icon: Icon,
-                            placeholder,
-                            onChange,
-                            type,
-                            value,
-                          },
-                          index,
-                        ) => (
-                          <div
-                            key={`${id}-${index}`}
-                            className="flex flex-col gap-1.5"
-                          >
-                            <label
-                              htmlFor={id}
-                              className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1"
-                            >
-                              {label}
-                            </label>
-                            <div className="relative">
-                              <Icon
-                                size={16}
-                                className="text-primary/60 absolute top-1/2 -translate-y-1/2 left-3"
-                                aria-hidden="true"
-                              />
-                              <input
-                                id={id}
-                                type={type}
-                                value={value}
-                                onChange={onChange}
-                                placeholder={placeholder}
-                                spellCheck={false}
-                                className={`w-full bg-zinc-50 border border-zinc-200 pl-10 pr-4 py-3 rounded-xl text-sm font-bold outline-none focus:ring-4 focus:ring-green-500/10 focus:border-green-500/50 transition-all ${type === "number" ? "font-mono tracking-wider tabular-nums" : ""}`}
-                              />
-                            </div>
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </fieldset>
+            <DeliveryToggle
+              setIsDelivery={setIsDelivery}
+              isDelivery={isDelivery}
+              DELIVERY_FIELDS={DELIVERY_FIELDS}
+            />
           </div>
 
           <Button style="primary" onClick={handleRegisterClick}>

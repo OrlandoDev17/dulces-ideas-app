@@ -1,11 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #78574c;
-  --color-cream: #fff9e3;
+  --color-primary-50: #f5f4f1;
+  --color-primary-100: #e7e2da;
+  --color-primary-200: #d1c6b7;
+  --color-primary-300: #b6a48e;
+  --color-primary-400: #a1886e;
+  --color-primary-500: #927760;
+  --color-primary-600: #7d6251;
+  --color-primary-700: #70554a;
+  --color-primary-800: #57423c;
+  --color-primary-900: #4c3b37;
   --color-dark: #444;
 }
 
 body {
-  @apply bg-gray-100 min-h-screen text-dark;
+  @apply bg-primary-50 min-h-screen text-dark;
+}
+
+.grid-cols-recent-sales {
+  @apply grid-cols-[100px_1fr_300px_250px_100px_100px];
 }

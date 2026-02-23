@@ -33,7 +33,7 @@ export function OptionDropdown<T>({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute z-50 mt-2 w-64 bg-white border border-zinc-100 shadow-lg shadow-zinc-500/20 rounded-xl max-h-[300px] overflow-y-auto"
+            className="absolute z-50 mt-2 w-full bg-white border border-primary-200 shadow-lg shadow-primary-500/50 rounded-xl max-h-[400px] overflow-y-auto"
           >
             {options.map((option: any, index: number) => (
               <li
@@ -42,7 +42,7 @@ export function OptionDropdown<T>({
                   onSelect(option);
                   setIsOpen(false);
                 }}
-                className="flex justify-between items-center px-3 py-2.5 text-sm rounded-lg hover:bg-primary hover:text-white cursor-pointer transition-colors group"
+                className="flex justify-between items-center px-3 py-2.5 text-sm rounded-lg hover:bg-primary-500 hover:text-white cursor-pointer transition-colors group"
               >
                 <span
                   className="font-medium truncate flex-1 min-w-0 mr-2"

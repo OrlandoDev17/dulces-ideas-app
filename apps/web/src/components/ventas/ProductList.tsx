@@ -23,7 +23,7 @@ export function ProductList({ items, onRemoveItem }: Props) {
             >
               <div className="flex flex-col">
                 <strong
-                  className="font-bold text-zinc-800 text-sm leading-tight"
+                  className="font-bold text-dark text-sm leading-tight"
                   title={item.name}
                 >
                   {item.name}
@@ -34,7 +34,7 @@ export function ProductList({ items, onRemoveItem }: Props) {
                 </small>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-bold text-primary text-lg text-right min-w-[80px]">
+                <span className="font-bold text-primary-500 text-lg text-right min-w-[80px]">
                   {item.currency === "VES" ? "Bs. " : "$"}
                   {(item.price * item.quantity).toFixed(2)}
                 </span>

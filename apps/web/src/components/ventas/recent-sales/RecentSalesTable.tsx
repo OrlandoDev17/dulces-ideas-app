@@ -3,6 +3,7 @@ import { RecentSaleRow } from "./RecentSaleRow";
 import { useRecentSalesEdit } from "@/hooks/useRecentSalesEdit";
 import { ShoppingBag } from "lucide-react";
 import { useMemo } from "react";
+import { EditSaleModal } from "./EditSaleModal";
 
 interface Props {
   sales: Sale[];
@@ -28,6 +29,12 @@ export function RecentSalesTable({ sales, onDeleteSale, onUpdateSale }: Props) {
 
   const reversedSales = useMemo(() => [...sales].reverse(), [sales]);
 
+  // Encontrar la venta que se está editando para pasarla al modal
+  const activeEditingSale = useMemo(
+    () => sales.find((s) => s.id === editingSaleId),
+    [sales, editingSaleId],
+  );
+
   if (sales.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-zinc-400 gap-4 bg-zinc-50/30 rounded-3xl border border-dashed border-zinc-200">
@@ -44,6 +51,15 @@ export function RecentSalesTable({ sales, onDeleteSale, onUpdateSale }: Props) {
     );
   }
 
+  const COLUMNS = [
+    { key: "time", label: "Hora" },
+    { key: "products", label: "Productos" },
+    { key: "total", label: "Total" },
+    { key: "payments", label: "Pagos" },
+    { key: "delivery", label: "Delivery" },
+    { key: "actions", label: "Acciones" },
+  ];
+
   return (
     <div className="flex flex-col w-full overflow-x-auto">
       <div
@@ -53,19 +69,14 @@ export function RecentSalesTable({ sales, onDeleteSale, onUpdateSale }: Props) {
       >
         {/* Encabezado de la tabla usando CSS Grid para alineación perfecta */}
         <div
-          className="grid grid-cols-[100px_1fr_150px_220px_100px_100px] gap-4 px-6 py-3 bg-zinc-50 rounded-2xl mb-4 text-[10px] 2xl:text-xs font-black uppercase tracking-wider text-zinc-700 border border-zinc-100"
+          className="grid grid-cols-recent-sales gap-4 px-6 py-3 bg-zinc-50 rounded-2xl mb-4 text-[10px] 2xl:text-xs font-black uppercase tracking-wider text-zinc-700 border border-zinc-100"
           role="row"
         >
-          <div role="columnheader">Hora</div>
-          <div role="columnheader">Productos</div>
-          <div role="columnheader">Total</div>
-          <div role="columnheader">Pagos</div>
-          <div role="columnheader" className="text-center">
-            Delivery
-          </div>
-          <div role="columnheader" className="text-right">
-            Acciones
-          </div>
+          {COLUMNS.map((column) => (
+            <div key={column.key} role="columnheader">
+              {column.label}
+            </div>
+          ))}
         </div>
 
         <div className="flex flex-col gap-3" role="rowgroup">
@@ -73,17 +84,24 @@ export function RecentSalesTable({ sales, onDeleteSale, onUpdateSale }: Props) {
             <RecentSaleRow
               key={sale.id}
               sale={sale}
-              isEditing={editingSaleId === sale.id}
-              editValues={{ bs: editTotalBS, usd: editTotalUSD }}
-              onEditChange={{ bs: setEditTotalBS, usd: setEditTotalUSD }}
               onStartEdit={() => startEdit(sale)}
-              onSave={() => saveEdit(sale)}
-              onCancel={cancelEdit}
               onDelete={() => onDeleteSale(sale.id)}
             />
           ))}
         </div>
       </div>
+
+      {/* Modal de edición */}
+      {activeEditingSale && (
+        <EditSaleModal
+          sale={activeEditingSale}
+          isOpen={true}
+          onClose={cancelEdit}
+          onSave={() => saveEdit(activeEditingSale)}
+          editValues={{ bs: editTotalBS, usd: editTotalUSD }}
+          onEditChange={{ bs: setEditTotalBS, usd: setEditTotalUSD }}
+        />
+      )}
     </div>
   );
 }

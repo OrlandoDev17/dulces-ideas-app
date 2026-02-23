@@ -9,7 +9,8 @@
     "dev:web": "bun run --filter @dulces-ideas/web dev",
     "dev:api": "bun run --filter @dulces-ideas/api dev",
     "install:all": "bun install",
-    "clean:ports": "taskkill /F /IM node.exe /T /FI \"STATUS eq RUNNING\""
+    "clean:ports": "powershell -Command \"Get-Process -Name node,bun -ErrorAction SilentlyContinue | Stop-Process -Force\"",
+    "clean:3000": "powershell -Command \"Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force }\""
   },
   "dependencies": {
     "lucide-react": "^0.563.0"

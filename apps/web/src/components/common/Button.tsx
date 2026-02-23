@@ -26,7 +26,7 @@ export function Button({
 
   const styleClasses =
     style === "primary"
-      ? "bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary-dark hover:shadow-primary/40 border-2 border-transparent"
+      ? "bg-primary-600 text-white shadow-lg shadow-primary/20 hover:bg-primary-700 hover:shadow-primary-200 border-2 border-transparent"
       : "bg-white border-2 border-zinc-200 text-zinc-600 hover:border-primary hover:text-primary hover:shadow-premium";
 
   return href ? (
