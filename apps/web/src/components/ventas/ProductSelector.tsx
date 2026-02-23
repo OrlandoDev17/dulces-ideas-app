@@ -50,12 +50,12 @@ export function ProductSelector({
       </header>
 
       {/* Controles */}
-      <div className="flex gap-2 items-center">
+      <div className="flex gap-1.5 sm:gap-2 items-center">
         {/* Dropdown Personalizado */}
-        <div className={`relative flex-1`}>
+        <div className={`relative flex-1 min-w-0`}>
           <DropdownButton isOpen={isOpen} setIsOpen={setIsOpen}>
             <span
-              className="truncate text-xs 2xl:text-base flex-1 min-w-0 mr-2"
+              className="truncate text-xs 2xl:text-base flex-1 min-w-0 mr-1"
               title={selectedProduct ? selectedProduct.name : ""}
             >
               {selectedProduct

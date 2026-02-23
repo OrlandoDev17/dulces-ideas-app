@@ -155,15 +155,21 @@ export default function VentasPage() {
         </div>
 
         {/* Lista de categorias de productos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {PRODUCT_CATEGORIES.map((cat) => (
-            <ProductSelector
+            <div
               key={cat.id}
-              title={cat.title}
-              icon={cat.icon}
-              products={cat.products}
-              onAddToCart={addToCart}
-            />
+              className={
+                cat.id === "bebidas" ? "col-span-1" : "col-span-2 lg:col-span-1"
+              }
+            >
+              <ProductSelector
+                title={cat.title}
+                icon={cat.icon}
+                products={cat.products}
+                onAddToCart={addToCart}
+              />
+            </div>
           ))}
         </div>
         {cart.length > 0 && (
