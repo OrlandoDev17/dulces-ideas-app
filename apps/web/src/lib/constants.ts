@@ -24,15 +24,9 @@ export const NAV_LINKS: NavLink[] = [
   },
   {
     id: "admin",
-    label: "Administración",
+    label: "Admin",
     href: "/admin",
     icon: LayoutDashboard,
-  },
-  {
-    id: "reportes",
-    label: "Reportes",
-    href: "/reports",
-    icon: BarChart3,
   },
 ];
 

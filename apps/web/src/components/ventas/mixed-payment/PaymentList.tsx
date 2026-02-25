@@ -85,10 +85,10 @@ export function PaymentList({ payments, onRemove }: Props) {
                     {getMethodIcon(p.method)}
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-bold text-zinc-700">
+                    <span className="text-xs md:text-sm font-bold text-zinc-700">
                       {getMethodLabel(p.method)}
                     </span>
-                    <span className="text-xs text-zinc-400">
+                    <span className="text-[8px] md:text-xs text-zinc-400">
                       {p.method === "usd"
                         ? `Bs. ${p.amountBs.toLocaleString("es-VE", { minimumFractionDigits: 2 })}`
                         : `Ref: $${p.amountRef.toFixed(2)}`}
@@ -96,7 +96,7 @@ export function PaymentList({ payments, onRemove }: Props) {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="font-mono font-bold text-zinc-700">
+                  <span className="text-xs md:text-base font-mono font-bold text-zinc-700">
                     {p.method === "usd"
                       ? `$ ${p.amountRef.toFixed(2)}`
                       : `Bs. ${p.amountBs.toLocaleString("es-VE", { minimumFractionDigits: 2 })}`}

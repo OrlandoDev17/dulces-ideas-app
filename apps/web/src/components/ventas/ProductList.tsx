@@ -9,7 +9,7 @@ interface Props {
 
 export function ProductList({ items, onRemoveItem }: Props) {
   return (
-    <section className="flex flex-col gap-2 overflow-hidden">
+    <section className="flex flex-col gap-2 overflow-hidden ">
       <ul className="flex flex-col gap-2">
         <AnimatePresence mode="popLayout">
           {items.map((item, index) => (
@@ -40,7 +40,7 @@ export function ProductList({ items, onRemoveItem }: Props) {
                 </span>
                 <button
                   onClick={() => onRemoveItem(item.id)}
-                  className="opacity-0 group-hover:opacity-100 p-1.5 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all cursor-pointer"
+                  className="p-1.5 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all cursor-pointer"
                   aria-label={`Eliminar ${item.name}`}
                 >
                   <Trash2 size={16} />

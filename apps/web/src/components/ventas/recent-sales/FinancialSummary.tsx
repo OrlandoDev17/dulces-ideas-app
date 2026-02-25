@@ -106,9 +106,9 @@ export function FinancialSummary({
   if (!isMounted) return null;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full mb-2">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-2">
       {/* Panel de Ventas (Ingresos) - Diseño solicitado Marrón */}
-      <article className="bg-primary-600 rounded-3xl p-6 text-white shadow-lg shadow-primary-600/50 flex flex-col gap-4 relative overflow-hidden">
+      <article className="bg-primary-600 rounded-3xl p-4 md:p-6 text-white shadow-lg shadow-primary-600/50 flex flex-col gap-4 relative overflow-hidden">
         {/* Adorno visual */}
         <div className="absolute right-[-20px] top-[-20px] opacity-10 rotate-12">
           <Calculator size={150} />
@@ -116,14 +116,14 @@ export function FinancialSummary({
 
         <header className="flex items-center gap-2 border-b border-white/20 pb-3">
           <Calculator size={20} aria-hidden="true" />
-          <h3 className="text-lg font-black">Ventas (Ingresos)</h3>
+          <h3 className="text-base md:text-lg font-black">Ventas (Ingresos)</h3>
         </header>
 
-        <div className="grid grid-cols-2 gap-6 relative z-10">
+        <div className="grid grid-cols-2 gap-4 md:gap-6 relative z-10">
           {/* Columna Bolívares */}
           <section className="flex flex-col gap-2">
             <span
-              className="text-[12px] font-black uppercase tracking-widest text-white bg-black/10 
+              className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white bg-black/10 
             px-2 py-0.5 rounded w-fit"
             >
               Caja Bolívares
@@ -132,7 +132,7 @@ export function FinancialSummary({
               {BOLIVARS_BOX.map((box) => (
                 <div
                   key={box.label}
-                  className="flex justify-between text-sm font-medium"
+                  className="flex justify-between text-[10px] md:text-sm font-medium"
                 >
                   <span className="text-white/90">{box.label}:</span>
                   <span className="font-black tabular-nums">
@@ -145,11 +145,11 @@ export function FinancialSummary({
 
           {/* Columna Divisas */}
           <section className="flex flex-col gap-2 border-l border-white/20 pl-6">
-            <span className="text-[10px] font-black uppercase tracking-widest text-white/90 bg-black/10 px-2 py-0.5 rounded w-fit">
+            <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white/90 bg-black/10 px-2 py-0.5 rounded w-fit">
               Caja Divisas
             </span>
             <div className="flex flex-col">
-              <span className="text-4xl font-black tabular-nums">
+              <span className="text-3xl md:text-4xl font-black tabular-nums">
                 ${totals.usdTotal.toFixed(2)}
               </span>
             </div>
@@ -162,7 +162,7 @@ export function FinancialSummary({
               <span className="text-xs font-bold uppercase tracking-tighter text-white/60">
                 Total Ingresos
               </span>
-              <span className="text-2xl font-black tabular-nums">
+              <span className="text-lg md:text-2xl font-black tabular-nums">
                 Bs.{" "}
                 {totals.totalBs > 0 ? roundTo2Decimals(totals.totalBs) : "0.00"}
               </span>
@@ -171,7 +171,7 @@ export function FinancialSummary({
             <button
               onClick={onAddCierre}
               aria-label="Registrar un nuevo cierre de caja"
-              className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-tight transition-all border border-white/20 cursor-pointer backdrop-blur-sm active:scale-95"
+              className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-tight transition-all border border-white/20 cursor-pointer backdrop-blur-sm active:scale-95"
             >
               Agregar Cierre
             </button>

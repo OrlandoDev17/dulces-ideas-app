@@ -47,7 +47,7 @@ export function MixedPaymentModal({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-900 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
     >
       <motion.div
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
@@ -58,8 +58,10 @@ export function MixedPaymentModal({
         {/* Cabecera del Modal */}
         <header className="bg-primary-500 p-4 flex justify-between items-center">
           <div>
-            <h2 className="text-xl font-bold text-primary-50">Pago Mixto</h2>
-            <p className="text-xs text-primary-200 font-medium mt-0.5">
+            <h2 className="text-base md:text-xl font-bold text-primary-50">
+              Pago Mixto
+            </h2>
+            <p className="text-[10px] md:text-xs text-primary-200 font-medium mt-0.5 text-balance">
               Registra múltiples métodos de pago para esta orden
             </p>
           </div>
@@ -100,7 +102,7 @@ export function MixedPaymentModal({
         </div>
 
         {/* Pie del Modal con acciones de confirmación */}
-        <footer className="p-5 border-t border-zinc-100 bg-zinc-50 flex gap-3">
+        <footer className="p-2 md:p-5 border-t border-zinc-100 bg-zinc-50 flex gap-3">
           <Button style="secondary" onClick={onClose} className="w-1/3">
             Cancelar
           </Button>

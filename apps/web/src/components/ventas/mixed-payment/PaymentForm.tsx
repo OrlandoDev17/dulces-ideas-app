@@ -66,7 +66,7 @@ export function PaymentForm({
             options={paymentOptions}
             onSelect={setSelectedMethod}
             getLabel={(opt) => opt.label}
-            maxHeight="max-h-[120px]"
+            maxHeight="max-h-[80px] md:max-h-[120px]"
           />
         </div>
 

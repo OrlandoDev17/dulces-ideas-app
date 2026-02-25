@@ -23,7 +23,7 @@ export function RecentSaleRow({ sale, onStartEdit, onDelete }: Props) {
   return (
     <div
       role="row"
-      className="grid grid-cols-recent-sales gap-4 px-4 md:px-6 py-5 items-center bg-white hover:bg-zinc-50/50 rounded-2xl transition-all border border-zinc-100 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 group"
+      className="grid grid-cols-recent-sales gap-4 px-6 py-5 items-center bg-white hover:bg-zinc-50/50 rounded-2xl transition-all border border-zinc-100 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 group"
     >
       {/* Columna: Hora */}
       <div className="flex items-center gap-2 text-zinc-600 font-bold text-sm tabular-nums">
@@ -62,7 +62,7 @@ export function RecentSaleRow({ sale, onStartEdit, onDelete }: Props) {
 
       {/* Columna: Totales */}
       <div className="flex flex-col">
-        <span className="text-primary font-black text-sm 2xl:text-base tracking-tight tabular-nums">
+        <span className="text-primary font-black text-sm tracking-tight tabular-nums">
           Bs. {roundTo2Decimals(sale.totalBS)}
         </span>
         <span className="text-zinc-400 font-bold text-xs tracking-tighter tabular-nums">
@@ -128,7 +128,7 @@ export function RecentSaleRow({ sale, onStartEdit, onDelete }: Props) {
         <button
           onClick={onStartEdit}
           className="p-2 text-zinc-300 hover:text-primary hover:bg-primary/5 rounded-lg transition-all md:opacity-0 group-hover:opacity-100 cursor-pointer active:scale-90"
-          aria-label="Editar precio de esta venta"
+          aria-label="Editar"
           title="Editar precio"
         >
           <Pencil size={18} aria-hidden="true" />
@@ -136,7 +136,7 @@ export function RecentSaleRow({ sale, onStartEdit, onDelete }: Props) {
         <button
           onClick={onDelete}
           className="p-2 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all md:opacity-0 group-hover:opacity-100 cursor-pointer active:scale-90"
-          aria-label="Eliminar esta venta definitivamente"
+          aria-label="Eliminar"
         >
           <Trash2 size={18} aria-hidden="true" />
         </button>

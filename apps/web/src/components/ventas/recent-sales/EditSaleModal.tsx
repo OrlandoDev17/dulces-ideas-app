@@ -32,7 +32,7 @@ export function EditSaleModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-100 flex items-center justify-center p-4"
+            className="fixed inset-0 z-900 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           />
 
           {/* Modal */}
@@ -40,18 +40,20 @@ export function EditSaleModal({
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-3xl shadow-2xl z-101 overflow-hidden border border-zinc-100"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full md:max-w-md bg-white rounded-[2.5rem] shadow-2xl z-901 overflow-hidden border border-zinc-100"
           >
             {/* Header */}
-            <div className="bg-primary-600 p-8 text-white relative overflow-hidden">
+            <div className="bg-primary-600 p-4 md:p-8 text-white relative overflow-hidden">
               <div className="absolute right-[-20px] top-[-20px] opacity-10 rotate-12">
                 <Calculator size={120} />
               </div>
 
               <div className="flex justify-between items-start relative z-10">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-2xl font-black">Editar Montos</h3>
-                  <p className="text-white/70 text-sm font-medium">
+                  <h3 className="text-lg md:text-2xl font-black">
+                    Editar Montos
+                  </h3>
+                  <p className="text-white/70 text-xs md:text-sm font-medium">
                     Venta del{" "}
                     {new Date(sale.fecha).toLocaleTimeString("es-VE", {
                       hour: "2-digit",
@@ -69,7 +71,7 @@ export function EditSaleModal({
             </div>
 
             {/* Content */}
-            <div className="p-8 flex flex-col gap-6">
+            <div className="p-4 md:p-8 flex flex-col gap-4 md:gap-6">
               <div className="grid grid-cols-1 gap-4">
                 {/* BS Input */}
                 <div className="flex flex-col gap-2">
@@ -83,16 +85,18 @@ export function EditSaleModal({
                     <input
                       type="number"
                       step="0.01"
+                      placeholder="0.00"
                       value={
                         editValues.bs
                           ? Math.round(Number(editValues.bs) * 100) / 100
                           : ""
                       }
                       onChange={(e) => {
-                        const val = Number(e.target.value);
+                        const val =
+                          e.target.value === "" ? 0 : Number(e.target.value);
                         onEditChange.bs(Math.round(val * 100) / 100);
                       }}
-                      className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl pl-12 pr-4 py-4 text-lg font-black text-zinc-800 focus:border-primary-500 focus:bg-white transition-all outline-none"
+                      className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl pl-12 pr-4 py-4 text-lg font-black text-zinc-800 focus:border-primary-500 focus:bg-white transition-all outline-none font-mono"
                     />
                   </div>
                 </div>
@@ -109,22 +113,24 @@ export function EditSaleModal({
                     <input
                       type="number"
                       step="0.01"
+                      placeholder="0.00"
                       value={
                         editValues.usd
                           ? Math.round(Number(editValues.usd) * 100) / 100
                           : ""
                       }
                       onChange={(e) => {
-                        const val = Number(e.target.value);
+                        const val =
+                          e.target.value === "" ? 0 : Number(e.target.value);
                         onEditChange.usd(Math.round(val * 100) / 100);
                       }}
-                      className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl pl-12 pr-4 py-4 text-lg font-black text-zinc-800 focus:border-green-500 focus:bg-white transition-all outline-none"
+                      className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl pl-12 pr-4 py-4 text-lg font-black text-zinc-800 focus:border-green-500 focus:bg-white transition-all outline-none font-mono"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3 mt-4">
+              <div className="flex flex-col gap-3 md:mt-4">
                 <Button
                   style="primary"
                   onClick={() => onSave(editValues.bs, editValues.usd)}

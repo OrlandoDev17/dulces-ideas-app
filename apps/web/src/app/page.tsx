@@ -139,28 +139,25 @@ export default function VentasPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4 max-w-7xl mx-auto p-6">
-      <header className="flex flex-col gap-1">
+    <div className="flex flex-col gap-2 w-full md:gap-4 md:max-w-7xl md:mx-auto p-2 md:p-6">
+      <header className="flex flex-col items-center md:items-start gap-1">
         <h1 className="text-2xl font-bold text-primary-800 tracking-tight">
           Panel de Ventas
         </h1>
-        <h2 className="text-primary-300 font-bold uppercase">{fechaHoy}</h2>
+        <h2 className="text-sm md:text-base text-primary-300 font-bold uppercase">
+          {fechaHoy}
+        </h2>
       </header>
-      <section className="flex flex-col gap-8 mt-4">
+      <section className="flex flex-col gap-4 md:gap-8 mt-4">
         {/* Sección: Tasa de Cambio y Control de Divisas */}
         <div className="w-full">
           <BCVCard />
         </div>
 
         {/* Lista de categorias de productos */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {PRODUCT_CATEGORIES.map((cat) => (
-            <div
-              key={cat.id}
-              className={
-                cat.id === "bebidas" ? "col-span-1" : "col-span-2 lg:col-span-1"
-              }
-            >
+            <div key={cat.id} className="col-span-1">
               <ProductSelector
                 title={cat.title}
                 icon={cat.icon}

@@ -26,12 +26,12 @@ export function TotalToPay({
       {/* Decoración de ticket */}
       <div className="absolute top-0 left-0 w-full h-1" />
 
-      <div className="flex justify-between items-end relative z-10">
+      <div className="flex justify-between items-center relative z-10">
         <div className="flex flex-col gap-1">
-          <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+          <span className="text-[8px] md:text-[10px] font-black text-zinc-400 uppercase tracking-widest">
             Total a pagar
           </span>
-          <strong className="text-3xl font-black text-primary tracking-tighter leading-none">
+          <strong className="text-xl md:text-3xl font-black text-primary tracking-tighter leading-none">
             Bs.{" "}
             {finalTotalBsRoundedTo2?.toLocaleString("es-VE", {
               minimumFractionDigits: 2,
@@ -39,10 +39,10 @@ export function TotalToPay({
           </strong>
         </div>
         <div className="text-right flex flex-col items-end gap-1.5">
-          <span className="block text-sm font-black text-zinc-500 tabular-nums">
+          <span className="block text-xs md:text-sm font-black text-zinc-500 tabular-nums">
             ${finalTotalUSD.toFixed(2)} USD
           </span>
-          <small className="text-[10px] text-zinc-400 font-bold uppercase tracking-tighter bg-white px-2 py-1 rounded-md border border-zinc-100 shadow-sm">
+          <small className="text-[8px] md:text-[10px] text-zinc-400 font-bold uppercase tracking-tighter bg-white px-2 py-1 rounded-md border border-zinc-100 shadow-sm">
             Tasa: {tasa}
           </small>
         </div>
@@ -53,14 +53,14 @@ export function TotalToPay({
           aria-label="Desglose de costos"
         >
           <div className="flex justify-between items-center text-sm font-bold text-primary-500">
-            <span>Subtotal Productos</span>
+            <span className="text-xs md:text-sm">Subtotal Productos</span>
             <span className="tabular-nums text-zinc-600">
               Bs.{" "}
               {totalBS?.toLocaleString("es-VE", { minimumFractionDigits: 2 })}
             </span>
           </div>
           <div className="flex justify-between items-center text-sm font-bold text-primary-500">
-            <span>Servicio Delivery</span>
+            <span className="text-xs md:text-sm">Servicio Delivery</span>
             <span className="tabular-nums text-zinc-600">
               Bs.{" "}
               {deliveryAmount?.toLocaleString("es-VE", {

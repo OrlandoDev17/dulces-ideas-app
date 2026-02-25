@@ -1,5 +1,6 @@
 import { Sale } from "@/lib/types";
 import { RecentSaleRow } from "./RecentSaleRow";
+import { RecentSaleCard } from "./RecentSaleCard";
 import { useRecentSalesEdit } from "@/hooks/useRecentSalesEdit";
 import { ShoppingBag } from "lucide-react";
 import { useMemo } from "react";
@@ -61,15 +62,11 @@ export function RecentSalesTable({ sales, onDeleteSale, onUpdateSale }: Props) {
   ];
 
   return (
-    <div className="flex flex-col w-full min-w-0 overflow-x-auto pb-4">
-      <div
-        className="min-w-[750px] lg:min-w-full"
-        role="table"
-        aria-label="Historial de ventas"
-      >
-        {/* Encabezado de la tabla usando CSS Grid para alineación perfecta */}
+    <div className="flex flex-col w-full min-w-0 pb-4">
+      <div className="w-full" role="table" aria-label="Historial de ventas">
+        {/* Encabezado de la tabla: Solo visible en desktop */}
         <div
-          className="grid grid-cols-recent-sales gap-4 px-4 md:px-6 py-4 bg-zinc-50 rounded-2xl mb-4 text-[10px] xl:text-xs font-black uppercase tracking-wider text-zinc-700 border border-zinc-100"
+          className="hidden md:grid grid-cols-recent-sales gap-4 px-6 py-4 bg-zinc-50 rounded-2xl mb-4 text-[10px] xl:text-xs font-black uppercase tracking-wider text-zinc-700 border border-zinc-100"
           role="row"
         >
           {COLUMNS.map((column) => (
@@ -79,14 +76,26 @@ export function RecentSalesTable({ sales, onDeleteSale, onUpdateSale }: Props) {
           ))}
         </div>
 
-        <div className="flex flex-col gap-3" role="rowgroup">
+        <div className="flex flex-col gap-3 md:gap-4" role="rowgroup">
           {reversedSales.map((sale) => (
-            <RecentSaleRow
-              key={sale.id}
-              sale={sale}
-              onStartEdit={() => startEdit(sale)}
-              onDelete={() => onDeleteSale(sale.id)}
-            />
+            <div key={sale.id}>
+              {/* Versión Card para móvil */}
+              <div className="md:hidden">
+                <RecentSaleCard
+                  sale={sale}
+                  onStartEdit={() => startEdit(sale)}
+                  onDelete={() => onDeleteSale(sale.id)}
+                />
+              </div>
+              {/* Versión Fila para desktop */}
+              <div className="hidden md:block">
+                <RecentSaleRow
+                  sale={sale}
+                  onStartEdit={() => startEdit(sale)}
+                  onDelete={() => onDeleteSale(sale.id)}
+                />
+              </div>
+            </div>
           ))}
         </div>
       </div>

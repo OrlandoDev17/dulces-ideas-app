@@ -20,7 +20,7 @@ export function OptionDropdown<T>({
   options,
   getLabel,
   getExtra,
-  maxHeight = "max-h-[400px]",
+  maxHeight = "max-h-[200px] md:max-h-[400px]",
 }: Props<T>) {
   return (
     <AnimatePresence>

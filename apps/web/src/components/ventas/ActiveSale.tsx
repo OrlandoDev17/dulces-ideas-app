@@ -147,17 +147,17 @@ export function ActiveSale({
           initial={{ opacity: 0, x: 20, scale: 0.95 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: 20, scale: 0.95 }}
-          className={`flex flex-col gap-4 w-full bg-white p-6 rounded-3xl border border-zinc-200 shadow-lg shadow-primary-500/20 relative ${isOpenMetodo ? "z-20" : "z-10"}`}
+          className={`flex flex-col gap-4 w-full bg-white p-4 md:p-6 rounded-3xl border border-zinc-200 shadow-lg shadow-primary-500/20 relative ${isOpenMetodo ? "z-20" : "z-10"}`}
         >
           {/* Header de la Orden */}
           <header className="flex justify-between items-center">
             <div className="flex items-center gap-2 text-primary-500 font-bold">
               <figure className="p-2 bg-primary-500/10 rounded-lg">
-                <ShoppingBag size={20} aria-hidden="true" />
+                <ShoppingBag className="size-4 md:size-6" aria-hidden="true" />
               </figure>
-              <h3 className="text-lg">Orden Actual</h3>
+              <h3 className="text-base md:text-lg">Orden Actual</h3>
             </div>
-            <output className="text-[10px] font-black uppercase tracking-tighter text-zinc-400 bg-zinc-100 px-2.5 py-1.5 rounded-lg tabular-nums">
+            <output className="text-[8px] md:text-[10px] font-black uppercase tracking-tighter text-zinc-400 bg-zinc-100 px-2.5 py-1.5 rounded-lg tabular-nums">
               {items.length} {items.length === 1 ? "Item" : "Items"}
             </output>
           </header>

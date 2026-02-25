@@ -34,7 +34,7 @@ export function AddCierreModal({ isOpen, onClose, onConfirm }: Props) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-900 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           />
 
           {/* Modal */}
@@ -42,18 +42,20 @@ export function AddCierreModal({ isOpen, onClose, onConfirm }: Props) {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl z-101 overflow-hidden border border-zinc-100"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full md:max-w-md bg-white rounded-[2.5rem] shadow-2xl z-901 overflow-hidden border border-zinc-100"
           >
             {/* Header */}
-            <div className="bg-primary-600 p-8 text-white relative overflow-hidden">
+            <div className="bg-primary-600 p-4 md:p-8 text-white relative overflow-hidden">
               <div className="absolute right-[-20px] top-[-20px] opacity-10 rotate-12">
                 <Calculator size={120} />
               </div>
 
               <div className="flex justify-between items-start relative z-10">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-2xl font-black">Agregar Cierre</h3>
-                  <p className="text-white/70 text-sm font-medium">
+                  <h3 className="text-lg md:text-2xl font-black">
+                    Agregar Cierre
+                  </h3>
+                  <p className="text-white/70 text-xs md:text-sm font-medium">
                     Registra el ingreso de caja de hoy
                   </p>
                 </div>
@@ -67,7 +69,10 @@ export function AddCierreModal({ isOpen, onClose, onConfirm }: Props) {
             </div>
 
             {/* Content */}
-            <form onSubmit={handleSubmit} className="p-8 flex flex-col gap-6">
+            <form
+              onSubmit={handleSubmit}
+              className="p-2 md:p-8 flex flex-col gap-2 md:gap-6"
+            >
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-black uppercase tracking-widest text-zinc-400 ml-1">
                   Monto del Cierre (Bs.)

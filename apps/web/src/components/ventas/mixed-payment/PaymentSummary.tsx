@@ -17,10 +17,10 @@ export function PaymentSummary({
     <section className="grid grid-cols-2 gap-4">
       {/* Tarjeta de Total */}
       <div className="bg-primary-50 border border-primary-700 rounded-2xl flex flex-col gap-1 items-center justify-center text-center">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-primary/60">
+        <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-wider text-primary/60">
           Total a Pagar
         </span>
-        <strong className="text-xl text-primary font-black">
+        <strong className="text-base md:text-xl text-primary font-black">
           Bs.{" "}
           {totalToPayBs.toLocaleString("es-VE", { minimumFractionDigits: 2 })}
         </strong>
@@ -37,7 +37,7 @@ export function PaymentSummary({
         }`}
       >
         <span
-          className={`text-[10px] font-bold uppercase tracking-wider ${
+          className={`text-[8px] md:text-[10px] font-bold uppercase tracking-wider ${
             isComplete
               ? "text-green-600"
               : remainingBs > 0
@@ -52,7 +52,7 @@ export function PaymentSummary({
               : "Completado"}
         </span>
         <strong
-          className={`text-xl font-black ${
+          className={`text-base md:text-xl font-black ${
             isComplete
               ? "text-green-700"
               : remainingBs > 0

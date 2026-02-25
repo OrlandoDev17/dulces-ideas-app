@@ -19,14 +19,24 @@ export function BCVCard() {
   const tasaRounded = Math.round(tasa * 100) / 100;
 
   return (
-    <article className="flex justify-between items-center gap-4 px-4 py-6 bg-white border-l-6 border-primary-500 rounded-3xl shadow-lg shadow-primary-500/20">
-      <h3 className="text-lg text-primary font-black tracking-tight">
-        Tasa del Día (BCV)
-      </h3>
-      <label className="flex items-center gap-3 text-primary-500 font-bold uppercase tracking-tighter text-xs">
+    <article className="flex flex-col md:flex-row md:justify-between items-center gap-4 px-4 py-6 bg-white border-l-6 border-primary-500 rounded-3xl shadow-lg shadow-primary-500/20">
+      <div className="flex justify-between items-center w-full md:w-auto">
+        <h3 className="text-sm md:text-lg text-primary font-black tracking-tight">
+          Tasa del Día (BCV)
+        </h3>
+        <div className="md:hidden flex flex-col items-end gap-1">
+          <span className="text-[6px] font-black uppercase text-zinc-400 tracking-widest bg-zinc-100 px-2 py-1 rounded-md">
+            Última Actualización
+          </span>
+          <span className="text-sm text-zinc-600 font-black tabular-nums">
+            {ultimaActualizacion || "Cargando…"}
+          </span>
+        </div>
+      </div>
+      <label className="flex items-center gap-1.5 md:gap-3 text-primary-500 font-bold uppercase tracking-tighter text-xs">
         Bs.
         <input
-          className={`w-32 text-base border-2 border-zinc-200 font-black rounded-xl py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-300 tabular-nums ${
+          className={`w-26 md:w-32 text-sm md:text-base border-2 border-zinc-200 font-black rounded-xl py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-300 tabular-nums ${
             editando ? "border-primary-500" : "border-zinc-200 cursor-default"
           }`}
           aria-label="Monto de la tasa en Bolívares"
@@ -36,7 +46,7 @@ export function BCVCard() {
           readOnly={!editando}
           onChange={(e) => setTasa(parseFloat(e.target.value))}
         />
-        <div className="flex items-center gap-3 ml-2">
+        <div className="flex items-center gap-1.5 md:gap-3 md:ml-2">
           <button
             onClick={fetchTasa}
             disabled={loading || editando}
@@ -44,7 +54,7 @@ export function BCVCard() {
             className="group cursor-pointer p-2 rounded-2xl hover:bg-primary-500 hover:text-primary-50 transition-all active:scale-90 disabled:opacity-30"
           >
             <RefreshCcw
-              className={`size-6 transition-transform duration-500 group-hover:rotate-180 ${loading ? "animate-spin" : ""}`}
+              className={`size-5 md:size-6 transition-transform duration-500 group-hover:rotate-180 ${loading ? "animate-spin" : ""}`}
               aria-hidden="true"
             />
           </button>
@@ -60,14 +70,14 @@ export function BCVCard() {
             }`}
           >
             {editando ? (
-              <Check className="size-6" aria-hidden="true" />
+              <Check className="size-5 md:size-6" aria-hidden="true" />
             ) : (
-              <Pencil className="size-6" aria-hidden="true" />
+              <Pencil className="size-5 md:size-6" aria-hidden="true" />
             )}
           </button>
         </div>
       </label>
-      <div className="flex flex-col items-end gap-1">
+      <div className="hidden md:flex flex-col items-end gap-1">
         <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest bg-zinc-100 px-2 py-1 rounded-md">
           Última Actualización
         </span>
