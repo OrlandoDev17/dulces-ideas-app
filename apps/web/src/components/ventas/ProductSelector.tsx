@@ -77,13 +77,13 @@ export function ProductSelector({
         {/* Input de Cantidad */}
         <input
           type="number"
-          value={quantity}
+          defaultValue={quantity}
           min={1}
           aria-label={`Cantidad para ${title}`}
           onChange={(e) =>
             setQuantity(Math.max(1, parseInt(e.target.value) || 1))
           }
-          className="max-w-12 p-3.5 rounded-xl w-full bg-white border border-primary-200 text-sm font-bold shadow-lg shadow-primary-500/20 focus:outline-none focus:ring-2 focus:ring-primary-600 transition-all cursor-pointer"
+          className="max-w-14 p-3.5 rounded-xl w-full bg-white border border-primary-200 text-sm font-bold shadow-lg shadow-primary-500/20 focus:outline-none focus:ring-2 focus:ring-primary-600 transition-all cursor-pointer"
         />
 
         {/* Botón Añadir */}

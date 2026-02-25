@@ -53,7 +53,10 @@ export function EditSaleModal({
                   <h3 className="text-lg md:text-2xl font-black">
                     Editar Montos
                   </h3>
-                  <p className="text-white/70 text-xs md:text-sm font-medium">
+                  <p
+                    className="text-white/70 text-xs md:text-sm font-medium"
+                    suppressHydrationWarning
+                  >
                     Venta del{" "}
                     {new Date(sale.fecha).toLocaleTimeString("es-VE", {
                       hour: "2-digit",

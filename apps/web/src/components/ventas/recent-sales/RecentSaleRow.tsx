@@ -1,3 +1,5 @@
+"use client";
+
 import { Sale } from "@/lib/types";
 import { PAYMENT_METHODS } from "@/lib/constants";
 import { Clock, CreditCard, MapPin, Pencil, Trash2 } from "lucide-react";
@@ -30,10 +32,12 @@ export function RecentSaleRow({ sale, onStartEdit, onDelete }: Props) {
         <div className="p-1.5 bg-zinc-100 rounded-lg text-zinc-400">
           <Clock size={14} aria-hidden="true" />
         </div>
-        {new Date(sale.fecha).toLocaleTimeString("es-VE", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })}
+        <span suppressHydrationWarning>
+          {new Date(sale.fecha).toLocaleTimeString("es-VE", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </span>
       </div>
 
       {/* Columna: Productos resumen */}

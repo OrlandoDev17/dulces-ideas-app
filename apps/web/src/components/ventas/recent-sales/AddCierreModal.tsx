@@ -16,11 +16,17 @@ interface Props {
 export function AddCierreModal({ isOpen, onClose, onConfirm }: Props) {
   const [monto, setMonto] = useState<number | "">("");
 
+  // Función para cerrar el modal y resetear el estado
+  const handleClose = () => {
+    setMonto("");
+    onClose();
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (monto && Number(monto) > 0) {
       onConfirm(Number(monto));
-      onClose();
+      handleClose();
     }
   };
 
@@ -33,7 +39,7 @@ export function AddCierreModal({ isOpen, onClose, onConfirm }: Props) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={handleClose}
             className="fixed inset-0 z-900 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           />
 
@@ -60,7 +66,7 @@ export function AddCierreModal({ isOpen, onClose, onConfirm }: Props) {
                   </p>
                 </div>
                 <button
-                  onClick={onClose}
+                  onClick={handleClose}
                   className="p-2 hover:bg-white/10 rounded-full transition-colors"
                 >
                   <X size={24} />
@@ -113,7 +119,7 @@ export function AddCierreModal({ isOpen, onClose, onConfirm }: Props) {
                 </Button>
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={handleClose}
                   className="w-full py-4 text-zinc-400 font-black uppercase tracking-widest text-xs hover:text-zinc-600 transition-colors"
                 >
                   Cancelar

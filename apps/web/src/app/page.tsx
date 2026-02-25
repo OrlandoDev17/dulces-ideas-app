@@ -1,7 +1,7 @@
 "use client";
 
 //Hooks
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTasaBCV } from "@/hooks/useTasaBCV";
 // Services
 import { getVenezuelaTime, formatVenezuelaDate } from "@/services/FechaYHora";
@@ -22,22 +22,17 @@ export default function VentasPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
 
   // Rule 5.10: Usar inicialización perezosa para el estado de ventas
-  const [sales, setSales] = useState<Sale[]>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("sales");
-      return stored ? JSON.parse(stored) : [];
-    }
-    return [];
-  });
+  const [sales, setSales] = useState<Sale[]>([]);
+  const [cierres, setCierres] = useState<Cierre[]>([]);
 
-  // Rule 5.10: Usar inicialización perezosa para el estado de cierres
-  const [cierres, setCierres] = useState<Cierre[]>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("cierres");
-      return stored ? JSON.parse(stored) : [];
-    }
-    return [];
-  });
+  // Característica: Efecto para cargar datos desde localStorage después del montaje (Evita errores de hidratación)
+  useEffect(() => {
+    const storedSales = localStorage.getItem("sales");
+    if (storedSales) setSales(JSON.parse(storedSales));
+
+    const storedCierres = localStorage.getItem("cierres");
+    if (storedCierres) setCierres(JSON.parse(storedCierres));
+  }, []);
 
   const [showCierreModal, setShowCierreModal] = useState(false);
 

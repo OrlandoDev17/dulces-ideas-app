@@ -1,10 +1,14 @@
+"use client";
+
+import { useMemo, useSyncExternalStore } from "react";
 import { Sale } from "@/lib/types";
 import { RecentSaleRow } from "./RecentSaleRow";
 import { RecentSaleCard } from "./RecentSaleCard";
 import { useRecentSalesEdit } from "@/hooks/useRecentSalesEdit";
 import { ShoppingBag } from "lucide-react";
-import { useMemo } from "react";
 import { EditSaleModal } from "./EditSaleModal";
+
+const emptySubscribe = () => () => {};
 
 interface Props {
   sales: Sale[];
@@ -28,6 +32,12 @@ export function RecentSalesTable({ sales, onDeleteSale, onUpdateSale }: Props) {
     cancelEdit,
   } = useRecentSalesEdit(onUpdateSale);
 
+  const isMounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true, // client snapshot
+    () => false, // server snapshot
+  );
+
   const reversedSales = useMemo(() => [...sales].reverse(), [sales]);
 
   // Encontrar la venta que se está editando para pasarla al modal
@@ -35,6 +45,13 @@ export function RecentSalesTable({ sales, onDeleteSale, onUpdateSale }: Props) {
     () => sales.find((s) => s.id === editingSaleId),
     [sales, editingSaleId],
   );
+
+  // Característica: Si no está montado, retornar un placeholder consistente con SSR para evitar hidratación.
+  if (!isMounted) {
+    return (
+      <div className="flex flex-col w-full min-w-0 pb-4 h-[100px] animate-pulse bg-zinc-50 rounded-3xl border border-zinc-100" />
+    );
+  }
 
   if (sales.length === 0) {
     return (
