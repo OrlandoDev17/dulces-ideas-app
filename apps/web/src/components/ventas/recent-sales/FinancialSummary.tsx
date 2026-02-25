@@ -1,6 +1,6 @@
 import { Sale, Cierre } from "@/lib/types";
 import { Calculator, Bike, Info, History, Pencil, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { AddCierreModal } from "./AddCierreModal";
 
 interface Props {
@@ -23,6 +23,13 @@ export function FinancialSummary({
   onDeleteCierre,
 }: Props) {
   const [editingCierre, setEditingCierre] = useState<Cierre | null>(null);
+
+  // Hook para evitar errores de hidratación sin disparar cascadas de renderizado
+  const isMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   // Cálculos de ingresos por método
   const totals = useMemo(() => {
@@ -67,7 +74,7 @@ export function FinancialSummary({
     };
   }, [sales]);
 
-  const rountTo2Decimals = (num: number) => {
+  const roundTo2Decimals = (num: number) => {
     return Math.round(num * 100) / 100;
   };
 
@@ -85,6 +92,8 @@ export function FinancialSummary({
       value: totals.efBs,
     },
   ];
+
+  if (!isMounted) return null;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full mb-2">
@@ -117,7 +126,7 @@ export function FinancialSummary({
                 >
                   <span className="text-white/90">{box.label}:</span>
                   <span className="font-black tabular-nums">
-                    {box.value > 0 ? rountTo2Decimals(box.value) : "0.00"}
+                    {box.value > 0 ? roundTo2Decimals(box.value) : "0.00"}
                   </span>
                 </div>
               ))}
@@ -145,7 +154,7 @@ export function FinancialSummary({
               </span>
               <span className="text-2xl font-black tabular-nums">
                 Bs.{" "}
-                {totals.totalBs > 0 ? rountTo2Decimals(totals.totalBs) : "0.00"}
+                {totals.totalBs > 0 ? roundTo2Decimals(totals.totalBs) : "0.00"}
               </span>
             </div>
 
