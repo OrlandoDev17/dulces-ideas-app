@@ -56,23 +56,24 @@ export function MixedPaymentModal({
         className="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
       >
         {/* Cabecera del Modal */}
-        <header className="bg-zinc-50 border-b border-zinc-100 p-5 flex justify-between items-center">
+        <header className="bg-primary-500 p-4 flex justify-between items-center">
           <div>
-            <h2 className="text-xl font-bold text-zinc-800">Pago Mixto</h2>
-            <p className="text-xs text-zinc-500 font-medium mt-0.5">
+            <h2 className="text-xl font-bold text-primary-50">Pago Mixto</h2>
+            <p className="text-xs text-primary-200 font-medium mt-0.5">
               Registra múltiples métodos de pago para esta orden
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-zinc-200 rounded-full transition-colors text-zinc-400 hover:text-zinc-600 cursor-pointer"
+            className="p-2 text-primary-50 hover:bg-primary-800/20 rounded-lg
+            transition-all cursor-pointer"
           >
             <X size={20} />
           </button>
         </header>
 
         {/* Cuerpo del Modal con scroll si es necesario */}
-        <div className="p-6 flex flex-col gap-6 overflow-y-auto">
+        <div className="p-4 flex flex-col gap-4 overflow-y-auto">
           {/* Resumen de montos (Total y Restante) */}
           <PaymentSummary
             totalToPayBs={totalToPayBs}

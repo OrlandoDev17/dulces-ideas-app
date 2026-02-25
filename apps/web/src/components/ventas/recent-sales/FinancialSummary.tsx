@@ -38,7 +38,7 @@ export function FinancialSummary({
     let efBs = 0;
     let usdTotal = 0;
     let deliveryTotal = 0;
-    const deliverySales: Sale[] = [];
+    const deliveryGrouped: Record<string, number> = {};
 
     sales.forEach((sale) => {
       // Ingresos
@@ -58,10 +58,20 @@ export function FinancialSummary({
 
       // Delivery
       if (sale.delivery) {
-        deliverySales.push(sale);
-        if (sale.deliveryAmount) deliveryTotal += sale.deliveryAmount;
+        const name = sale.deliveryName || "Delivery s/n";
+        const amount = sale.deliveryAmount || 0;
+        deliveryGrouped[name] = (deliveryGrouped[name] || 0) + amount;
+        deliveryTotal += amount;
       }
     });
+
+    // Convertir el objeto agrupado a un array para el renderizado
+    const deliverySummary = Object.entries(deliveryGrouped).map(
+      ([name, total]) => ({
+        name,
+        total,
+      }),
+    );
 
     return {
       pmBs,
@@ -69,7 +79,7 @@ export function FinancialSummary({
       efBs,
       usdTotal,
       deliveryTotal,
-      deliverySales,
+      deliverySummary,
       totalBs: pmBs + pvBs + efBs,
     };
   }, [sales]);
@@ -238,19 +248,17 @@ export function FinancialSummary({
         </header>
 
         <div className="flex flex-col gap-3 min-h-[100px]">
-          {totals.deliverySales.length > 0 ? (
+          {totals.deliverySummary.length > 0 ? (
             <ul className="flex flex-col gap-2">
-              {totals.deliverySales.map((sale) => (
+              {totals.deliverySummary.map((item, index) => (
                 <li
-                  key={sale.id}
+                  key={`delivery-${index}`}
                   className="flex justify-between items-center text-sm"
                 >
-                  <span className="text-zinc-500 font-bold">
-                    {sale.deliveryName || "Delivery s/n"}
-                  </span>
+                  <span className="text-zinc-500 font-bold">{item.name}</span>
                   <span className="font-black text-zinc-700 tabular-nums">
                     Bs.{" "}
-                    {(sale.deliveryAmount || 0).toLocaleString("es-VE", {
+                    {item.total.toLocaleString("es-VE", {
                       minimumFractionDigits: 2,
                     })}
                   </span>

@@ -34,7 +34,7 @@ export function ProductList({ items, onRemoveItem }: Props) {
                 </small>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-bold text-primary-500 text-lg text-right min-w-[80px]">
+                <span className="font-bold text-primary-500 text-lg">
                   {item.currency === "VES" ? "Bs. " : "$"}
                   {(item.price * item.quantity).toFixed(2)}
                 </span>

@@ -15,15 +15,13 @@ export function Sidebar() {
   const isActive = (href: string) => path === href;
 
   return (
-    <aside className="fixed left-0 top-0 hidden md:flex flex-col gap-12 p-4 w-64 2xl:w-72 h-screen z-100 bg-white border-r-2 border-primary-500">
+    <aside className="fixed left-0 top-0 hidden md:flex flex-col gap-12 p-4 w-64 min-h-screen z-100 bg-white border-r-2 border-primary-500">
       <header className="flex items-center gap-2">
         <CakeSlice
-          className="size-10 2xl:size-12 text-primary-50 p-2 bg-primary-600 rounded-xl"
+          className="size-10 text-primary-50 p-2 bg-primary-600 rounded-xl"
           aria-hidden="true"
         />
-        <h2 className="text-primary-600 font-bold text-lg 2xl:text-xl">
-          Dulces Ideas
-        </h2>
+        <h2 className="text-primary-600 font-bold text-lg">Dulces Ideas</h2>
       </header>
       <nav aria-label="Navegación principal">
         <ul className="flex flex-col gap-4">
@@ -38,10 +36,10 @@ export function Sidebar() {
                 href={href}
               >
                 <Icon
-                  className="size-5 2xl:size-7 transition-transform group-hover:scale-110"
+                  className="size-6 transition-transform group-hover:scale-110"
                   aria-hidden="true"
                 />
-                <span className="text-base 2xl:text-lg font-bold">{label}</span>
+                <span className="font-bold">{label}</span>
               </Link>
             </li>
           ))}

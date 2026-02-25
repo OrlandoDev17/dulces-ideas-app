@@ -66,6 +66,7 @@ export function PaymentForm({
             options={paymentOptions}
             onSelect={setSelectedMethod}
             getLabel={(opt) => opt.label}
+            maxHeight="max-h-[120px]"
           />
         </div>
 
@@ -82,14 +83,14 @@ export function PaymentForm({
               onChange={(e) =>
                 setAmount(e.target.value === "" ? "" : Number(e.target.value))
               }
-              className="w-full bg-zinc-50 border border-zinc-200 pl-8 pr-4 py-2.5 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-mono"
+              className="w-full bg-primary-50 border border-primary-200 pl-8 pr-4 py-4 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-primary-500 transition-all font-mono"
               onKeyDown={(e) => e.key === "Enter" && onAdd()}
             />
           </div>
           <button
             onClick={onAdd}
             disabled={!amount || Number(amount) <= 0}
-            className="p-2.5 bg-zinc-900 text-white rounded-xl hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            className="p-2.5 bg-primary-500 text-primary-50 rounded-xl hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             title="Agregar pago"
           >
             <Plus size={20} />

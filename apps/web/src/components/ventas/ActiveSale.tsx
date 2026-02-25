@@ -155,9 +155,9 @@ export function ActiveSale({
               <figure className="p-2 bg-primary-500/10 rounded-lg">
                 <ShoppingBag size={20} aria-hidden="true" />
               </figure>
-              <h3 className="text-base 2xl:text-lg">Orden Actual</h3>
+              <h3 className="text-lg">Orden Actual</h3>
             </div>
-            <output className="text-[10px] 2xl:text-xs font-black uppercase tracking-tighter text-zinc-400 bg-zinc-100 px-2.5 py-1.5 rounded-lg tabular-nums">
+            <output className="text-[10px] font-black uppercase tracking-tighter text-zinc-400 bg-zinc-100 px-2.5 py-1.5 rounded-lg tabular-nums">
               {items.length} {items.length === 1 ? "Item" : "Items"}
             </output>
           </header>

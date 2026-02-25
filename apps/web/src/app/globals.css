@@ -19,5 +19,5 @@ body {
 }
 
 .grid-cols-recent-sales {
-  @apply grid-cols-[100px_1fr_300px_250px_100px_100px];
+  @apply grid-cols-[1.5fr_2.5fr_2fr_2fr_1fr_1fr];
 }

@@ -21,7 +21,7 @@ export function RecentSales({
   onClearAll,
 }: Props) {
   return (
-    <section className="flex flex-col gap-6 w-full bg-white p-6 rounded-3xl border border-zinc-200 shadow-lg shadow-primary-500/30 mt-4 overflow-hidden">
+    <section className="flex flex-col gap-6 w-full min-w-0 bg-white p-4 md:p-6 rounded-3xl border border-zinc-200 shadow-lg shadow-primary-500/30 mt-4 overflow-hidden">
       {/* Parte Superior: Título y Botones de acción (PDF, Limpiar) */}
       <RecentSalesHeader
         sales={sales}

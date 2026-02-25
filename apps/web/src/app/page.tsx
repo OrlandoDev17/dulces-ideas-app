@@ -139,14 +139,12 @@ export default function VentasPage() {
   };
 
   return (
-    <div className="flex flex-col gap-2 2xl:gap-4 p-4">
+    <div className="flex flex-col gap-4 max-w-7xl mx-auto p-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl 2xl:text-3xl font-bold text-primary-800 tracking-tight">
+        <h1 className="text-2xl font-bold text-primary-800 tracking-tight">
           Panel de Ventas
         </h1>
-        <h2 className="text-sm 2xl:text-base text-primary-300 font-bold uppercase">
-          {fechaHoy}
-        </h2>
+        <h2 className="text-primary-300 font-bold uppercase">{fechaHoy}</h2>
       </header>
       <section className="flex flex-col gap-8 mt-4">
         {/* Sección: Tasa de Cambio y Control de Divisas */}

@@ -23,7 +23,7 @@ export function RecentSaleRow({ sale, onStartEdit, onDelete }: Props) {
   return (
     <div
       role="row"
-      className="grid grid-cols-recent-sales gap-4 px-6 py-5 items-center bg-white hover:bg-zinc-50/50 rounded-2xl transition-all border border-zinc-100 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 group"
+      className="grid grid-cols-recent-sales gap-4 px-4 md:px-6 py-5 items-center bg-white hover:bg-zinc-50/50 rounded-2xl transition-all border border-zinc-100 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 group"
     >
       {/* Columna: Hora */}
       <div className="flex items-center gap-2 text-zinc-600 font-bold text-sm tabular-nums">

@@ -22,7 +22,7 @@ export function Button({
   type = "button",
 }: ButtonProps) {
   const commonClasses =
-    "flex items-center justify-center gap-2 px-4 py-3 text-sm 2xl:text-base font-bold rounded-xl hover:-translate-y-1 active:scale-95 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none";
+    "flex items-center justify-center gap-2 px-4 py-3 text-base font-bold rounded-xl hover:-translate-y-1 active:scale-95 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none";
 
   const styleClasses =
     style === "primary"
