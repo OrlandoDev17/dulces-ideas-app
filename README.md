@@ -1,67 +1,56 @@
-# 🍭 Dulces Ideas - CRM & Sales Management System
+# Dulces Ideas - Sistema de Gestión 🍩
 
-Un sistema moderno de gestión de ventas y caja diseñado específicamente para el mercado venezolano, optimizado para el manejo multimoneda y pagos mixtos con una interfaz premium.
+Bienvenido al repositorio principal de **Dulces Ideas**, una aplicación integral diseñada para la gestión de ventas, inventario y cajas de la tienda de dulces.
 
-## ✨ Características Principales
+Este proyecto está dividido en dos partes principales (monorepo):
 
-- **🛒 Carrito de Compras Inteligente:** Gestión fluida de productos, cantidades y eliminación de ítems.
-- **💹 Tasa BCV Automática:** Integración en tiempo real con la tasa oficial del Banco Central de Venezuela.
-- **💸 Pagos Mixtos Dinámicos:** Módulo avanzado para registrar pagos combinando diferentes métodos (USD, Bs Efectivo, Pago Móvil, Punto de Venta).
-- **📱 Interfaz Ultra-Responsive:** Diseñada para tablets y móviles, con animaciones fluidas impulsadas por Framer Motion.
-- **🎨 Diseño Premium:** Estética moderna, modo claro/oscuro refinado y micro-interacciones de alta calidad.
-
-## 🛠️ Stack Tecnológico
-
-- **Framework:** [Next.js 15](https://nextjs.org/) (App Router)
-- **Lenguaje:** [TypeScript](https://www.typescriptlang.org/)
-- **Estilos:** [Tailwind CSS v4](https://tailwindcss.com/)
-- **Animaciones:** [Framer Motion](https://www.framer.com/motion/)
-- **Iconos:** [Lucide React](https://lucide.dev/)
-- **Runtime:** [Bun](https://bun.sh/)
-
-## 🚀 Inicio Rápido
-
-### Requisitos Previos
-
-- [Bun](https://bun.sh/) instalado en tu sistema.
-
-### Instalación
-
-1. Clona el repositorio:
-
-   ```bash
-   git clone https://github.com/tu-usuario/dulces-ideas-app.git
-   cd dulces-ideas-app
-   ```
-
-2. Instala las dependencias:
-
-   ```bash
-   bun install
-   ```
-
-3. Inicia el servidor de desarrollo:
-   ```bash
-   bun dev:web
-   ```
-
-## 📂 Estructura del Proyecto
-
-```text
-apps/
-  web/                # Aplicación principal Next.js
-    src/
-      app/            # Rutas y páginas
-      components/     # Componentes de UI (Ventas, Common, Layout)
-      hooks/          # Hooks personalizados (Tasa BCV, etc)
-      services/       # Lógica de negocio y servicios externos
-      lib/            # Utilidades, tipos y constantes
-```
-
-## 🤝 Contribución
-
-Las contribuciones son bienvenidas. Por favor, abre un issue para discutir lo que te gustaría cambiar antes de enviar un pull request.
+1. **El Servidor (Backend / API)**: Donde se guarda y procesa toda la información (Base de datos).
+2. **La Vista (Frontend / Web)**: La aplicación que usas en tu navegador para interactuar con los datos.
 
 ---
 
-Hecho con con amor para **Dulces Ideas** 🍬
+## 🏗️ Estructura del Proyecto
+
+```text
+dulces-ideas-app/
+├── apps/
+│   ├── api/       # Código del servidor (Backend con Node.js, Express y Prisma)
+│   └── web/       # Código de la interfaz de usuario (Frontend con React y Vite)
+└── package.json   # Configuraciones globales del monorepo
+```
+
+---
+
+## 🛠️ Tecnologías Principales
+
+- **Base de Datos:** PostgreSQL (Neon)
+- **Backend:** Node.js, Express, Prisma ORM
+- **Frontend:** Next.js, TypeScript, TailwindCSS
+
+---
+
+## 📖 Documentación Específica
+
+Para conocer más detalles sobre cada parte del sistema, puedes consultar las siguientes guías:
+
+### 🖥️ Para el FrontEnd (La Interfaz Visual)
+
+_Ubicado en la carpeta `apps/web/`_
+
+- [Manual de Usuario (Para personas no técnicas)](./apps/web/MANUAL_USO.md): Cómo usar el sistema en el día a día.
+- [Guía para Desarrolladores](./apps/web/README.md): Cómo instalar, ejecutar y modificar el código de la vista.
+
+### ⚙️ Para el BackEnd (El Motor de Datos)
+
+_Ubicado en la carpeta `apps/api/`_
+
+- [Guía Básica del Servidor (Para personas no técnicas)](./apps/api/MANUAL_USO.md): Qué hace el servidor y por qué es importante.
+- [Guía para Desarrolladores](./apps/api/README.md): Cómo configurar la base de datos, Prisma y crear nuevas rutas en el servidor.
+
+---
+
+## 🚀 Cómo ejecutar todo el proyecto a la vez (Para Desarrolladores)
+
+Si deseas correr tanto el Frontend como el Backend instalados, deberás tener configurado y corriendo los respectivos servicios u usar herramientas de ejecución paralela (ej. `npm run dev` en la raíz si fue configurado de esa manera, o abrir dos consolas).
+
+Para instrucciones paso a paso, refiérase a las guías de desarrolladores de cada carpeta (`apps/api/README.md` y `apps/web/README.md`).

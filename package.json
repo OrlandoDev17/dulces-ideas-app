@@ -8,6 +8,7 @@
   "scripts": {
     "dev:web": "bun run --filter @dulces-ideas/web dev",
     "dev:api": "bun run --filter @dulces-ideas/api dev",
+    "dev": "bun run dev:web & bun run dev:api",
     "clean": "bun x kill-port 3000"
   },
   "dependencies": {
