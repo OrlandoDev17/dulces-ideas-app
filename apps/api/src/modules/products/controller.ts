@@ -8,7 +8,7 @@ export const ProductsController = {
         include: {
           products: {
             where: { active: true },
-            orderBy: { name: "asc" },
+            orderBy: { price: "asc" },
           },
         },
         orderBy: { name: "asc" },
@@ -24,6 +24,27 @@ export const ProductsController = {
         })),
       }));
 
+      // Orden manual solicitado por el usuario (Basado en los nombres exactos de la DB)
+      const customOrder = [
+        "Postres / Porciones",
+        "Tortas Completas",
+        "Bebidas",
+      ];
+
+      formatted.sort((a, b) => {
+        const indexA = customOrder.indexOf(a.label);
+        const indexB = customOrder.indexOf(b.label);
+
+        // Si ambos están en el orden personalizado
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        // Si solo A está en el orden personalizado, va primero
+        if (indexA !== -1) return -1;
+        // Si solo B está en el orden personalizado, va primero
+        if (indexB !== -1) return 1;
+        // Si ninguno está, orden alfabético
+        return a.label.localeCompare(b.label);
+      });
+
       res.json(formatted);
     } catch (error) {
       res.status(500).json({ error: "Error al cargar catálogo de productos" });
@@ -33,7 +54,7 @@ export const ProductsController = {
   async listMethods(_req: Request, res: Response) {
     try {
       const methods = await prisma.paymentMethod.findMany({
-        orderBy: { name: "asc" },
+        orderBy: { id: "asc" },
       });
       res.json(methods);
     } catch (error) {

@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
-import { Payment } from "@/lib/types";
-import { PAYMENT_METHODS } from "@/lib/constants";
+import { Payment, PaymentMethod } from "@/lib/types";
 
 /**
  * Hook personalizado para gestionar la lógica de pagos mixtos.
@@ -9,18 +8,34 @@ import { PAYMENT_METHODS } from "@/lib/constants";
 export const useMixedPayment = (
   totalToPayBs: number,
   tasa: number,
+  paymentMethods: PaymentMethod[],
   onConfirm: (payments: Payment[]) => void,
 ) => {
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [amount, setAmount] = useState<number | "">("");
-  const [selectedMethod, setSelectedMethod] = useState(PAYMENT_METHODS[0]);
-  const [isOpenMethod, setIsOpenMethod] = useState(false);
 
-  // Filtramos "Pago Mixto" para evitar recursión infinita
+  // Filtramos "Pago Mixto" para evitar recursión infinita (si llegara a estar)
   const paymentOptions = useMemo(
-    () => PAYMENT_METHODS.filter((m) => m.id !== "mx"),
-    [],
+    () => paymentMethods.filter((m) => m.id !== "mx"),
+    [paymentMethods],
   );
+
+  // Estado para la selección manual del usuario (inicia con la primera opción disponible)
+  const [selectedMethodInternal, setSelectedMethod] = useState<
+    PaymentMethod | undefined
+  >(paymentOptions[0]);
+
+  // Estado derivado: usa la selección manual si sigue siendo válida, si no, vuelve a la primera opicón
+  const selectedMethod = useMemo(() => {
+    const isValid =
+      selectedMethodInternal &&
+      paymentOptions.some((m) => m.id === selectedMethodInternal.id);
+    return isValid ? selectedMethodInternal : paymentOptions[0];
+  }, [selectedMethodInternal, paymentOptions]);
+
+  const [isOpenMethod, setIsOpenMethod] = useState(false);
+  const [amount, setAmount] = useState<number | "">("");
+
+  // Eliminamos el useEffect que causaba renders en cascada
 
   const totalRegisteredBs = useMemo(
     () => payments.reduce((acc, p) => acc + p.amountBs, 0),
@@ -36,12 +51,12 @@ export const useMixedPayment = (
    */
   const addPayment = () => {
     const val = Number(amount);
-    if (!val || val <= 0) return;
+    if (!val || val <= 0 || !selectedMethod) return;
 
     let amountBs = 0;
     let amountRef = 0;
 
-    if (selectedMethod.id === "usd") {
+    if (selectedMethod.currency === "USD") {
       amountRef = val;
       amountBs = val * tasa;
     } else {

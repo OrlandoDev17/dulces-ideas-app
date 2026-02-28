@@ -5,17 +5,19 @@ import {
   DollarSign,
   CreditCard,
 } from "lucide-react";
-import { DropdownButton } from "../../common/DropdownButton";
-import { OptionDropdown } from "../../common/OptionDropdown";
+import { DropdownButton } from "@/components/common/DropdownButton";
+import { OptionDropdown } from "@/components/common/OptionDropdown";
+
+import { PaymentMethod } from "@/lib/types";
 
 interface Props {
   amount: number | "";
   setAmount: (v: number | "") => void;
-  selectedMethod: { id: string; label: string };
-  setSelectedMethod: (v: { id: string; label: string }) => void;
+  selectedMethod: PaymentMethod;
+  setSelectedMethod: (v: PaymentMethod) => void;
   isOpenMethod: boolean;
   setIsOpenMethod: (v: boolean) => void;
-  paymentOptions: { id: string; label: string }[];
+  paymentOptions: PaymentMethod[];
   onAdd: () => void;
 }
 
@@ -58,14 +60,14 @@ export function PaymentForm({
         <div className="w-full sm:w-1/2 relative">
           <DropdownButton isOpen={isOpenMethod} setIsOpen={setIsOpenMethod}>
             {getMethodIcon(selectedMethod.id)}
-            <span className="truncate">{selectedMethod.label}</span>
+            <span className="truncate">{selectedMethod.name}</span>
           </DropdownButton>
           <OptionDropdown
             isOpen={isOpenMethod}
             setIsOpen={setIsOpenMethod}
             options={paymentOptions}
             onSelect={setSelectedMethod}
-            getLabel={(opt) => opt.label}
+            getLabel={(opt) => opt.name}
           />
         </div>
 

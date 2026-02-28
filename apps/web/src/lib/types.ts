@@ -8,9 +8,15 @@ export interface NavLink {
 }
 
 export interface Product {
+  id: number | string;
   name: string;
   price: number;
   currency: string;
+}
+
+export interface Category {
+  label: string;
+  options: Product[];
 }
 
 export interface ProductSelector {
@@ -23,10 +29,10 @@ export interface ProductSelector {
 
 export interface CartItem {
   id: string;
-  name: string;
+  name?: string;
   price: number;
   quantity: number;
-  currency: string;
+  currency?: string;
 }
 
 export interface Payment {
@@ -41,6 +47,7 @@ export interface Sale {
   items: CartItem[];
   totalUSD: number;
   totalBS: number;
+  tasa_bcv: number;
   metodo: string;
   fecha: string;
   delivery: boolean;
@@ -85,4 +92,10 @@ export interface Cierre {
 export interface Session {
   id: string;
   name: string;
+}
+
+export interface PaymentMethod {
+  id: string;
+  name: string;
+  currency: "VES" | "USD";
 }

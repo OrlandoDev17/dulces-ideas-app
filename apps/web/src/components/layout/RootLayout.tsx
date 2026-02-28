@@ -4,15 +4,21 @@ import { BottomNav } from "./BottomNav";
 // Components
 import { Sidebar } from "./Sidebar";
 import { SessionProvider } from "@/contexts/SessionContext";
+import { ProductsProvider } from "@/contexts/ProductsContext";
+import { SalesProvider } from "@/contexts/SalesContext";
 
 export function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
-      <div className="flex">
-        <Sidebar />
-        <main className="flex-1 pb-24 md:pb-0 md:pl-64">{children}</main>
-        <BottomNav />
-      </div>
-    </SessionProvider>
+    <ProductsProvider>
+      <SessionProvider>
+        <SalesProvider>
+          <div className="flex">
+            <Sidebar />
+            <main className="flex-1 pb-24 md:pb-0 md:pl-64">{children}</main>
+            <BottomNav />
+          </div>
+        </SalesProvider>
+      </SessionProvider>
+    </ProductsProvider>
   );
 }

@@ -6,12 +6,12 @@ import {
   Smartphone,
   DollarSign,
 } from "lucide-react";
-import { Payment } from "@/lib/types";
-import { PAYMENT_METHODS } from "@/lib/constants";
+import { Payment, PaymentMethod } from "@/lib/types";
 
 interface Props {
   payments: Payment[];
   onRemove: (id: string) => void;
+  paymentMethods: PaymentMethod[];
 }
 
 /**
@@ -31,16 +31,15 @@ const getMethodIcon = (id: string) => {
 };
 
 /**
- * Obtiene el nombre legible del método de pago.
- */
-const getMethodLabel = (id: string) => {
-  return PAYMENT_METHODS.find((p) => p.id === id)?.label || id;
-};
-
-/**
  * Lista animada de los pagos parciales agregados al pago mixto.
  */
-export function PaymentList({ payments, onRemove }: Props) {
+export function PaymentList({ payments, onRemove, paymentMethods }: Props) {
+  /**
+   * Obtiene el nombre legible del método de pago.
+   */
+  const getMethodLabel = (id: string) => {
+    return paymentMethods.find((p) => p.id === id)?.name || id;
+  };
   return (
     <section className="flex flex-col gap-3 min-h-[120px]">
       {/* Contador de pagos registrados */}

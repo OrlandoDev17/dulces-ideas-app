@@ -14,14 +14,13 @@ import { TotalToPay } from "./TotalToPay";
 import { DropdownButton } from "@/components/common/DropdownButton";
 import { Button } from "@/components/common/Button";
 import { DeliveryToggle } from "./DeliveryToggle";
-// Constants
-import { PAYMENT_METHODS } from "@/lib/constants";
 // Types
-import type { CartItem, Sale, Payment } from "@/lib/types";
+import type { CartItem, Sale, Payment, PaymentMethod } from "@/lib/types";
 
 interface Props {
   items: CartItem[];
   tasa: number;
+  paymentMethods: PaymentMethod[];
   onRemoveItem: (id: string) => void;
   onRegister: (sale: Sale) => void;
   setCart: (cart: CartItem[]) => void;
@@ -30,34 +29,63 @@ interface Props {
 export function ActiveSale({
   items,
   tasa,
+  paymentMethods,
   onRemoveItem,
   onRegister,
   setCart,
 }: Props) {
+  // Combinar métodos de la DB con la opción de Pago Mixto
+  const allPaymentOptions = useMemo(() => {
+    return [
+      ...paymentMethods,
+      { id: "mx", name: "Pago Mixto", currency: "VES" as const },
+    ];
+  }, [paymentMethods]);
+
   // Estados
   const [isOpenMetodo, setIsOpenMetodo] = useState(false);
-  const [metodoSelected, setMetodoSelected] = useState(PAYMENT_METHODS[0]);
   const [showMixedModal, setShowMixedModal] = useState(false);
   const [isDelivery, setIsDelivery] = useState(false);
   const [deliveryName, setDeliveryName] = useState("");
   const [deliveryAmount, setDeliveryAmount] = useState<number | "">("");
+
+  // Estado para la seleccion interna del usuario
+  const [metodoSelectedInternal, setMetodoSelected] = useState<
+    PaymentMethod | undefined
+  >(allPaymentOptions[0]);
+
+  // Derivamos el metodo seleccionado: si la seleccion es valida lo usamos, si no, volvemos al primero
+  const metodoSelected = useMemo(() => {
+    const isValid =
+      metodoSelectedInternal &&
+      allPaymentOptions.some((m) => m.id === metodoSelectedInternal.id);
+    return isValid
+      ? (metodoSelectedInternal as PaymentMethod)
+      : allPaymentOptions[0];
+  }, [metodoSelectedInternal, allPaymentOptions]);
+
+  // El efecto anterior se elimina para evitar renders en cascada
 
   // Funcion para registrar la venta
   const handleRegisterClick = () => {
     if (metodoSelected.id === "mx") {
       setShowMixedModal(true);
     } else {
-      onRegister({
+      const salePayload = {
         id: crypto.randomUUID(),
         items,
         totalUSD,
         totalBS,
+        tasa_bcv: tasa,
         metodo: metodoSelected.id,
         fecha: new Date().toISOString(),
         delivery: isDelivery,
         deliveryName: isDelivery ? deliveryName : undefined,
         deliveryAmount: isDelivery ? Number(deliveryAmount) || 0 : undefined,
-      });
+      };
+
+      console.log("🚀 Payload de Venta a Registrar:", salePayload);
+      onRegister(salePayload);
       resetStates();
     }
   };
@@ -74,18 +102,22 @@ export function ActiveSale({
   const confirmMixedPayment = (payments: Payment[]) => {
     console.log("Pagos registrados:", payments);
     setShowMixedModal(false);
-    onRegister({
+    const salePayload = {
       id: crypto.randomUUID(),
       items,
       totalUSD,
       totalBS,
+      tasa_bcv: tasa,
       metodo: metodoSelected.id,
       fecha: new Date().toISOString(),
       delivery: isDelivery,
       deliveryName: isDelivery ? deliveryName : undefined,
       deliveryAmount: isDelivery ? Number(deliveryAmount) || 0 : undefined,
       payments,
-    });
+    };
+
+    console.log("🚀 Payload de Venta Mixta a Registrar:", salePayload);
+    onRegister(salePayload);
     resetStates();
   };
 
@@ -180,17 +212,15 @@ export function ActiveSale({
             <div className={`relative ${isOpenMetodo ? "z-30" : "z-10"}`}>
               <DropdownButton isOpen={isOpenMetodo} setIsOpen={setIsOpenMetodo}>
                 <CreditCard size={18} className="text-primary-500" />
-                {metodoSelected.label}
+                {metodoSelected?.name || "Seleccionar pago…"}
               </DropdownButton>
 
               <OptionDropdown
                 isOpen={isOpenMetodo}
                 setIsOpen={setIsOpenMetodo}
-                options={PAYMENT_METHODS}
-                onSelect={(m: { id: string; label: string }) =>
-                  setMetodoSelected(m)
-                }
-                getLabel={(m: { id: string; label: string }) => m.label}
+                options={allPaymentOptions}
+                onSelect={(m: PaymentMethod) => setMetodoSelected(m)}
+                getLabel={(m: PaymentMethod) => m.name}
               />
             </div>
 
@@ -216,6 +246,7 @@ export function ActiveSale({
             totalBS + (isDelivery ? Number(deliveryAmount) || 0 : 0)
           }
           tasa={tasa}
+          paymentMethods={paymentMethods}
           onClose={() => setShowMixedModal(false)}
           onConfirm={confirmMixedPayment}
         />

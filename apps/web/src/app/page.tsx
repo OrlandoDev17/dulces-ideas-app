@@ -1,6 +1,11 @@
 "use client";
 
-//Hooks
+// Contexts
+import { useProducts } from "@/contexts/ProductsContext";
+import { useSalesContext } from "@/contexts/SalesContext";
+import { useSession } from "@/contexts/SessionContext";
+// Hooks
+import { usePaymentMethods } from "@/hooks/usePaymentMethods";
 import { useState, useEffect } from "react";
 import { useTasaBCV } from "@/hooks/useTasaBCV";
 // Services
@@ -12,33 +17,52 @@ import { ActiveSale } from "@/components/ventas/ActiveSale";
 import { FinancialSummary } from "@/components/ventas/recent-sales/FinancialSummary";
 import { AddCierreModal } from "@/components/ventas/recent-sales/AddCierreModal";
 import { RecentSales } from "@/components/ventas/RecentSales";
-// Constants
-import { PRODUCT_CATEGORIES } from "@/lib/constants";
+// Icons
+import { CakeSlice, Cake, CupSoda } from "lucide-react";
 // Types
 import type { CartItem, Cierre, Product, Sale } from "@/lib/types";
+import { LucideIcon } from "lucide-react";
 
 export default function VentasPage() {
   // Estado del carrito
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  // Rule 5.10: Usar inicialización perezosa para el estado de ventas
-  const [sales, setSales] = useState<Sale[]>([]);
+  // Contextos conectados al backend
+  const { currentSession } = useSession();
+  const { sales, fetchRecentSales, registerSale } = useSalesContext();
+
   const [cierres, setCierres] = useState<Cierre[]>([]);
 
-  // Característica: Efecto para cargar datos desde localStorage después del montaje (Evita errores de hidratación)
-  useEffect(() => {
-    const storedSales = localStorage.getItem("sales");
-    if (storedSales) setSales(JSON.parse(storedSales));
+  // Estado de productos y metodos de pago
+  const { categories, loading: loadingProducts, fetchProducts } = useProducts();
+  const { paymentMethods, fetchPaymentMethods } = usePaymentMethods();
 
-    const storedCierres = localStorage.getItem("cierres");
-    if (storedCierres) setCierres(JSON.parse(storedCierres));
-  }, []);
+  useEffect(() => {
+    fetchProducts();
+    fetchPaymentMethods();
+  }, [fetchProducts, fetchPaymentMethods]);
+
+  useEffect(() => {
+    if (currentSession?.id) {
+      fetchRecentSales(currentSession.id);
+    }
+  }, [currentSession, fetchRecentSales]);
 
   const [showCierreModal, setShowCierreModal] = useState(false);
 
   const { tasa } = useTasaBCV();
 
   const fechaHoy = formatVenezuelaDate(getVenezuelaTime());
+
+  // Mapeo de iconos para las categorías dinámicas
+  const getCategoryIcon = (label: string): LucideIcon => {
+    const icons: Record<string, LucideIcon> = {
+      "Postres / Porciones": CakeSlice,
+      "Tortas Completas": Cake,
+      Bebidas: CupSoda,
+    };
+    return icons[label] || CakeSlice;
+  };
 
   // Funcion para añadir productos al carrito
   const addToCart = (product: Product, quantity: number) => {
@@ -56,33 +80,31 @@ export default function VentasPage() {
     });
   };
 
-  // Funcion para registrar ventas
-  const registerSale = (sale: Sale) => {
-    setSales((prev) => {
-      const newSales = [...prev, sale];
-      localStorage.setItem("sales", JSON.stringify(newSales));
-      return newSales;
-    });
-  };
-
-  // Funcion para actualizar ventas
-  const updateSale = (updatedSale: Sale) => {
-    setSales((prev) => {
-      const newSales = prev.map((s) =>
-        s.id === updatedSale.id ? updatedSale : s,
+  // Funcion para registrar ventas (Conectado al backend)
+  const handleRegisterSale = async (sale: Sale) => {
+    if (!currentSession?.id) {
+      alert(
+        "⚠️ Debes abrir una caja (sesión) en el panel de Admin para registrar ventas.",
       );
-      localStorage.setItem("sales", JSON.stringify(newSales));
-      return newSales;
-    });
+      return;
+    }
+    const success = await registerSale(sale, currentSession.id);
+    if (!success) {
+      alert("❌ Error al registrar la venta. Por favor, intenta de nuevo.");
+    }
   };
 
-  // Funcion para eliminar ventas
+  // Funcion para actualizar ventas (Requiere endpoint en backend)
+  const updateSale = (updatedSale: Sale) => {
+    console.warn(
+      "Update sale not yet implemented in backend context",
+      updatedSale,
+    );
+  };
+
+  // Funcion para eliminar ventas (Requiere endpoint en backend)
   const deleteSale = (id: string) => {
-    setSales((prev) => {
-      const newSales = prev.filter((s) => s.id !== id);
-      localStorage.setItem("sales", JSON.stringify(newSales));
-      return newSales;
-    });
+    console.warn("Delete sale not yet implemented in backend context", id);
   };
 
   // Funcion para limpiar todo el historial de ventas y cierres
@@ -92,10 +114,11 @@ export default function VentasPage() {
         "¿Estás seguro de que deseas limpiar todo el historial de ventas y cierres?",
       )
     ) {
-      setSales([]);
       setCierres([]);
-      localStorage.removeItem("sales");
       localStorage.removeItem("cierres");
+      alert(
+        "Cierres limpiados localmente. El historial de ventas está en la base de datos.",
+      );
     }
   };
 
@@ -149,27 +172,34 @@ export default function VentasPage() {
           <BCVCard />
         </div>
 
-        {/* Lista de categorias de productos */}
+        {/* Lista de categorias de productos desglosada dinámicamente */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {PRODUCT_CATEGORIES.map((cat) => (
-            <div key={cat.id} className="col-span-1">
-              <ProductSelector
-                title={cat.title}
-                icon={cat.icon}
-                products={cat.products}
-                onAddToCart={addToCart}
-              />
+          {loadingProducts ? (
+            <div className="col-span-full flex justify-center py-10">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600"></div>
             </div>
-          ))}
+          ) : (
+            categories.map((cat) => (
+              <div key={cat.label} className="col-span-1">
+                <ProductSelector
+                  title={cat.label}
+                  icon={getCategoryIcon(cat.label)}
+                  products={cat.options}
+                  onAddToCart={addToCart}
+                />
+              </div>
+            ))
+          )}
         </div>
         {cart.length > 0 && (
           <ActiveSale
             items={cart}
             tasa={tasa || 0}
+            paymentMethods={paymentMethods}
             onRemoveItem={(id) =>
               setCart((prev) => prev.filter((item) => item.id !== id))
             }
-            onRegister={registerSale}
+            onRegister={handleRegisterSale}
             setCart={setCart}
           />
         )}

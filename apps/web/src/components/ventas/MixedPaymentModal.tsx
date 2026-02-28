@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle, CheckCircle2 } from "lucide-react";
-import type { Payment } from "@/lib/types";
+import type { Payment, PaymentMethod } from "@/lib/types";
 import { Button } from "../common/Button";
 import { useMixedPayment } from "@/hooks/useMixedPayment";
 import { PaymentSummary } from "./mixed-payment/PaymentSummary";
@@ -13,6 +13,7 @@ interface Props {
   onClose: () => void;
   totalToPayBs: number;
   tasa: number;
+  paymentMethods: PaymentMethod[];
   onConfirm: (payments: Payment[]) => void;
   isOpen?: boolean;
 }
@@ -24,6 +25,7 @@ export function MixedPaymentModal({
   onClose,
   totalToPayBs,
   tasa,
+  paymentMethods,
   onConfirm,
   isOpen = true,
 }: Props) {
@@ -42,7 +44,7 @@ export function MixedPaymentModal({
     addPayment,
     removePayment,
     confirm,
-  } = useMixedPayment(totalToPayBs, tasa, onConfirm);
+  } = useMixedPayment(totalToPayBs, tasa, paymentMethods, onConfirm);
 
   return (
     <Modal
@@ -94,7 +96,11 @@ export function MixedPaymentModal({
         )}
 
         {/* Listado de pagos ya agregados */}
-        <PaymentList payments={payments} onRemove={removePayment} />
+        <PaymentList
+          payments={payments}
+          onRemove={removePayment}
+          paymentMethods={paymentMethods}
+        />
       </div>
     </Modal>
   );
