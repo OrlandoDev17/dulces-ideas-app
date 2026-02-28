@@ -5,6 +5,11 @@
       "source": "patricio0312rev/skills",
       "sourceType": "github",
       "computedHash": "38131740c309bbcd98e1b3e5e600aff0883d81e2c44efc0956db78e31dc98762"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "516bd2154eb843a8240e43d5b285229129853114ad7075a5e141e1c08e408c84"
     }
   }
 }

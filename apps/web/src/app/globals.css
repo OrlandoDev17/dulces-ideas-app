@@ -21,3 +21,22 @@ body {
 .grid-cols-recent-sales {
   @apply grid-cols-[1.5fr_2.5fr_2fr_2fr_1fr_1fr];
 }
+
+/* Custom Scrollbar */
+.pretty-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pretty-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.pretty-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-primary-200 rounded-full transition-colors hover:bg-primary-300;
+}
+
+/* Firefox support */
+.pretty-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d1c6b7 transparent;
+}

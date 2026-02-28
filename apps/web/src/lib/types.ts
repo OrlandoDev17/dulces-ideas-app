@@ -81,3 +81,8 @@ export interface Cierre {
   monto: number;
   fecha: string;
 }
+
+export interface Session {
+  id: string;
+  name: string;
+}

@@ -1,7 +1,7 @@
-import { motion, AnimatePresence } from "motion/react";
-import { X, CheckCircle2, Calculator } from "lucide-react";
+import { CheckCircle2, Calculator } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../../common/Button";
+import { Modal } from "../../common/Modal";
 
 interface Props {
   isOpen: boolean;
@@ -22,8 +22,8 @@ export function AddCierreModal({ isOpen, onClose, onConfirm }: Props) {
     onClose();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (monto && Number(monto) > 0) {
       onConfirm(Number(monto));
       handleClose();
@@ -31,104 +31,64 @@ export function AddCierreModal({ isOpen, onClose, onConfirm }: Props) {
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Agregar Cierre"
+      description="Registra el ingreso de caja de hoy"
+      icon={Calculator}
+      footer={
         <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={handleClose}
-            className="fixed inset-0 z-900 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-          />
-
-          {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full md:max-w-md bg-white rounded-[2.5rem] shadow-2xl z-901 overflow-hidden border border-zinc-100"
+          <Button
+            style="primary"
+            type="submit"
+            form="add-cierre-form"
+            disabled={!monto || Number(monto) <= 0}
+            className="w-full py-4 rounded-2xl shadow-xl shadow-primary-500/20"
           >
-            {/* Header */}
-            <div className="bg-primary-600 p-4 md:p-8 text-white relative overflow-hidden">
-              <div className="absolute right-[-20px] top-[-20px] opacity-10 rotate-12">
-                <Calculator size={120} />
-              </div>
-
-              <div className="flex justify-between items-start relative z-10">
-                <div className="flex flex-col gap-1">
-                  <h3 className="text-lg md:text-2xl font-black">
-                    Agregar Cierre
-                  </h3>
-                  <p className="text-white/70 text-xs md:text-sm font-medium">
-                    Registra el ingreso de caja de hoy
-                  </p>
-                </div>
-                <button
-                  onClick={handleClose}
-                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-            </div>
-
-            {/* Content */}
-            <form
-              onSubmit={handleSubmit}
-              className="p-2 md:p-8 flex flex-col gap-2 md:gap-6"
-            >
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-black uppercase tracking-widest text-zinc-400 ml-1">
-                  Monto del Cierre (Bs.)
-                </label>
-                <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-500 font-bold">
-                    Bs.
-                  </div>
-                  <input
-                    autoFocus
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={monto}
-                    onChange={(e) => {
-                      const val =
-                        e.target.value === "" ? "" : Number(e.target.value);
-                      setMonto(
-                        typeof val === "number"
-                          ? Math.round(val * 100) / 100
-                          : "",
-                      );
-                    }}
-                    className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl pl-12 pr-4 py-4 text-lg font-black text-zinc-800 focus:border-primary-500 focus:bg-white transition-all outline-none font-mono"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3 mt-4">
-                <Button
-                  style="primary"
-                  type="submit"
-                  disabled={!monto || Number(monto) <= 0}
-                  className="w-full py-4 rounded-2xl shadow-xl shadow-primary-500/20"
-                >
-                  <CheckCircle2 size={20} className="mr-2" />
-                  Registrar Cierre
-                </Button>
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  className="w-full py-4 text-zinc-400 font-black uppercase tracking-widest text-xs hover:text-zinc-600 transition-colors"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          </motion.div>
+            <CheckCircle2 size={20} className="mr-2" />
+            Registrar Cierre
+          </Button>
+          <button
+            type="button"
+            onClick={handleClose}
+            className="w-full py-4 text-zinc-400 font-black uppercase tracking-widest text-xs hover:text-zinc-600 transition-colors"
+          >
+            Cancelar
+          </button>
         </>
-      )}
-    </AnimatePresence>
+      }
+    >
+      <form
+        id="add-cierre-form"
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-6"
+      >
+        <div className="flex flex-col gap-2">
+          <label className="text-xs font-black uppercase tracking-widest text-zinc-400 ml-1">
+            Monto del Cierre (Bs.)
+          </label>
+          <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-500 font-bold">
+              Bs.
+            </div>
+            <input
+              autoFocus
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              value={monto}
+              onChange={(e) => {
+                const val = e.target.value === "" ? "" : Number(e.target.value);
+                setMonto(
+                  typeof val === "number" ? Math.round(val * 100) / 100 : "",
+                );
+              }}
+              className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl pl-12 pr-4 py-4 text-lg font-black text-zinc-800 focus:border-primary-500 focus:bg-white transition-all outline-none font-mono"
+            />
+          </div>
+        </div>
+      </form>
+    </Modal>
   );
 }
