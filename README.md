@@ -1,56 +1,36 @@
-# Dulces Ideas - Sistema de Gestión 🍩
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-Bienvenido al repositorio principal de **Dulces Ideas**, una aplicación integral diseñada para la gestión de ventas, inventario y cajas de la tienda de dulces.
+## Getting Started
 
-Este proyecto está dividido en dos partes principales (monorepo):
+First, run the development server:
 
-1. **El Servidor (Backend / API)**: Donde se guarda y procesa toda la información (Base de datos).
-2. **La Vista (Frontend / Web)**: La aplicación que usas en tu navegador para interactuar con los datos.
-
----
-
-## 🏗️ Estructura del Proyecto
-
-```text
-dulces-ideas-app/
-├── apps/
-│   ├── api/       # Código del servidor (Backend con Node.js, Express y Prisma)
-│   └── web/       # Código de la interfaz de usuario (Frontend con React y Vite)
-└── package.json   # Configuraciones globales del monorepo
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
----
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## 🛠️ Tecnologías Principales
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-- **Base de Datos:** PostgreSQL (Neon)
-- **Backend:** Node.js, Express, Prisma ORM
-- **Frontend:** Next.js, TypeScript, TailwindCSS
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
----
+## Learn More
 
-## 📖 Documentación Específica
+To learn more about Next.js, take a look at the following resources:
 
-Para conocer más detalles sobre cada parte del sistema, puedes consultar las siguientes guías:
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-### 🖥️ Para el FrontEnd (La Interfaz Visual)
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-_Ubicado en la carpeta `apps/web/`_
+## Deploy on Vercel
 
-- [Manual de Usuario (Para personas no técnicas)](./apps/web/MANUAL_USO.md): Cómo usar el sistema en el día a día.
-- [Guía para Desarrolladores](./apps/web/README.md): Cómo instalar, ejecutar y modificar el código de la vista.
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-### ⚙️ Para el BackEnd (El Motor de Datos)
-
-_Ubicado en la carpeta `apps/api/`_
-
-- [Guía Básica del Servidor (Para personas no técnicas)](./apps/api/MANUAL_USO.md): Qué hace el servidor y por qué es importante.
-- [Guía para Desarrolladores](./apps/api/README.md): Cómo configurar la base de datos, Prisma y crear nuevas rutas en el servidor.
-
----
-
-## 🚀 Cómo ejecutar todo el proyecto a la vez (Para Desarrolladores)
-
-Si deseas correr tanto el Frontend como el Backend instalados, deberás tener configurado y corriendo los respectivos servicios u usar herramientas de ejecución paralela (ej. `npm run dev` en la raíz si fue configurado de esa manera, o abrir dos consolas).
-
-Para instrucciones paso a paso, refiérase a las guías de desarrolladores de cada carpeta (`apps/api/README.md` y `apps/web/README.md`).
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
