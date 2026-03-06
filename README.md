@@ -23,7 +23,6 @@ El proyecto está construido sobre React y Next.js, utilizando un enfoque fuerte
 ### Backend y Servicios Externos
 
 - **BaaS / Base de Datos:** Supabase (`@supabase/supabase-js`) para autenticación, base de datos en tiempo real y almacenamiento.
-- **Automatización de Agentes:** Integración con flujos y agentes de **n8n** a través de hooks personalizados (`useN8n`), permitiendo acciones automatizadas e interfaces interactivas basadas en IA (ej., actualización de datos en tiempo real por el agente).
 
 ### Utilidades
 
@@ -83,9 +82,15 @@ Se implementó un set de componentes de interacción robustos basados en **Frame
 
 - **ArchiveDayModal:** Proporciona un resumen ejecutivo del cierre del día con micro-gráficas animadas de distribución por método de pago.
 - **ConfirmDeleteModal:** Un sistema estandarizado para acciones destructivas que reemplaza los diálogos nativos del navegador por una interfaz coherente y segura.
-- **SuccessModal:** Un modal de retroalimentación positiva con cierre automático (barra de progreso de 2s), optimizado para confirmar la persistencia de datos en Supabase.
+- **SuccessModal:** Un modal de retroalimentación positiva con cierre automático (barra de progreso de 2s), optimizado para confirmar la persistencia de datos en Supabase. Su activación es ahora instantánea (Optimistic Feedback) para mejorar la percepción de velocidad.
 
-### 6. Event-Driven AI Actions (n8n Integration)
+### 6. Compatibilidad y Resiliencia (Mobile-Ready)
+
+- **Generación de IDs Robustos (`generateId`):** Se implementó una utilidad personalizada que prioriza `crypto.randomUUID()` pero incluye un fallback basado en `Math.random()` y timestamps para asegurar compatibilidad total en dispositivos móviles antiguos o entornos sin HTTPS.
+- **RecentSaleCard Semántica:** La visualización de ventas ha sido reconstruida usando etiquetas HTML5 semánticas (`article`, `time`, `header`, `footer`) y `aria-labels` para máxima accesibilidad y SEO.
+- **Diseño Ultra-Compacto:** Interfaz optimizada para pantallas pequeñas, eliminando desplazamientos laterales y maximizando la densidad de información mediante rejillas adaptables.
+
+### 7. Event-Driven AI Actions (n8n Integration)
 
 La aplicación puede suscribirse a respuestas provenientes de un webhook/agente en n8n. Mediante eventos despachados al `window` o integraciones en los hooks, las acciones exitosas de IA (ej., actualización procesada por un LLM) gatillan la invalidación de la caché de React Query (`refresh_worklyst_data`), provocando que la UI se renderice con datos frescos automáticamente.
 
