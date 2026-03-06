@@ -69,7 +69,23 @@ Un flujo robusto que permite concretar una única transacción combinando múlti
 
 Se hace un fuerte énfasis en la experiencia del usuario intermitente implementando `idb-keyval`. Las ventas pendientes y las sesiones del usuario se mantienen vivas en IndexedDB, asegurando cero pérdida de estados críticos ante un reload de ventana.
 
-### 4. Event-Driven AI Actions (n8n Integration)
+### 4. Gestión Avanzada de Delivery
+
+El sistema ha sido mejorado para un rastreo preciso de entregas a domicilio, tratándolas como una entidad financiera separada:
+
+- **Contabilidad Independiente:** Los montos de delivery se descuentan automáticamente de los ingresos brutos en el panel financiero (`FinancialSummary`), gestionándolos como "Cuentas por Pagar".
+- **Visualización Premium:** Diseño de indicadores visuales con iconos dinámicos y estados de entrega claros, agrupados por repartidor.
+- **Sincronización PDF:** El servicio de exportación (`pdfService`) mantiene esta misma lógica, separando los ingresos operativos de las deudas por servicio de entrega.
+
+### 5. Sistema de Interacción Visual (Modales Premium)
+
+Se implementó un set de componentes de interacción robustos basados en **Framer Motion**:
+
+- **ArchiveDayModal:** Proporciona un resumen ejecutivo del cierre del día con micro-gráficas animadas de distribución por método de pago.
+- **ConfirmDeleteModal:** Un sistema estandarizado para acciones destructivas que reemplaza los diálogos nativos del navegador por una interfaz coherente y segura.
+- **SuccessModal:** Un modal de retroalimentación positiva con cierre automático (barra de progreso de 2s), optimizado para confirmar la persistencia de datos en Supabase.
+
+### 6. Event-Driven AI Actions (n8n Integration)
 
 La aplicación puede suscribirse a respuestas provenientes de un webhook/agente en n8n. Mediante eventos despachados al `window` o integraciones en los hooks, las acciones exitosas de IA (ej., actualización procesada por un LLM) gatillan la invalidación de la caché de React Query (`refresh_worklyst_data`), provocando que la UI se renderice con datos frescos automáticamente.
 

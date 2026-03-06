@@ -1,7 +1,7 @@
 "use client";
 
 // Hooks
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTasaBCV } from "@/hooks/useTasaBCV";
 import { usePosData } from "@/hooks/usePosData";
 import { useSales } from "@/hooks/useSales";
@@ -17,6 +17,9 @@ import {
 import { ActiveSale } from "@/components/ventas/active-sale/ActiveSale";
 import { FinancialSummary } from "@/components/ventas/recent-sales/FinancialSummary";
 import { AddCierreModal } from "@/components/ventas/recent-sales/AddCierreModal";
+import { ArchiveDayModal } from "@/components/ventas/recent-sales/ArchiveDayModal";
+import { ConfirmDeleteModal } from "@/components/common/ConfirmDeleteModal";
+import { SuccessModal } from "@/components/common/SuccessModal";
 import { RecentSales } from "@/components/ventas/RecentSales";
 // Icons
 import { CakeSlice, Cake, CupSoda } from "lucide-react";
@@ -25,13 +28,19 @@ import { motion } from "motion/react";
 // Animations
 import { fadeUp, staggerContainer, slideInLeft } from "@/lib/animations";
 // Types
-import type { CartItem, Cierre, Product, Sale } from "@/lib/types";
+import { CartItem, Cierre, Product, Sale } from "@/lib/types";
+import { generateId } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
 
 export default function VentasPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cierres, setCierres] = useState<Cierre[]>([]);
   const [showCierreModal, setShowCierreModal] = useState(false);
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showClearAllModal, setShowClearAllModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   // Hook de sesión y ventas sincronizado
   const { currentSessionId } = useSession();
@@ -83,24 +92,21 @@ export default function VentasPage() {
       return;
     }
 
+    // Feedback inmediato (Optimístico)
+    setCart([]);
+    setShowSuccessModal(true);
+
     // Estructuramos el payload para el hook createSale
-    createSale.mutate(
-      {
-        total_bs: saleData.totalBs || 0,
-        total_usd: saleData.totalUsd || 0,
-        tasa_bcv: tasa || 0,
-        items: cart,
-        payments: saleData.payments || [],
-        delivery: saleData.delivery,
-        delivery_name: saleData.delivery_name,
-        delivery_amount: saleData.delivery_amount,
-      },
-      {
-        onSuccess: () => {
-          setCart([]);
-        },
-      },
-    );
+    createSale.mutate({
+      total_bs: saleData.totalBs || 0,
+      total_usd: saleData.totalUsd || 0,
+      tasa_bcv: tasa || 0,
+      items: cart,
+      payments: saleData.payments || [],
+      delivery: saleData.delivery,
+      delivery_name: saleData.delivery_name,
+      delivery_amount: saleData.delivery_amount,
+    });
   };
 
   // 2. Actualizar Venta
@@ -111,35 +117,64 @@ export default function VentasPage() {
 
   // 3. Eliminar Venta
   const handleDeleteSale = (id: string) => {
-    if (confirm("¿Estás seguro de eliminar esta venta permanentemente?")) {
-      deleteSale.mutate(id);
+    setPendingDeleteId(id);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteSale = () => {
+    if (pendingDeleteId) {
+      deleteSale.mutate(pendingDeleteId, {
+        onSuccess: () => {
+          setShowDeleteModal(false);
+          setPendingDeleteId(null);
+        },
+      });
     }
   };
 
   // 4. Limpiar Todo (Borrado físico de la sesión actual)
   const handleClearAllRecent = () => {
-    if (
-      confirm(
-        "⚠️ ¡ATENCIÓN! Esto eliminará permanentemente todas las ventas de esta sesión SIN guardarlas en el historial. ¿Continuar?",
-      )
-    ) {
-      deleteAllRecent.mutate();
-    }
+    setShowClearAllModal(true);
+  };
+
+  const confirmClearAll = () => {
+    deleteAllRecent.mutate(undefined, {
+      onSuccess: () => {
+        setShowClearAllModal(false);
+      },
+    });
   };
 
   // 5. Archivar Día (Historial / Cierre de turno)
   const handleArchiveDay = () => {
-    if (
-      confirm("¿Deseas cerrar el turno? Las ventas se moverán al historial.")
-    ) {
-      archiveSales.mutate();
-    }
+    setShowArchiveModal(true);
   };
+
+  const confirmArchiveDay = () => {
+    archiveSales.mutate(undefined, {
+      onSuccess: () => {
+        setShowArchiveModal(false);
+      },
+    });
+  };
+
+  const cierreResumen = useMemo(() => {
+    if (!recentSales) return { totalBs: 0, totalUsd: 0, count: 0 };
+
+    return recentSales.reduce(
+      (acc, sale) => ({
+        totalBs: acc.totalBs + sale.total_bs,
+        totalUsd: acc.totalUsd + sale.total_usd,
+        count: acc.count + 1,
+      }),
+      { totalBs: 0, totalUsd: 0, count: 0 },
+    );
+  }, [recentSales]);
 
   // --- GESTIÓN DE CIERRES (Temporalmente Local) ---
   const addCierre = (monto: number) => {
     const nuevoCierre: Cierre = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       monto,
       fecha: new Date().toISOString(),
     };
@@ -248,6 +283,43 @@ export default function VentasPage() {
         isOpen={showCierreModal}
         onClose={() => setShowCierreModal(false)}
         onConfirm={addCierre}
+      />
+
+      <ArchiveDayModal
+        isOpen={showArchiveModal}
+        onClose={() => setShowArchiveModal(false)}
+        onConfirm={confirmArchiveDay}
+        summary={cierreResumen}
+        sales={recentSales || []}
+        isPending={archiveSales.isPending}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setPendingDeleteId(null);
+        }}
+        onConfirm={confirmDeleteSale}
+        title="¿Eliminar Venta?"
+        message="Esta acción es permanente y no se podrá recuperar la información de esta venta."
+        isPending={deleteSale.isPending}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={showClearAllModal}
+        onClose={() => setShowClearAllModal(false)}
+        onConfirm={confirmClearAll}
+        title="¿Limpiar Todo?"
+        message="⚠️ ¡ATENCIÓN! Esto eliminará permanentemente TODAS las ventas de esta sesión sin guardarlas en el historial."
+        isPending={deleteAllRecent.isPending}
+      />
+
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title="¡Venta Exitosa!"
+        message="La venta se ha registrado correctamente en la base de datos."
       />
     </motion.div>
   );

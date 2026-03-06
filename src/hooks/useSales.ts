@@ -160,10 +160,14 @@ export function useSales(sessionId: string | null) {
         .eq("is_archived", false);
       if (error) throw error;
     },
-    onSuccess: () =>
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["sales", "recent", sessionId],
-      }),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["sales", "archived", sessionId],
+      });
+    },
   });
 
   return {

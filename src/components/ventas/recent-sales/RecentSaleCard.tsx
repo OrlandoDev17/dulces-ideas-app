@@ -32,12 +32,6 @@ export function RecentSaleCard({
     return Math.round(value * 100) / 100;
   };
 
-  const getMethodLabel = (id: string) => {
-    const method = paymentMethods?.find((m) => m.id === id);
-    if (!method) return id;
-    return `${method.currency} - ${method.name}`;
-  };
-
   // Funcion para buscar el nombre del producto
   const getProductName = (id: string | number) => {
     if (!productCategories) return "Cargando...";
@@ -57,148 +51,167 @@ export function RecentSaleCard({
   const payments: Payment[] = sale.sale_payments || [];
 
   return (
-    <div className="flex flex-col gap-4 px-4 py-4 bg-white rounded-2xl border border-zinc-100 shadow-sm active:bg-zinc-50 transition-colors">
+    <article className="group flex flex-col gap-3.5 p-2 bg-white rounded-3xl border border-zinc-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
       {/* 1. Cabecera: Hora y Acciones */}
-      <div className="flex items-center justify-between border-b border-zinc-50 pb-2">
-        <div className="flex items-center gap-2 text-zinc-600 font-bold text-xs tabular-nums">
-          <div className="p-1.5 bg-zinc-100 rounded-lg text-zinc-400">
-            <Clock size={14} aria-hidden="true" />
-          </div>
-          <span suppressHydrationWarning>
+      <header className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5 bg-zinc-50 px-2 py-1.5 rounded-xl border border-zinc-100/50 shrink-0">
+          <Clock size={11} className="text-zinc-400" aria-hidden="true" />
+          <time
+            className="text-[10px] font-black text-zinc-600 tabular-nums uppercase tracking-tight"
+            suppressHydrationWarning
+          >
             {new Date(sale.created_at || sale.fecha || "").toLocaleTimeString(
               "es-VE",
               {
                 hour: "2-digit",
                 minute: "2-digit",
+                hour12: true,
               },
             )}
-          </span>
+          </time>
         </div>
 
-        <div className="flex gap-1">
+        <nav className="flex gap-1 shrink-0" aria-label="Acciones de venta">
           <button
             onClick={onStartEdit}
-            className="p-1.5 text-zinc-400 hover:text-primary-500 hover:bg-primary-500/5 rounded-lg active:scale-90"
-            aria-label="Editar"
+            className="p-1.5 text-zinc-400 hover:text-primary-500 hover:bg-primary-50 rounded-lg transition-all active:scale-90"
+            aria-label="Editar venta"
           >
-            <Pencil size={18} aria-hidden="true" />
+            <Pencil size={16} aria-hidden="true" />
           </button>
           <button
             onClick={onDelete}
-            className="p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-lg active:scale-90"
-            aria-label="Eliminar"
+            className="p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all active:scale-90"
+            aria-label="Eliminar venta"
           >
-            <Trash2 size={18} aria-hidden="true" />
+            <Trash2 size={16} aria-hidden="true" />
           </button>
-        </div>
-      </div>
+        </nav>
+      </header>
 
-      {/* 2. Lista de Productos (sale_items) */}
-      <div className="flex flex-wrap gap-1.5">
+      {/* 2. Lista de Productos */}
+      <ul
+        className="flex flex-wrap gap-1.5"
+        aria-label="Productos en esta venta"
+      >
         {items.map((item: CartItem, i: number) => (
-          <span
+          <li
             key={`${sale.id}-item-${i}`}
-            className="inline-flex items-center px-2 py-0.5 rounded-lg bg-zinc-100 text-zinc-700 text-[10px] font-bold border border-zinc-200/50"
+            className="inline-flex items-center px-2 py-0.5 rounded-lg bg-zinc-50/80 text-zinc-700 text-[10px] font-bold border border-zinc-100/50 shadow-sm"
           >
-            <span className="text-primary-500 mr-1">{item.quantity}x</span>{" "}
-            {getProductName(item.product_id || item.id)}
-          </span>
+            <span className="text-primary-500 mr-1 font-black">
+              {item.quantity}x
+            </span>
+            <span className="truncate max-w-[100px]">
+              {getProductName(item.product_id || item.id)}
+            </span>
+          </li>
         ))}
-      </div>
+      </ul>
 
-      {/* 3. Totales y Desglose de Pagos (sale_payments) */}
-      <div className="grid grid-cols-2 gap-4 pt-2 border-t border-zinc-50">
-        <div className="flex flex-col">
-          <span className="text-[10px] font-black uppercase text-zinc-400 mb-1">
-            Total Venta
-          </span>
-          <span className="text-primary-500 font-black text-sm tracking-tight tabular-nums">
-            Bs.{" "}
-            {roundTo2Decimals(
-              (sale.total_bs || sale.totalBs || 0) -
-                (sale.delivery ? sale.delivery_amount || 0 : 0),
-            )}
-          </span>
-          <span className="text-zinc-400 font-bold text-[10px] tracking-tighter tabular-nums">
-            $
-            {(
-              (sale.total_usd || sale.totalUsd || 0) -
-              (sale.delivery
-                ? (sale.delivery_amount || 0) / (sale.tasa_bcv || 1)
-                : 0)
-            ).toFixed(2)}{" "}
-            USD
-          </span>
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <span className="text-[10px] font-black uppercase text-zinc-400 mb-0.5">
-            Métodos de Pago
-          </span>
-          <div className="flex flex-wrap gap-1.5">
-            {payments.length > 0 ? (
-              payments.map((p: Payment, pIndex: number) => (
-                <div
-                  key={`${sale.id}-pay-${pIndex}`}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary-50 border-[1.5px] border-primary-200 rounded-full shadow-sm hover:scale-[1.02] transition-transform"
-                >
-                  <CreditCard
-                    size={11}
-                    className="text-primary-800"
-                    strokeWidth={2.5}
-                    aria-hidden="true"
-                  />
-                  <span className="font-black text-primary-900 text-[10px] uppercase tracking-wide mt-0.5">
-                    {getMethodLabel(p.method_id || p.methodId)}
-                  </span>
-                  <span className="font-extrabold text-primary-800/70 text-[9px] bg-white/50 px-1 py-0.5 rounded-full ml-1 tabular-nums mt-0.5">
-                    {p.currency === "USD"
-                      ? `$${Number(p.amountRef || p.amount_ref).toFixed(2)}`
-                      : `${Number(p.amountBs || p.amount_bs).toFixed(2)}`}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <span className="text-[10px] text-zinc-300 italic">
-                Sin pagos
+      {/* 3. Totales y Pagos */}
+      <section className="flex flex-col gap-3 pt-3 border-t border-zinc-50 border-dashed">
+        <div className="flex flex-col xs:flex-row justify-between items-start gap-3">
+          {/* Col Izquierda: Total */}
+          <div className="flex flex-col bg-primary-50/50 px-3 py-2 rounded-xl border border-primary-100/50 w-full xs:w-auto min-w-[100px]">
+            <h3 className="text-[8px] font-black uppercase text-primary-400 tracking-widest mb-0.5">
+              Neto Venta
+            </h3>
+            <div className="flex flex-col">
+              <span className="text-base font-black text-primary-600 leading-tight tabular-nums">
+                Bs.{" "}
+                {roundTo2Decimals(
+                  (sale.total_bs || sale.totalBs || 0) -
+                    (sale.delivery ? sale.delivery_amount || 0 : 0),
+                ).toLocaleString("es-VE", { minimumFractionDigits: 2 })}
               </span>
-            )}
+              <span className="text-[9px] font-bold text-primary-400/80 tabular-nums leading-none">
+                $
+                {(
+                  (sale.total_usd || sale.totalUsd || 0) -
+                  (sale.delivery
+                    ? (sale.delivery_amount || 0) / (sale.tasa_bcv || 1)
+                    : 0)
+                ).toFixed(2)}{" "}
+                USD
+              </span>
+            </div>
+          </div>
+
+          {/* Col Derecha: Pagos */}
+          <div className="w-full flex-1 flex flex-col gap-1.5 min-w-0">
+            <h3 className="text-[8px] font-black uppercase text-zinc-400 tracking-widest px-0.5">
+              Pagos
+            </h3>
+            <ul className="flex flex-col gap-1">
+              {payments.length > 0 ? (
+                payments.map((p: Payment, pIndex: number) => {
+                  const method = paymentMethods?.find(
+                    (m) => m.id === (p.method_id || p.methodId),
+                  );
+                  return (
+                    <li
+                      key={`${sale.id}-pay-${pIndex}`}
+                      className="flex items-center justify-between gap-2 px-2 py-1.5 bg-zinc-50/30 border border-zinc-100/50 rounded-xl group/pay"
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <CreditCard
+                          size={10}
+                          className="text-zinc-300 group-hover/pay:text-primary-500 shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span className="text-[10px] font-black text-zinc-700 uppercase truncate">
+                          {method?.name || p.method_id || p.methodId}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-black text-zinc-800 tabular-nums shrink-0">
+                        {p.currency === "USD" ? "$" : "Bs. "}
+                        {Number(
+                          p.currency === "USD"
+                            ? p.amountRef || p.amount_ref
+                            : p.amountBs || p.amount_bs,
+                        ).toLocaleString("es-VE", {
+                          minimumFractionDigits: p.currency === "USD" ? 2 : 1,
+                        })}
+                      </span>
+                    </li>
+                  );
+                })
+              ) : (
+                <li className="text-[9px] text-zinc-300 italic">Sin pagos</li>
+              )}
+            </ul>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* 4. Sección de Delivery - Nuevo Diseño Premium */}
-      <div className="flex flex-col gap-2 pt-3 border-t border-zinc-50 border-dashed">
-        <header className="flex justify-between items-center px-1">
-          <span className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">
-            Detalles de Entrega
-          </span>
-          {!sale.delivery && (
-            <span className="text-[10px] font-bold text-zinc-300">N/A</span>
-          )}
-        </header>
-
+      {/* 4. Sección de Delivery */}
+      <footer className="flex flex-col gap-2 pt-2 border-t border-zinc-50 border-dashed">
         {sale.delivery && (
-          <div className="flex items-center gap-4 bg-green-50/50 p-3 rounded-2xl border border-green-100/50 group/delivery transition-all hover:bg-green-50">
-            {/* Círculo con Icono */}
-            <div className="size-12 rounded-2xl bg-white flex items-center justify-center shadow-sm border border-green-100 group-hover/delivery:scale-105 transition-transform">
-              <div className="size-9 rounded-xl bg-green-400/10 flex items-center justify-center text-green-600">
-                <MapPin size={22} strokeWidth={2.5} />
-              </div>
+          <div className="flex items-center gap-2.5 bg-green-50/30 p-2 rounded-xl border border-green-100/30">
+            <div className="size-8 rounded-lg bg-white flex items-center justify-center shadow-sm border border-green-50 shrink-0">
+              <MapPin
+                size={14}
+                className="text-green-500"
+                strokeWidth={3}
+                aria-hidden="true"
+              />
             </div>
 
-            {/* Información de la Entrega */}
-            <div className="flex flex-col gap-0.5">
-              <span className="text-sm font-black text-zinc-800 tracking-tight">
-                {sale.delivery_name || "Sin Nombre"}
+            <div className="flex flex-col min-w-0">
+              <span className="text-[10px] font-black text-zinc-800 truncate leading-none mb-0.5">
+                {sale.delivery_name || "Delivery"}
               </span>
-              <span className="text-xs font-black text-green-600 tabular-nums">
-                +Bs. {Number(sale.delivery_amount || 0).toFixed(2)}
+              <span className="text-[10px] font-bold text-green-600 tabular-nums leading-none">
+                +Bs.{" "}
+                {Number(sale.delivery_amount || 0).toLocaleString("es-VE", {
+                  minimumFractionDigits: 2,
+                })}
               </span>
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </footer>
+    </article>
   );
 }

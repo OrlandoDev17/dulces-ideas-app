@@ -17,6 +17,7 @@ import { Button } from "@/components/common/Button";
 import { DeliveryToggle } from "./DeliveryToggle";
 // Types
 import type { CartItem, Sale, Payment, PaymentMethod } from "@/lib/types";
+import { generateId } from "@/lib/utils";
 
 interface Props {
   items: CartItem[];
@@ -71,7 +72,7 @@ export function ActiveSale({
     } else {
       // Creamos el array de un solo pago con la estructura que espera el hook
       const singlePayment: Payment = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         methodId: metodoSelected.id,
         amountBs: totalAmountBs,
         amountRef: totalAmountUsd,
@@ -79,7 +80,7 @@ export function ActiveSale({
       };
 
       const salePayload: any = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         sale_items: items.map((item) => ({
           product_id: item.id,
           quantity: item.quantity,
@@ -109,7 +110,7 @@ export function ActiveSale({
       totalUSD + (isDelivery ? (Number(deliveryAmount) || 0) / tasa : 0);
 
     const salePayload: Sale = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       items: [...items],
       totalBs: totalAmountBs,
       totalUsd: totalAmountUsd,

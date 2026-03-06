@@ -1,4 +1,5 @@
 import { Order, OrderPayment, Sale } from "@/lib/types";
+import { generateId } from "@/lib/utils";
 
 const ORDERS_KEY = "orders";
 const SALES_KEY = "sales";
@@ -100,10 +101,10 @@ export const ordersService = {
     if (typeof window === "undefined") return;
 
     const sale: Sale = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       items: [
         {
-          id: crypto.randomUUID(),
+          id: generateId(),
           name: `${concept}: ${order.productoNombre} (${order.clienteNombre})`,
           price: order.totalUSD,
           quantity: 1,

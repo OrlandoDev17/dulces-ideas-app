@@ -46,20 +46,53 @@ export const exportSalesToPDF = (sales: Sale[], cierres: Cierre[] = []) => {
   let deliveryTotal = 0;
 
   sales.forEach((sale) => {
-    if (sale.payments && sale.payments.length > 0) {
-      sale.payments.forEach((p) => {
-        if (p.method === "pm") pmBs += p.amountBs;
-        if (p.method === "pv") pvBs += p.amountBs;
-        if (p.method === "bs") efBs += p.amountBs;
-        if (p.method === "usd") usdTotal += p.amountRef;
+    const payments = sale.sale_payments || [];
+    const totalBs = sale.total_bs || sale.totalBs || 0;
+    const totalUsd = sale.total_usd || sale.totalUsd || 0;
+    const deliveryAmt = sale.delivery_amount || sale.deliveryAmount || 0;
+    const tasa = sale.tasa_bcv || 1;
+
+    // Ingresos (Descontando Delivery si aplica)
+    if (payments.length > 0) {
+      const totalPaidInBs = payments.reduce(
+        (acc, p) => acc + (p.amount_bs || p.amountBs || 0),
+        0,
+      );
+
+      payments.forEach((p) => {
+        const mId = p.method_id || p.methodId;
+        const amtBs = p.amount_bs || p.amountBs || 0;
+        const amtRef = p.amount_ref || p.amountRef || 0;
+
+        let finalAmtBs = amtBs;
+        let finalAmtRef = amtRef;
+
+        if (deliveryAmt > 0 && totalPaidInBs > 0) {
+          const factor = amtBs / totalPaidInBs;
+          const discountBs = deliveryAmt * factor;
+          finalAmtBs = Math.max(0, amtBs - discountBs);
+          finalAmtRef = Math.max(0, amtRef - discountBs / tasa);
+        }
+
+        if (mId === "pm") pmBs += finalAmtBs;
+        if (mId === "punto") pvBs += finalAmtBs;
+        if (mId === "ves") efBs += finalAmtBs;
+        if (mId === "usd") usdTotal += finalAmtRef;
       });
     } else {
-      if (sale.metodo === "pm") pmBs += sale.totalBS;
-      if (sale.metodo === "pv") pvBs += sale.totalBS;
-      if (sale.metodo === "bs") efBs += sale.totalBS;
-      if (sale.metodo === "usd") usdTotal += sale.totalUSD;
+      const met = sale.method_id || sale.metodo;
+      const finalTotalBs = Math.max(0, totalBs - deliveryAmt);
+      const finalTotalUsd = Math.max(0, totalUsd - deliveryAmt / tasa);
+
+      if (met === "pm") pmBs += finalTotalBs;
+      if (met === "punto") pvBs += finalTotalBs;
+      if (met === "ves") efBs += finalTotalBs;
+      if (met === "usd") usdTotal += finalTotalUsd;
     }
-    if (sale.deliveryAmount) deliveryTotal += sale.deliveryAmount;
+
+    if (sale.delivery) {
+      deliveryTotal += deliveryAmt;
+    }
   });
 
   const totalBolivares = pmBs + pvBs + efBs;
@@ -147,27 +180,38 @@ export const exportSalesToPDF = (sales: Sale[], cierres: Cierre[] = []) => {
   doc.setTextColor(60, 60, 60);
   doc.text("Detalle Cronológico de Ventas", 14, currentY);
 
-  const tableRows = sales.map((sale) => [
-    new Date(sale.fecha).toLocaleTimeString("es-VE", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    }),
-    sale.items.map((i) => `${i.quantity}x ${i.name}`).join(", "),
-    sale.payments && sale.payments.length > 1
-      ? "Mixto"
-      : sale.metodo === "pm"
-        ? "P. Móvil"
-        : sale.metodo === "pv"
-          ? "Punto"
-          : sale.metodo === "usd"
-            ? "Divisas"
-            : "Efectivo",
-    `Bs. ${sale.totalBS.toLocaleString("es-VE", { minimumFractionDigits: 2 })}`,
-    sale.delivery
-      ? `${sale.deliveryName || "Repart."} (+${sale.deliveryAmount || 0})`
-      : "-",
-  ]);
+  const tableRows = sales.map((sale) => {
+    const saleItems = sale.sale_items || sale.items || [];
+    const salePayments = sale.sale_payments || sale.payments || [];
+    const totalBsNoDelivery =
+      (sale.total_bs || sale.totalBs || 0) -
+      (sale.delivery ? sale.delivery_amount || 0 : 0);
+
+    return [
+      new Date(sale.created_at || sale.fecha || "").toLocaleTimeString(
+        "es-VE",
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        },
+      ),
+      saleItems.map((i) => `${i.quantity}x ${i.name || "Prod."}`).join(", "),
+      salePayments.length > 1
+        ? "Mixto"
+        : salePayments[0]?.method_id === "pm" || sale.metodo === "pm"
+          ? "P. Móvil"
+          : salePayments[0]?.method_id === "punto" || sale.metodo === "punto"
+            ? "Punto"
+            : salePayments[0]?.currency === "USD" || sale.metodo === "usd"
+              ? "Divisas"
+              : "Efectivo",
+      `Bs. ${totalBsNoDelivery.toLocaleString("es-VE", { minimumFractionDigits: 2 })}`,
+      sale.delivery
+        ? `${sale.delivery_name || "Repart."} (+${sale.delivery_amount || 0})`
+        : "-",
+    ];
+  });
 
   autoTable(doc, {
     startY: currentY + 5,

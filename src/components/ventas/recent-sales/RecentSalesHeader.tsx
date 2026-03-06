@@ -21,34 +21,44 @@ export function RecentSalesHeader({
   handleEndDay,
 }: Props) {
   return (
-    <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-2 gap-4">
-      <div className="flex flex-col gap-1">
-        <h2 className="text-xl text-primary-600 font-bold">
+    <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 gap-6">
+      <div className="flex flex-col gap-0.5">
+        <h2 className="text-2xl font-black text-zinc-800 tracking-tight">
           Historial del Día
         </h2>
-        <p className="text-sm text-zinc-500 font-medium">
-          Control detallado de ventas y cierres registrados
+        <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+          Control de ventas y cierres
         </p>
       </div>
-      <div className="flex items-center gap-3 w-full sm:w-auto">
-        <Button style="dashed" onClick={handleEndDay} className="group">
-          <CircleDollarSign className="size-5 " />
-          <span>Cerrar Día</span>
+
+      <div className="flex items-center gap-2 w-full sm:w-auto h-12">
+        <Button
+          style="dashed"
+          onClick={handleEndDay}
+          className="flex-1 sm:flex-none h-full px-4 rounded-2xl group border-2 border-zinc-200 hover:border-primary-500 hover:bg-primary-50 transition-all"
+        >
+          <CircleDollarSign className="size-4 text-zinc-400 group-hover:text-primary-500" />
+          <span className="text-xs font-black uppercase tracking-wider text-zinc-600 group-hover:text-primary-600">
+            Cerrar Día
+          </span>
         </Button>
+
         <Button
           style="primary"
           onClick={() => exportSalesToPDF(sales, cierres)}
           disabled={sales.length === 0}
+          className="flex-1 sm:flex-none h-full px-4 rounded-2xl shadow-lg shadow-primary-500/20 text-xs font-black uppercase tracking-wider"
         >
           Exportar PDF
         </Button>
+
         <button
           onClick={onClearAll}
-          className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all cursor-pointer"
+          className="size-12 flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-2xl border border-zinc-100 transition-all shrink-0"
           title="Limpiar historial"
           aria-label="Limpiar historial de ventas"
         >
-          <Trash2 size={18} />
+          <Trash2 size={20} />
         </button>
       </div>
     </header>
