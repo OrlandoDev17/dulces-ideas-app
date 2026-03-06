@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 interface ButtonProps {
-  style: "primary" | "secondary";
+  style: "primary" | "secondary" | "dashed";
   href?: string;
   children: React.ReactNode;
   form?: string;
@@ -27,7 +27,9 @@ export function Button({
   const styleClasses =
     style === "primary"
       ? "bg-primary-600 text-white shadow-lg shadow-primary/20 hover:bg-primary-700 hover:shadow-primary-200 border-2 border-transparent"
-      : "bg-white border-2 border-zinc-200 text-zinc-600 hover:border-primary hover:text-primary hover:shadow-premium";
+      : style === "secondary"
+        ? "bg-white border-2 border-zinc-200 text-zinc-600 hover:border-primary hover:text-primary hover:shadow-premium"
+        : "bg-primary-50 border-2 border-dashed border-primary-200 text-primary-600 hover:bg-primary-600 hover:text-white hover:border-primary-600 rounded-2xl";
 
   return href ? (
     <Link

@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dulces Ideas App - Documentación Técnica
 
-## Getting Started
+Esta es la documentación técnica principal para **Dulces Ideas App** (`@dulces-ideas/web`), un sistema de Punto de Venta (POS) y gestión construido con tecnologías web modernas.
 
-First, run the development server:
+## 🚀 Arquitectura y Stack Tecnológico
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+El proyecto está construido sobre React y Next.js, utilizando un enfoque fuertemente tipado con TypeScript y estilizado con Tailwind CSS.
+
+### Tecnologías Core
+
+- **Framework:** Next.js 16 (React 19)
+- **Lenguaje:** TypeScript 5
+- **Estilos:** Tailwind CSS v4
+- **Animaciones:** Framer Motion (`motion`) para transiciones fluidas e interacciones UI.
+- **Iconografía:** Lucide React
+
+### Caching, Estado y Persistencia
+
+- **Server State:** TanStack React Query v5. Utilizado para orquestar la obtención, caché y mutación de datos.
+- **Persistencia Offshore/Offline:** `@tanstack/react-query-persist-client` en conjunto con `idb-keyval` (IndexedDB) para persistir la caché de React Query en el cliente, permitiendo un manejo resiliente de sesiones y ventas.
+- **Estado Global:** React Context API para estados ui y reglas de negocio específicas que no requieren persistencia asíncrona (ej., `useMixedPayment`, `useSessions`).
+
+### Backend y Servicios Externos
+
+- **BaaS / Base de Datos:** Supabase (`@supabase/supabase-js`) para autenticación, base de datos en tiempo real y almacenamiento.
+- **Automatización de Agentes:** Integración con flujos y agentes de **n8n** a través de hooks personalizados (`useN8n`), permitiendo acciones automatizadas e interfaces interactivas basadas en IA (ej., actualización de datos en tiempo real por el agente).
+
+### Utilidades
+
+- **Generación de Reportes:** `jspdf` y `jspdf-autotable` para exportar cierres de caja, reportes financieros y facturas en formato PDF directamente desde el cliente.
+- **Peticiones HTTP:** `axios` y `fetch` estándar.
+
+---
+
+## 📂 Estructura del Proyecto
+
+El código fuente principal reside en el directorio `src/`, organizado modularmente por responsabilidad:
+
+```text
+src/
+├── api/          # Endpoints de API internas (Next.js Route Handlers)
+├── app/          # Definición de rutas y vistas principales (Next.js App Router)
+├── components/   # Componentes UI de React
+│   ├── ui/       # Componentes base y de bajo nivel (botones, inputs, modales)
+│   ├── ventas/   # Componentes de dominio específico del POS (PaymentModal, ActiveSale)
+│   └── ...
+├── context/      # Proveedores de estado global (React Context Providers)
+├── hooks/        # Custom hooks para encapsular lógica de negocio (useSessions, useN8n, useMixedPayment)
+├── lib/          # Tipos, esquemas de validación, constantes y utilidades externas
+└── services/     # Capa del cliente para comunicación con APIs externas / Supabase
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ⚙️ Características Técnicas Principales
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1. Sistema de Punto de Venta (POS) Dinámico
 
-## Learn More
+El módulo de ventas (en `components/ventas`) está diseñado para optimizar el rendimiento y la rápida captura de productos. Soporta operaciones rápidas y un manejador complejo del carrito de compras.
 
-To learn more about Next.js, take a look at the following resources:
+### 2. Motor de Pagos Mixtos (`useMixedPayment`)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Un flujo robusto que permite concretar una única transacción combinando múltiples métodos de pago (efectivo, tarjeta, transferencias) e incluso diferentes divisas (Bs., USD).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Validación Matemática:** Gestión precisa de decimales y cálculos de cambio/vuelto evitando errores de precisión de punto flotante.
+- **Manejo de Tolerancia:** Lógica estricta de validación de pago completo y tolerancias configurables (ej. diferencias mínimas por redondeo en diferentes monedas).
 
-## Deploy on Vercel
+### 3. Persistencia Asíncrona (Offline Support)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Se hace un fuerte énfasis en la experiencia del usuario intermitente implementando `idb-keyval`. Las ventas pendientes y las sesiones del usuario se mantienen vivas en IndexedDB, asegurando cero pérdida de estados críticos ante un reload de ventana.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 4. Event-Driven AI Actions (n8n Integration)
+
+La aplicación puede suscribirse a respuestas provenientes de un webhook/agente en n8n. Mediante eventos despachados al `window` o integraciones en los hooks, las acciones exitosas de IA (ej., actualización procesada por un LLM) gatillan la invalidación de la caché de React Query (`refresh_worklyst_data`), provocando que la UI se renderice con datos frescos automáticamente.
+
+---
+
+## 🛠️ Convenciones de Desarrollo
+
+- **Componentización:** Se prefieren componentes puros para la presentación y contenedores inteligentes (o custom hooks combinados con Context) para inyectar lógica compleja o interactuar con React Query.
+- **Separación de Lógica de UI (Hooks):** Toda la lógica de negocio pesada, como cálculos de impuestos y consolidación en métodos de pagos mixtos, es delegada a _Custom Hooks_ (ej., `src/hooks/useMixedPayment.ts`).
+- **Data Fetching:** Se utiliza estrictamente React Query para datos provenientes del backend. Múltiples queries comparten keys estandarizadas para invalidación optimista tras realizar mutaciones (Creación de ventas, modificaciones, etc.).
+- **Optimización del Bundle:** Se emplean prácticas de Vercel/Next.js (`next/dynamic` importes) para la renderización de componentes pesados (como los modales transaccionales y gráficos).

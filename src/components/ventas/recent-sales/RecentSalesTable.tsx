@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useSyncExternalStore } from "react";
-import { Sale } from "@/lib/types";
+import { Sale, PaymentMethod } from "@/lib/types";
 import { RecentSaleRow } from "./RecentSaleRow";
 import { RecentSaleCard } from "./RecentSaleCard";
 import { useRecentSalesEdit } from "@/hooks/useRecentSalesEdit";
@@ -12,6 +12,7 @@ const emptySubscribe = () => () => {};
 
 interface Props {
   sales: Sale[];
+  paymentMethods: PaymentMethod[];
   onDeleteSale: (id: string) => void;
   onUpdateSale?: (sale: Sale) => void;
 }
@@ -20,7 +21,12 @@ interface Props {
  * Tabla de ventas recientes.
  * Gestiona la lista de ventas y el estado de edición individual.
  */
-export function RecentSalesTable({ sales, onDeleteSale, onUpdateSale }: Props) {
+export function RecentSalesTable({
+  sales,
+  paymentMethods,
+  onDeleteSale,
+  onUpdateSale,
+}: Props) {
   const {
     editingSaleId,
     editTotalBS,
@@ -100,6 +106,7 @@ export function RecentSalesTable({ sales, onDeleteSale, onUpdateSale }: Props) {
               <div className="md:hidden">
                 <RecentSaleCard
                   sale={sale}
+                  paymentMethods={paymentMethods}
                   onStartEdit={() => startEdit(sale)}
                   onDelete={() => onDeleteSale(sale.id)}
                 />
@@ -108,6 +115,7 @@ export function RecentSalesTable({ sales, onDeleteSale, onUpdateSale }: Props) {
               <div className="hidden md:block">
                 <RecentSaleRow
                   sale={sale}
+                  paymentMethods={paymentMethods}
                   onStartEdit={() => startEdit(sale)}
                   onDelete={() => onDeleteSale(sale.id)}
                 />

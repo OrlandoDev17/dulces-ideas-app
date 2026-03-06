@@ -11,6 +11,8 @@ interface Props<T> {
   // Opcional: Función para extraer información extra (precio, descripción, etc.)
   getExtra?: (option: T) => React.ReactNode;
   maxHeight?: string;
+  className?: string;
+  direction?: "up" | "down";
 }
 
 export function OptionDropdown<T>({
@@ -21,7 +23,11 @@ export function OptionDropdown<T>({
   getLabel,
   getExtra,
   maxHeight = "max-h-[200px] md:max-h-[400px]",
+  className = "mt-2",
+  direction = "down",
 }: Props<T>) {
+  const yOffset = direction === "up" ? 10 : -10;
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -32,11 +38,11 @@ export function OptionDropdown<T>({
           />
 
           <motion.ul
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: yOffset }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className={`absolute z-50 mt-2 w-fit bg-white border border-primary-200 shadow-lg shadow-primary-500/50 rounded-xl 
-            overflow-y-auto ${maxHeight}`}
+            exit={{ opacity: 0, y: yOffset }}
+            className={`absolute z-50 w-fit bg-white border border-primary-200 shadow-lg shadow-primary-500/50 rounded-xl 
+            overflow-y-auto ${maxHeight} ${className}`}
           >
             {options.map((option: any, index: number) => (
               <li

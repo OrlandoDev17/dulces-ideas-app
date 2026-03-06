@@ -1,3 +1,5 @@
+import { fmtBs, fmtUSD } from "@/lib/formatters";
+
 interface Props {
   totalBS: number;
   totalUSD: number;
@@ -16,8 +18,6 @@ export function TotalToPay({
   const finalTotalBS = totalBS + deliveryAmount;
   const finalTotalUSD = totalUSD + deliveryAmount / tasa;
 
-  const finalTotalBsRoundedTo2 = Math.round(finalTotalBS * 100) / 100;
-
   return (
     <article
       className="flex flex-col gap-4 p-4 rounded-2xl bg-primary-50/20 border border-primary-500 
@@ -32,15 +32,12 @@ export function TotalToPay({
             Total a pagar
           </span>
           <strong className="text-xl md:text-3xl font-black text-primary tracking-tighter leading-none">
-            Bs.{" "}
-            {finalTotalBsRoundedTo2?.toLocaleString("es-VE", {
-              minimumFractionDigits: 2,
-            })}
+            Bs. {fmtBs(finalTotalBS)}
           </strong>
         </div>
         <div className="text-right flex flex-col items-end gap-1.5">
           <span className="block text-xs md:text-sm font-black text-zinc-500 tabular-nums">
-            ${finalTotalUSD.toFixed(2)} USD
+            ${fmtUSD(finalTotalUSD)} USD
           </span>
           <small className="text-[8px] md:text-[10px] text-zinc-400 font-bold uppercase tracking-tighter bg-white px-2 py-1 rounded-md border border-zinc-100 shadow-sm">
             Tasa: {tasa}
@@ -55,17 +52,13 @@ export function TotalToPay({
           <div className="flex justify-between items-center text-sm font-bold text-primary-500">
             <span className="text-xs md:text-sm">Subtotal Productos</span>
             <span className="tabular-nums text-zinc-600">
-              Bs.{" "}
-              {totalBS?.toLocaleString("es-VE", { minimumFractionDigits: 2 })}
+              Bs. {fmtBs(totalBS)}
             </span>
           </div>
           <div className="flex justify-between items-center text-sm font-bold text-primary-500">
             <span className="text-xs md:text-sm">Servicio Delivery</span>
             <span className="tabular-nums text-zinc-600">
-              Bs.{" "}
-              {deliveryAmount?.toLocaleString("es-VE", {
-                minimumFractionDigits: 2,
-              })}
+              Bs. {fmtBs(deliveryAmount)}
             </span>
           </div>
         </section>

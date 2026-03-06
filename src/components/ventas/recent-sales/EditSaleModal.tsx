@@ -22,7 +22,9 @@ export function EditSaleModal({
   editValues,
   onEditChange,
 }: Props) {
-  const formattedTime = new Date(sale.fecha).toLocaleTimeString("es-VE", {
+  const formattedTime = new Date(
+    sale.created_at || sale.fecha || "",
+  ).toLocaleTimeString("es-VE", {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -39,7 +41,7 @@ export function EditSaleModal({
           <Button
             style="primary"
             onClick={() => onSave(editValues.bs, editValues.usd)}
-            className="w-full py-4 rounded-2xl shadow-xl shadow-primary-500/20"
+            className="w-full py-4 rounded-2xl shadow-xl shadow-primary-500/10"
           >
             <Save size={20} className="mr-2" />
             Guardar Cambios

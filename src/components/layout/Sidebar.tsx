@@ -1,19 +1,22 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-// Contexts
-import { useSession } from "@/contexts/SessionContext";
 // Hooks
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useSessions } from "@/hooks/useSessions";
+import { useSession } from "@/context/SessionContext";
 // Components
 import Link from "next/link";
+import { Button } from "../common/Button";
 import { DropdownButton } from "../common/DropdownButton";
 import { OptionDropdown } from "../common/OptionDropdown";
 import { CreateSessionModal } from "./CreateSessionModal";
 // Constants
 import { NAV_LINKS } from "@/lib/constants";
 // Icons
-import { CakeSlice, Plus, Store } from "lucide-react";
+import { CakeSlice, Loader, Plus, Store } from "lucide-react";
+import { Session } from "@/lib/types";
 
 export function Sidebar() {
   // Estados
@@ -23,32 +26,40 @@ export function Sidebar() {
   // Pathname
   const path = usePathname();
 
-  // Context
-  const {
-    sessions,
-    currentSession,
-    loading,
-    error,
-    createSession,
-    fetchSession,
-    setCurrentSession,
-  } = useSession();
+  // 1. Integracion de React Query
+  const { sessions, isLoading, createSession } = useSessions();
+  const { currentSessionId, setCurrentSessionId } = useSession();
 
+  const currentSession =
+    sessions.find((s) => s.id === currentSessionId) || null;
+
+  // 2. Persistencia local de la sesion seleccionada
   useEffect(() => {
-    fetchSession();
-  }, []);
+    if (!currentSessionId && sessions.length > 0) {
+      // Si no hay nada seleccionado, tomamos la primera por defecto
+      setCurrentSessionId(sessions[0].id || null);
+    }
+  }, [sessions, currentSessionId, setCurrentSessionId]);
+
+  const handleSelectSession = (session: Session) => {
+    setCurrentSessionId(session.id || null);
+    setIsDropdownOpen(false);
+  };
 
   const handleCreateSession = async (name: string) => {
-    const session = await createSession(name);
-    if (session) {
+    try {
+      const newSession = await createSession(name);
+      handleSelectSession(newSession);
       setIsModalOpen(false);
+    } catch {
+      throw new Error("Error al crear la sesion");
     }
   };
 
   const isActive = (href: string) => path === href;
 
   return (
-    <aside className="fixed left-0 top-0 hidden md:flex flex-col gap-10 p-4 w-64 min-h-screen z-100 bg-white border-r-2 border-primary-500">
+    <aside className="fixed left-0 top-0 hidden md:flex flex-col gap-10 p-4 w-72 min-h-screen z-50 bg-white border-r-2 border-primary-500">
       <header className="flex items-center gap-2">
         <CakeSlice
           className="size-10 text-primary-50 p-2 bg-primary-600 rounded-xl"
@@ -56,6 +67,7 @@ export function Sidebar() {
         />
         <h2 className="text-primary-600 font-bold text-lg">Dulces Ideas</h2>
       </header>
+
       <nav aria-label="Navegación principal">
         <ul className="flex flex-col gap-4">
           {NAV_LINKS.map(({ id, label, href, icon: Icon }) => (
@@ -85,38 +97,45 @@ export function Sidebar() {
             Sesión Activa
           </label>
           <DropdownButton isOpen={isDropdownOpen} setIsOpen={setIsDropdownOpen}>
-            <Store size={18} className="text-primary-500 shrink-0" />
+            {isLoading ? (
+              <Loader
+                size={18}
+                className="size-4 animate-spin text-primary-500"
+              />
+            ) : (
+              <Store size={18} className="text-primary-500 shrink-0" />
+            )}
             <span className="truncate">
-              {currentSession?.name || "Selecciona una sesión"}
+              {currentSession?.name ||
+                (isLoading ? "Cargando..." : "Sin sesión")}
             </span>
           </DropdownButton>
 
-          <div className="absolute bottom-full left-0 mb-2 w-full">
-            <OptionDropdown
-              isOpen={isDropdownOpen}
-              setIsOpen={setIsDropdownOpen}
-              options={sessions}
-              getLabel={(s) => s.name}
-              onSelect={(s) => setCurrentSession(s)}
-            />
-          </div>
+          <OptionDropdown
+            isOpen={isDropdownOpen}
+            setIsOpen={setIsDropdownOpen}
+            options={sessions}
+            getLabel={(s) => s.name}
+            onSelect={handleSelectSession}
+            className="bottom-full mb-2 w-full"
+            direction="up"
+          />
         </div>
 
-        <button
+        <Button
+          style="dashed"
           onClick={() => setIsModalOpen(true)}
-          className="group flex items-center justify-center gap-2 p-4 bg-primary-50 rounded-2xl border-2 border-dashed border-primary-200 text-primary-600 font-bold hover:bg-primary-600 hover:text-white hover:border-primary-600 transition-all duration-300"
+          className="group w-full"
         >
           <Plus className="size-5 transition-transform group-hover:rotate-90" />
           <span>Nueva Sesión</span>
-        </button>
+        </Button>
       </footer>
 
       <CreateSessionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onConfirm={handleCreateSession}
-        loading={loading}
-        error={error}
       />
     </aside>
   );

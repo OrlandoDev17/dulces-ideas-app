@@ -79,6 +79,7 @@ export function MixedPaymentModal({
           totalToPayBs={totalToPayBs}
           remainingBs={remainingBs}
           isComplete={isComplete}
+          tasa={tasa}
         />
 
         {/* Formulario de entrada (solo si no está completo) */}

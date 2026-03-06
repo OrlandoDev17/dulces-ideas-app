@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 // Hooks
@@ -8,7 +9,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { CreditCard, ShoppingBag, User, DollarSign } from "lucide-react";
 // Components
 import { OptionDropdown } from "@/components/common/OptionDropdown";
-import { MixedPaymentModal } from "./MixedPaymentModal";
+import { MixedPaymentModal } from "../MixedPaymentModal";
 import { ProductList } from "./ProductList";
 import { TotalToPay } from "./TotalToPay";
 import { DropdownButton } from "@/components/common/DropdownButton";
@@ -34,14 +35,6 @@ export function ActiveSale({
   onRegister,
   setCart,
 }: Props) {
-  // Combinar métodos de la DB con la opción de Pago Mixto
-  const allPaymentOptions = useMemo(() => {
-    return [
-      ...paymentMethods,
-      { id: "mx", name: "Pago Mixto", currency: "VES" as const },
-    ];
-  }, [paymentMethods]);
-
   // Estados
   const [isOpenMetodo, setIsOpenMetodo] = useState(false);
   const [showMixedModal, setShowMixedModal] = useState(false);
@@ -52,42 +45,86 @@ export function ActiveSale({
   // Estado para la seleccion interna del usuario
   const [metodoSelectedInternal, setMetodoSelected] = useState<
     PaymentMethod | undefined
-  >(allPaymentOptions[0]);
+  >(paymentMethods[0]);
 
   // Derivamos el metodo seleccionado: si la seleccion es valida lo usamos, si no, volvemos al primero
   const metodoSelected = useMemo(() => {
     const isValid =
       metodoSelectedInternal &&
-      allPaymentOptions.some((m) => m.id === metodoSelectedInternal.id);
+      paymentMethods.some((m) => m.id === metodoSelectedInternal.id);
     return isValid
       ? (metodoSelectedInternal as PaymentMethod)
-      : allPaymentOptions[0];
-  }, [metodoSelectedInternal, allPaymentOptions]);
+      : paymentMethods[0];
+  }, [metodoSelectedInternal, paymentMethods]);
 
   // El efecto anterior se elimina para evitar renders en cascada
 
   // Funcion para registrar la venta
   const handleRegisterClick = () => {
+    const totalAmountBs =
+      totalBSRounded + (isDelivery ? Number(deliveryAmount) || 0 : 0);
+    const totalAmountUsd =
+      totalUSD + (isDelivery ? (Number(deliveryAmount) || 0) / tasa : 0);
+
     if (metodoSelected.id === "mx") {
       setShowMixedModal(true);
     } else {
-      const salePayload = {
+      // Creamos el array de un solo pago con la estructura que espera el hook
+      const singlePayment: Payment = {
         id: crypto.randomUUID(),
-        items,
-        totalUSD,
-        totalBS,
+        methodId: metodoSelected.id,
+        amountBs: totalAmountBs,
+        amountRef: totalAmountUsd,
+        currency: metodoSelected.currency,
+      };
+
+      const salePayload: any = {
+        id: crypto.randomUUID(),
+        sale_items: items.map((item) => ({
+          product_id: item.id,
+          quantity: item.quantity,
+          price_at_moment: item.price,
+        })),
+        totalBs: totalAmountBs,
+        totalUsd: totalAmountUsd,
         tasa_bcv: tasa,
         metodo: metodoSelected.id,
         fecha: new Date().toISOString(),
+        payments: [singlePayment],
         delivery: isDelivery,
-        deliveryName: isDelivery ? deliveryName : undefined,
-        deliveryAmount: isDelivery ? Number(deliveryAmount) || 0 : undefined,
+        delivery_name: isDelivery ? deliveryName || "" : null, // Si es delivery, texto o vacío; si no, null
+        delivery_amount: isDelivery ? Number(deliveryAmount) || 0 : 0, // Si es delivery, el monto; si no, 0
       };
 
-      console.log("🚀 Payload de Venta a Registrar:", salePayload);
       onRegister(salePayload);
       resetStates();
     }
+  };
+
+  // Caso Pago Mixto
+  const confirmMixedPayment = (payments: Payment[]) => {
+    const totalAmountBs =
+      totalBSRounded + (isDelivery ? Number(deliveryAmount) || 0 : 0);
+    const totalAmountUsd =
+      totalUSD + (isDelivery ? (Number(deliveryAmount) || 0) / tasa : 0);
+
+    const salePayload: Sale = {
+      id: crypto.randomUUID(),
+      items: [...items],
+      totalBs: totalAmountBs,
+      totalUsd: totalAmountUsd,
+      tasa_bcv: tasa,
+      metodo: "mx",
+      fecha: new Date().toISOString(),
+      payments: payments,
+      delivery: isDelivery,
+      delivery_name: isDelivery ? deliveryName : undefined,
+      delivery_amount: isDelivery ? Number(deliveryAmount) || 0 : undefined,
+    };
+
+    onRegister(salePayload);
+    setShowMixedModal(false);
+    resetStates();
   };
 
   // Funcion para resetear los estados
@@ -96,29 +133,6 @@ export function ActiveSale({
     setDeliveryName("");
     setDeliveryAmount("");
     setCart([]);
-  };
-
-  // Funcion para confirmar el pago mixto
-  const confirmMixedPayment = (payments: Payment[]) => {
-    console.log("Pagos registrados:", payments);
-    setShowMixedModal(false);
-    const salePayload = {
-      id: crypto.randomUUID(),
-      items,
-      totalUSD,
-      totalBS,
-      tasa_bcv: tasa,
-      metodo: metodoSelected.id,
-      fecha: new Date().toISOString(),
-      delivery: isDelivery,
-      deliveryName: isDelivery ? deliveryName : undefined,
-      deliveryAmount: isDelivery ? Number(deliveryAmount) || 0 : undefined,
-      payments,
-    };
-
-    console.log("🚀 Payload de Venta Mixta a Registrar:", salePayload);
-    onRegister(salePayload);
-    resetStates();
   };
 
   // Calculo del total en USD
@@ -218,9 +232,21 @@ export function ActiveSale({
               <OptionDropdown
                 isOpen={isOpenMetodo}
                 setIsOpen={setIsOpenMetodo}
-                options={allPaymentOptions}
+                options={paymentMethods}
                 onSelect={(m: PaymentMethod) => setMetodoSelected(m)}
                 getLabel={(m: PaymentMethod) => m.name}
+                getExtra={(m: PaymentMethod) => (
+                  <span
+                    className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
+                      m.currency === "USD"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-blue-100 text-blue-700"
+                    }`}
+                  >
+                    {m.currency}
+                  </span>
+                )}
+                className="mt-2 w-full min-w-[200px]"
               />
             </div>
 

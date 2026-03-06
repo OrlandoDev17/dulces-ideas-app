@@ -7,6 +7,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import { Payment, PaymentMethod } from "@/lib/types";
+import { fmtBs, fmtUSD } from "@/lib/formatters";
 
 interface Props {
   payments: Payment[];
@@ -18,16 +19,18 @@ interface Props {
  * Obtiene el icono correspondiente al método de pago.
  */
 const getMethodIcon = (id: string) => {
-  switch (id) {
-    case "bs":
-      return <Banknote size={16} />;
-    case "pm":
-      return <Smartphone size={16} />;
-    case "usd":
-      return <DollarSign size={16} />;
-    default:
-      return <CreditCard size={16} />;
-  }
+  const mid = id.toLowerCase();
+  if (mid.includes("bs") || mid.includes("efectivo") || mid.includes("cash"))
+    return <Banknote size={16} />;
+  if (
+    mid.includes("pm") ||
+    mid.includes("movil") ||
+    mid.includes("transferencia")
+  )
+    return <Smartphone size={16} />;
+  if (mid.includes("usd") || mid.includes("zelle") || mid.includes("dolar"))
+    return <DollarSign size={16} />;
+  return <CreditCard size={16} />;
 };
 
 /**
@@ -79,27 +82,29 @@ export function PaymentList({ payments, onRemove, paymentMethods }: Props) {
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className={`p-2 rounded-lg ${p.method === "usd" ? "bg-green-50 text-green-600" : "bg-blue-50 text-blue-600"}`}
+                    className={`p-2 rounded-lg ${p.currency === "USD" ? "bg-green-50 text-green-600" : "bg-blue-50 text-blue-600"}`}
                   >
-                    {getMethodIcon(p.method)}
+                    {getMethodIcon(p.methodId)}
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs md:text-sm font-bold text-zinc-700">
-                      {getMethodLabel(p.method)}
+                      {getMethodLabel(p.methodId)}
                     </span>
                     <span className="text-[8px] md:text-xs text-zinc-400">
-                      {p.method === "usd"
-                        ? `Bs. ${p.amountBs.toLocaleString("es-VE", { minimumFractionDigits: 2 })}`
-                        : `Ref: $${p.amountRef.toFixed(2)}`}
+                      {p.currency === "USD"
+                        ? `Bs. ${fmtBs(p.amountBs)}`
+                        : `Ref: $${fmtUSD(p.amountRef)}`}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs md:text-base font-mono font-bold text-zinc-700">
-                    {p.method === "usd"
-                      ? `$ ${p.amountRef.toFixed(2)}`
-                      : `Bs. ${p.amountBs.toLocaleString("es-VE", { minimumFractionDigits: 2 })}`}
-                  </span>
+                  <div className="flex flex-col items-end">
+                    <span className="text-xs md:text-base font-mono font-bold text-zinc-700 leading-none">
+                      {p.currency === "USD"
+                        ? `$ ${fmtUSD(p.amountRef)}`
+                        : `Bs. ${fmtBs(p.amountBs)}`}
+                    </span>
+                  </div>
                   <button
                     onClick={() => onRemove(p.id)}
                     className="p-1.5 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"

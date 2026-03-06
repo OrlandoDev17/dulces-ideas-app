@@ -1,7 +1,8 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { useState } from "react";
-import { PlusCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { PlusCircle, CheckCircle2 } from "lucide-react";
 import { Modal } from "../common/Modal";
 import { Button } from "../common/Button";
 
@@ -9,27 +10,24 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (name: string) => void;
-  loading: boolean;
-  error?: string | null;
 }
 
-export function CreateSessionModal({
-  isOpen,
-  onClose,
-  onConfirm,
-  loading,
-  error,
-}: Props) {
+export function CreateSessionModal({ isOpen, onClose, onConfirm }: Props) {
   const [sessionName, setSessionName] = useState("");
 
+  useEffect(() => {
+    if (isOpen) {
+      setSessionName("");
+    }
+  }, [isOpen]);
+
   const handleClose = () => {
-    setSessionName("");
     onClose();
   };
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (sessionName.trim() && !loading) {
+    if (sessionName.trim()) {
       onConfirm(sessionName.trim());
     }
   };
@@ -47,14 +45,10 @@ export function CreateSessionModal({
             style="primary"
             type="submit"
             form="create-session-form"
-            disabled={!sessionName.trim() || loading}
+            disabled={!sessionName.trim()}
             className="w-full py-4 rounded-2xl shadow-xl shadow-primary-500/20"
           >
-            {loading ? (
-              <Loader2 size={20} className="mr-2 animate-spin" />
-            ) : (
-              <CheckCircle2 size={20} className="mr-2" />
-            )}
+            <CheckCircle2 size={20} className="mr-2" />
             Crear Sesión
           </Button>
           <button
@@ -81,17 +75,8 @@ export function CreateSessionModal({
           placeholder="Ej: Turno Mañana, Caja Principal..."
           value={sessionName}
           onChange={(e) => setSessionName(e.target.value)}
-          className={`w-full bg-zinc-50 border-2 rounded-2xl px-6 py-4 text-lg font-bold text-zinc-800 transition-all outline-none ${
-            error
-              ? "border-red-200 focus:border-red-500"
-              : "border-zinc-100 focus:border-primary-500"
-          }`}
+          className={`w-full bg-zinc-50 border-2 rounded-2xl px-6 py-4 text-lg font-bold text-zinc-800 transition-all outline-none ${"border-zinc-100 focus:border-primary-500"}`}
         />
-        {error && (
-          <p className="text-red-500 text-xs font-bold mt-1 ml-1 flex items-center gap-1">
-            <Loader2 className="size-3 animate-pulse" /> {error}
-          </p>
-        )}
       </form>
     </Modal>
   );

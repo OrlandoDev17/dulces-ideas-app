@@ -25,8 +25,7 @@
       "@/lib/*": ["src/lib/*"],
       "@/hooks/*": ["src/hooks/*"],
       "@/context/*": ["src/context/*"],
-      "@/services/*": ["src/services/*"],
-      "@dulces-ideas/types": ["../../packages/types/index.ts"]
+      "@/services/*": ["src/services/*"]
     }
   },
   "include": [

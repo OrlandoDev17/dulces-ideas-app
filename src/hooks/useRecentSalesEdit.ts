@@ -14,8 +14,8 @@ export const useRecentSalesEdit = (onUpdateSale?: (sale: Sale) => void) => {
    */
   const startEdit = (sale: Sale) => {
     setEditingSaleId(sale.id);
-    setEditTotalBS(sale.totalBS);
-    setEditTotalUSD(sale.totalUSD);
+    setEditTotalBS(sale.total_bs || sale.totalBs || 0);
+    setEditTotalUSD(sale.total_usd || sale.totalUsd || 0);
   };
 
   /**
@@ -25,8 +25,10 @@ export const useRecentSalesEdit = (onUpdateSale?: (sale: Sale) => void) => {
     if (onUpdateSale) {
       onUpdateSale({
         ...sale,
-        totalBS: editTotalBS,
-        totalUSD: editTotalUSD,
+        total_bs: editTotalBS,
+        total_usd: editTotalUSD,
+        totalBs: editTotalBS,
+        totalUsd: editTotalUSD,
       });
     }
     setEditingSaleId(null);

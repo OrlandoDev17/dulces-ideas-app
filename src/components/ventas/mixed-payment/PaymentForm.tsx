@@ -25,16 +25,18 @@ interface Props {
  * Obtiene el icono correspondiente al método de pago.
  */
 const getMethodIcon = (id: string) => {
-  switch (id) {
-    case "bs":
-      return <Banknote size={16} />;
-    case "pm":
-      return <Smartphone size={16} />;
-    case "usd":
-      return <DollarSign size={16} />;
-    default:
-      return <CreditCard size={16} />;
-  }
+  const mid = id.toLowerCase();
+  if (mid.includes("bs") || mid.includes("efectivo") || mid.includes("cash"))
+    return <Banknote size={16} />;
+  if (
+    mid.includes("pm") ||
+    mid.includes("movil") ||
+    mid.includes("transferencia")
+  )
+    return <Smartphone size={16} />;
+  if (mid.includes("usd") || mid.includes("zelle") || mid.includes("dolar"))
+    return <DollarSign size={16} />;
+  return <CreditCard size={16} />;
 };
 
 /**
@@ -68,6 +70,18 @@ export function PaymentForm({
             options={paymentOptions}
             onSelect={setSelectedMethod}
             getLabel={(opt) => opt.name}
+            getExtra={(opt) => (
+              <span
+                className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
+                  opt.currency === "USD"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-blue-100 text-blue-700"
+                }`}
+              >
+                {opt.currency}
+              </span>
+            )}
+            className="mt-2 w-full min-w-[200px]"
           />
         </div>
 
@@ -75,7 +89,7 @@ export function PaymentForm({
         <div className="flex items-center gap-2 w-full sm:w-1/2">
           <div className="relative flex-1">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-xs pointer-events-none">
-              {selectedMethod.id === "usd" ? "$" : "Bs"}
+              {selectedMethod.currency === "USD" ? "$" : "Bs"}
             </span>
             <input
               type="number"

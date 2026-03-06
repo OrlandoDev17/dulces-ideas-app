@@ -66,9 +66,10 @@ export const useMixedPayment = (
 
     const newPayment: Payment = {
       id: crypto.randomUUID(),
-      method: selectedMethod.id,
+      methodId: selectedMethod.id,
       amountBs,
       amountRef,
+      currency: selectedMethod.currency,
     };
 
     setPayments([...payments, newPayment]);

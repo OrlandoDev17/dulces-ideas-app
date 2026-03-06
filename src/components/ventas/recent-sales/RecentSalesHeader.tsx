@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react";
+import { CircleDollarSign, Trash2 } from "lucide-react";
 import { Button } from "../../common/Button";
 import { Sale, Cierre } from "@/lib/types";
 import { exportSalesToPDF } from "@/services/pdfService";
@@ -7,13 +7,19 @@ interface Props {
   sales: Sale[];
   cierres: Cierre[];
   onClearAll: () => void;
+  handleEndDay: () => void;
 }
 
 /**
  * Cabecera de la sección de ventas recientes.
  * Contiene el título y las acciones globales (Exportar PDF y Limpiar).
  */
-export function RecentSalesHeader({ sales, cierres, onClearAll }: Props) {
+export function RecentSalesHeader({
+  sales,
+  cierres,
+  onClearAll,
+  handleEndDay,
+}: Props) {
   return (
     <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-2 gap-4">
       <div className="flex flex-col gap-1">
@@ -25,6 +31,10 @@ export function RecentSalesHeader({ sales, cierres, onClearAll }: Props) {
         </p>
       </div>
       <div className="flex items-center gap-3 w-full sm:w-auto">
+        <Button style="dashed" onClick={handleEndDay} className="group">
+          <CircleDollarSign className="size-5 " />
+          <span>Cerrar Día</span>
+        </Button>
         <Button
           style="primary"
           onClick={() => exportSalesToPDF(sales, cierres)}
