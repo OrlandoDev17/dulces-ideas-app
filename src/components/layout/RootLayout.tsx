@@ -1,8 +1,8 @@
 "use client";
 
 // Components
-import { BottomNav } from "./BottomNav";
 import { Sidebar } from "./Sidebar";
+import { BottomNav } from "./BottomNav";
 
 // React Query
 import { ReactNode, useState } from "react";
