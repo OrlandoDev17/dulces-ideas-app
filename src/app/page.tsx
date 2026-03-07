@@ -28,7 +28,7 @@ import { motion } from "motion/react";
 // Animations
 import { fadeUp, staggerContainer, slideInLeft } from "@/lib/animations";
 // Types
-import { CartItem, Cierre, Product, Sale } from "@/lib/types";
+import { CartItem, Cierre, Payment, Product, Sale } from "@/lib/types";
 import { generateId } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
 
@@ -161,12 +161,39 @@ export default function VentasPage() {
   const cierreResumen = useMemo(() => {
     if (!recentSales) return { totalBs: 0, totalUsd: 0, count: 0 };
 
-    return recentSales.reduce(
-      (acc, sale) => ({
-        totalBs: acc.totalBs + sale.total_bs,
-        totalUsd: acc.totalUsd + sale.total_usd,
-        count: acc.count + 1,
-      }),
+    return (recentSales as Sale[]).reduce(
+      (acc, sale: Sale) => {
+        const payments: Payment[] = sale.sale_payments || sale.payments || [];
+
+        const saleTotals = payments.reduce<{ bs: number; usd: number }>(
+          (pAcc, p: Payment) => {
+            const methodId = p.method_id || p.methodId;
+            const amountBs = p.amount_bs || p.amountBs || 0;
+            const amountUsd = p.amount_ref || p.amountRef || 0;
+
+            if (
+              methodId === "pm" ||
+              methodId === "bs" ||
+              methodId === "ves" ||
+              methodId === "pv" ||
+              methodId === "punto"
+            ) {
+              return { ...pAcc, bs: pAcc.bs + amountBs };
+            }
+            if (methodId === "usd" || methodId === "divisas") {
+              return { ...pAcc, usd: pAcc.usd + amountUsd };
+            }
+            return pAcc;
+          },
+          { bs: 0, usd: 0 },
+        );
+
+        return {
+          totalBs: acc.totalBs + saleTotals.bs,
+          totalUsd: acc.totalUsd + saleTotals.usd,
+          count: acc.count + 1,
+        };
+      },
       { totalBs: 0, totalUsd: 0, count: 0 },
     );
   }, [recentSales]);

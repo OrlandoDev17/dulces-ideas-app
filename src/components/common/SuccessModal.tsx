@@ -38,7 +38,7 @@ export function SuccessModal({
           <motion.div
             initial={{ width: "100%" }}
             animate={{ width: "0%" }}
-            transition={{ duration: 2.5, ease: "linear" }}
+            transition={{ duration: 1, ease: "linear" }}
             onAnimationComplete={onClose}
             className="h-full bg-green-500 rounded-full"
           />

@@ -73,8 +73,8 @@ export function FinancialSummary({
           }
 
           if (mId === "pm") pmBs += finalAmtBs;
-          if (mId === "punto") pvBs += finalAmtBs;
-          if (mId === "ves") efBs += finalAmtBs;
+          if (mId === "punto" || mId === "pv") pvBs += finalAmtBs;
+          if (mId === "ves" || mId === "bs") efBs += finalAmtBs;
           if (mId === "usd") usdTotal += finalAmtRef;
         });
       } else {
@@ -84,8 +84,8 @@ export function FinancialSummary({
         const finalTotalUsd = Math.max(0, totalUsd - deliveryAmt / tasa);
 
         if (met === "pm") pmBs += finalTotalBs;
-        if (met === "punto") pvBs += finalTotalBs;
-        if (met === "ves") efBs += finalTotalBs;
+        if (met === "punto" || met === "pv") pvBs += finalTotalBs;
+        if (met === "ves" || met === "bs") efBs += finalTotalBs;
         if (met === "usd") usdTotal += finalTotalUsd;
       }
 

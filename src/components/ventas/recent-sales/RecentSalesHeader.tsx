@@ -35,10 +35,11 @@ export function RecentSalesHeader({
         <Button
           style="dashed"
           onClick={handleEndDay}
-          className="flex-1 sm:flex-none h-full px-4 rounded-2xl group border-2 border-zinc-200 hover:border-primary-500 hover:bg-primary-50 transition-all"
+          disabled={sales.length === 0}
+          className="flex-1 sm:flex-none h-full px-4 rounded-2xl group border-2 border-zinc-200 hover:border-primary-500 hover:bg-primary-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-zinc-200"
         >
-          <CircleDollarSign className="size-4 text-zinc-400 group-hover:text-primary-500" />
-          <span className="text-xs font-black uppercase tracking-wider text-zinc-600 group-hover:text-primary-600">
+          <CircleDollarSign className="size-4 text-zinc-400 group-hover:text-primary-100 group-disabled:text-zinc-300" />
+          <span className="text-xs font-black uppercase tracking-wider text-zinc-600 group-hover:text-primary-100 group-disabled:text-zinc-300">
             Cerrar Día
           </span>
         </Button>
