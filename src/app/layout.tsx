@@ -10,7 +10,14 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   title: "Dulces Ideas",
   description: "Gestion de ventas, encargos y reportes",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Dulces Ideas App",
+    startupImage: ["/dulces-ideas-logo.png"],
+  },
   icons: {
+    apple: "/dulces-ideas-logo.png",
     icon: "/dulces-ideas-logo.png",
   },
 };
