@@ -30,7 +30,7 @@ export function RecentSaleRow({
   const getMethodLabel = (id: string) => {
     const method = paymentMethods?.find((m) => m.id === id);
     if (!method) return id;
-    return `${method.currency} - ${method.name}`;
+    return method.name.replace(/Punto de Venta/gi, "Punto");
   };
 
   // Funcion para buscar el nombre del producto
@@ -127,7 +127,12 @@ export function RecentSaleRow({
                   aria-hidden="true"
                 />
                 <span className="font-black text-primary-900 text-[11px] uppercase tracking-wide mt-0.5">
-                  {getMethodLabel(p.method_id || p.methodId)}
+                  {getMethodLabel(p.method_id || p.methodId)}:
+                </span>
+                <span className="font-black text-primary-600 text-[11px] tabular-nums mt-0.5">
+                  {p.currency === "USD"
+                    ? `$${(p.amount_ref || p.amountRef || 0).toFixed(2)}`
+                    : `Bs. ${roundTo2Decimals(p.amount_bs || p.amountBs || 0)}`}
                 </span>
               </div>
             ))}

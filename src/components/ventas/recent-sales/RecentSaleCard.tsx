@@ -157,7 +157,16 @@ export function RecentSaleCard({
                           aria-hidden="true"
                         />
                         <span className="text-[10px] font-black text-zinc-700 uppercase truncate">
-                          {method?.name || p.method_id || p.methodId}
+                          {(method?.name || p.method_id || p.methodId).replace(
+                            /Punto de Venta/gi,
+                            "Punto",
+                          )}
+                          :
+                        </span>
+                        <span className="text-[10px] font-black text-primary-600 tabular-nums">
+                          {p.currency === "USD"
+                            ? `$${(p.amount_ref || p.amountRef || 0).toFixed(2)}`
+                            : `Bs. ${(p.amount_bs || p.amountBs || 0).toLocaleString("es-VE", { minimumFractionDigits: 2 })}`}
                         </span>
                       </div>
                     </li>

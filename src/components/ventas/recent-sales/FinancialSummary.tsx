@@ -45,21 +45,50 @@ export function FinancialSummary({
       const payments = sale.sale_payments || [];
       const totalBs = sale.total_bs || sale.totalBs || 0;
       const totalUsd = sale.total_usd || sale.totalUsd || 0;
+      const deliveryAmt = sale.delivery_amount || sale.deliveryAmount || 0;
 
-      // Ingresos (Usando montos brutos de pagos)
+      // Ingresos (Ajustados para no incluir delivery)
       if (payments.length > 0) {
+        // Calculamos los montos de esta venta individualmente
+        let sPm = 0;
+        let sPv = 0;
+        let sEf = 0;
+        let sUsd = 0;
+
         payments.forEach((p) => {
           const mId = p.method_id || p.methodId;
           const amtBs = p.amount_bs || p.amountBs || 0;
           const amtRef = p.amount_ref || p.amountRef || 0;
 
-          if (mId === "pm") pmBs += amtBs;
-          if (mId === "punto" || mId === "pv") pvBs += amtBs;
-          if (mId === "ves" || mId === "bs") efBs += amtBs;
-          if (mId === "usd") usdTotal += amtRef;
+          if (mId === "pm") sPm += amtBs;
+          if (mId === "punto" || mId === "pv") sPv += amtBs;
+          if (mId === "ves" || mId === "bs") sEf += amtBs;
+          if (mId === "usd") sUsd += amtRef;
         });
+
+        // "No sumes el delivery nunca": Restamos el monto de delivery de los ingresos en Bs
+        // Prioridad de resta: Pago Móvil -> Punto -> Efectivo
+        let toSubtract = deliveryAmt;
+        if (toSubtract > 0) {
+          const subPm = Math.min(sPm, toSubtract);
+          sPm -= subPm;
+          toSubtract -= subPm;
+
+          const subPv = Math.min(sPv, toSubtract);
+          sPv -= subPv;
+          toSubtract -= subPv;
+
+          const subEf = Math.min(sEf, toSubtract);
+          sEf -= subEf;
+          toSubtract -= subEf;
+        }
+
+        pmBs += sPm;
+        pvBs += sPv;
+        efBs += sEf;
+        usdTotal += sUsd;
       } else {
-        // Fallback para ventas sin desglose de pagos detallado
+        // Fallback para ventas sin desglose detallado (totalBs ya es NETO según nuevas reglas)
         const met = sale.method_id || sale.metodo;
         if (met === "pm") pmBs += totalBs;
         if (met === "punto" || met === "pv") pvBs += totalBs;
@@ -67,7 +96,7 @@ export function FinancialSummary({
         if (met === "usd") usdTotal += totalUsd;
       }
 
-      // Deuda de Delivery (Cuentas por pagar)
+      // Agrupación de Delivery (se mantiene el desglose por persona pero no se sumará al total de ingresos)
       if (sale.delivery) {
         const name = sale.delivery_name || sale.deliveryName || "Delivery s/n";
         const amount = sale.delivery_amount || sale.deliveryAmount || 0;
@@ -278,15 +307,10 @@ export function FinancialSummary({
           )}
         </div>
 
-        <footer className="mt-auto pt-4 border-t-2 border-red-500">
-          <div className="flex justify-between items-center">
-            <span className="text-lg font-black text-zinc-800">
-              Total Deuda:
-            </span>
-            <span className="text-lg font-black text-zinc-800 tabular-nums">
-              Bs. {fmtBs(totals.deliveryTotal)}
-            </span>
-          </div>
+        <footer className="mt-auto pt-4 border-t border-zinc-100 italic">
+          <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">
+            * Los montos individuales se muestran por repartidor.
+          </p>
         </footer>
       </article>
     </div>
