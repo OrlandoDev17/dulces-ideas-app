@@ -79,22 +79,22 @@ export function ActiveSale({
         currency: metodoSelected.currency,
       };
 
-      const salePayload: any = {
+      const salePayload: Sale = {
         id: generateId(),
         sale_items: items.map((item) => ({
+          ...item,
           product_id: item.id,
-          quantity: item.quantity,
           price_at_moment: item.price,
         })),
-        totalBs: totalAmountBs,
-        totalUsd: totalAmountUsd,
+        totalBs: totalBSRounded, // Ahora guardamos el NETO
+        totalUsd: totalUSD, // Ahora guardamos el NETO
         tasa_bcv: tasa,
         metodo: metodoSelected.id,
         fecha: new Date().toISOString(),
         payments: [singlePayment],
         delivery: isDelivery,
-        delivery_name: isDelivery ? deliveryName || "" : null, // Si es delivery, texto o vacío; si no, null
-        delivery_amount: isDelivery ? Number(deliveryAmount) || 0 : 0, // Si es delivery, el monto; si no, 0
+        delivery_name: isDelivery ? deliveryName || "" : null,
+        delivery_amount: isDelivery ? Number(deliveryAmount) || 0 : 0,
       };
 
       onRegister(salePayload);
@@ -104,16 +104,11 @@ export function ActiveSale({
 
   // Caso Pago Mixto
   const confirmMixedPayment = (payments: Payment[]) => {
-    const totalAmountBs =
-      totalBSRounded + (isDelivery ? Number(deliveryAmount) || 0 : 0);
-    const totalAmountUsd =
-      totalUSD + (isDelivery ? (Number(deliveryAmount) || 0) / tasa : 0);
-
     const salePayload: Sale = {
       id: generateId(),
       items: [...items],
-      totalBs: totalAmountBs,
-      totalUsd: totalAmountUsd,
+      totalBs: totalBSRounded, // Ahora guardamos el NETO
+      totalUsd: totalUSD, // Ahora guardamos el NETO
       tasa_bcv: tasa,
       metodo: "mx",
       fecha: new Date().toISOString(),

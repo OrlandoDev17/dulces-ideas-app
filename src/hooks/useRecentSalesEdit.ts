@@ -23,6 +23,7 @@ export const useRecentSalesEdit = (onUpdateSale?: (sale: Sale) => void) => {
    */
   const saveEdit = (sale: Sale) => {
     if (onUpdateSale) {
+      // Ahora guardamos directamente el NETO (A partir de ahora)
       onUpdateSale({
         ...sale,
         total_bs: editTotalBS,

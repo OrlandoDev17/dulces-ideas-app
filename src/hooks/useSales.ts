@@ -27,6 +27,7 @@ export function useSales(sessionId: string | null) {
       return data;
     },
     enabled: !!sessionId,
+    staleTime: 0, // Asegura que la data no se considere "fresca" por mucho tiempo
   });
 
   // 2. CREAR: Registro en cascada (Venta -> Items -> Pagos)
@@ -90,11 +91,11 @@ export function useSales(sessionId: string | null) {
     },
     onSuccess: () =>
       queryClient.invalidateQueries({
-        queryKey: ["sales", "recent", sessionId],
+        queryKey: ["sales"],
       }),
   });
 
-  // 3. EDITAR: Actualiza solo la cabecera (totales/tasa)
+  // 3. EDITAR: Actualiza cabecera y sincroniza pagos
   const updateSale = useMutation({
     mutationFn: async ({
       id,
@@ -103,17 +104,78 @@ export function useSales(sessionId: string | null) {
       id: string;
       updates: Partial<Sale>;
     }) => {
-      const { data, error } = await supabase
+      // 1. Filtrar solo los campos válidos para 'sales' (Evita errores de Supabase con campos extra)
+      const filteredUpdates: Record<string, unknown> = {};
+      const actualUpdates = updates as Record<string, unknown>;
+
+      (
+        [
+          "total_bs",
+          "total_usd",
+          "tasa_bcv",
+          "delivery",
+          "delivery_name",
+          "delivery_amount",
+          "is_archived",
+          "type",
+          "description",
+          "status",
+        ] as const
+      ).forEach((col) => {
+        if (actualUpdates[col] !== undefined) {
+          filteredUpdates[col] = actualUpdates[col];
+        }
+      });
+
+      const { data: sale, error: saleError } = await supabase
         .from("sales")
-        .update(updates)
+        .update(filteredUpdates)
         .eq("id", id)
-        .eq("session_id", sessionId);
-      if (error) throw error;
-      return data;
+        .select()
+        .single();
+      if (saleError) throw saleError;
+
+      // 2. Sincronizar pagos: Ajustar montos si el total cambió
+      const { data: currentPayments } = await supabase
+        .from("sale_payments")
+        .select("*")
+        .eq("sale_id", id);
+
+      if (currentPayments && currentPayments.length > 0) {
+        const totalPaidBS = currentPayments.reduce(
+          (acc, p) => acc + (p.amount_bs || 0),
+          0,
+        );
+
+        // Si estamos guardando netos, el total pagado esperado es Net + Delivery
+        const deliveryAmt =
+          filteredUpdates.delivery_amount ?? sale.delivery_amount ?? 0;
+        const expectedTotalPaidBS =
+          (filteredUpdates.total_bs ?? sale.total_bs ?? 0) + deliveryAmt;
+
+        const factor =
+          totalPaidBS > 0 && expectedTotalPaidBS !== totalPaidBS
+            ? expectedTotalPaidBS / totalPaidBS
+            : 1;
+
+        if (factor !== 1) {
+          for (const p of currentPayments) {
+            await supabase
+              .from("sale_payments")
+              .update({
+                amount_bs: (p.amount_bs || 0) * factor,
+                amount_ref: (p.amount_ref || 0) * factor,
+              })
+              .eq("id", p.id);
+          }
+        }
+      }
+
+      return sale;
     },
     onSuccess: () =>
       queryClient.invalidateQueries({
-        queryKey: ["sales", "recent", sessionId],
+        queryKey: ["sales"],
       }),
   });
 
@@ -130,7 +192,7 @@ export function useSales(sessionId: string | null) {
     },
     onSuccess: () =>
       queryClient.invalidateQueries({
-        queryKey: ["sales", "recent", sessionId],
+        queryKey: ["sales"],
       }),
   });
 
@@ -146,7 +208,7 @@ export function useSales(sessionId: string | null) {
     },
     onSuccess: () =>
       queryClient.invalidateQueries({
-        queryKey: ["sales", "recent", sessionId],
+        queryKey: ["sales"],
       }),
   });
 
@@ -162,10 +224,7 @@ export function useSales(sessionId: string | null) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["sales", "recent", sessionId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["sales", "archived", sessionId],
+        queryKey: ["sales"],
       });
     },
   });

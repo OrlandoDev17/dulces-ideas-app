@@ -44,7 +44,7 @@ export function RecentSalesTable({
     () => false, // server snapshot
   );
 
-  const reversedSales = useMemo(() => [...sales].reverse(), [sales]);
+  const sortedSales = useMemo(() => sales, [sales]);
 
   // Encontrar la venta que se está editando para pasarla al modal
   const activeEditingSale = useMemo(
@@ -100,7 +100,7 @@ export function RecentSalesTable({
         </div>
 
         <div className="flex flex-col gap-3 md:gap-4" role="rowgroup">
-          {reversedSales.map((sale) => (
+          {sortedSales.map((sale) => (
             <div key={sale.id}>
               {/* Versión Card para móvil */}
               <div className="md:hidden">

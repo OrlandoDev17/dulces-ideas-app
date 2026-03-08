@@ -102,24 +102,12 @@ export function RecentSaleRow({
         )}
       </div>
 
-      {/* 3. Columna: Totales (snake_case) */}
       <div className="flex flex-col">
         <span className="text-primary-500 font-black text-sm tracking-tight tabular-nums">
-          Bs.{" "}
-          {roundTo2Decimals(
-            (sale.total_bs || sale.totalBs || 0) -
-              (sale.delivery ? sale.delivery_amount || 0 : 0),
-          )}
+          Bs. {roundTo2Decimals(sale.total_bs || sale.totalBs || 0)}
         </span>
         <span className="text-zinc-400 font-bold text-xs tracking-tighter tabular-nums">
-          $
-          {(
-            (sale.total_usd || sale.totalUsd || 0) -
-            (sale.delivery
-              ? (sale.delivery_amount || 0) / (sale.tasa_bcv || 1)
-              : 0)
-          ).toFixed(2)}{" "}
-          USD
+          ${(sale.total_usd || sale.totalUsd || 0).toFixed(2)} USD
         </span>
       </div>
 

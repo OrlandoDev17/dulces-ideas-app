@@ -45,48 +45,26 @@ export function FinancialSummary({
       const payments = sale.sale_payments || [];
       const totalBs = sale.total_bs || sale.totalBs || 0;
       const totalUsd = sale.total_usd || sale.totalUsd || 0;
-      const deliveryAmt = sale.delivery_amount || sale.deliveryAmount || 0;
-      const tasa = sale.tasa_bcv || 1;
 
-      // Ingresos (Descontando Delivery si aplica)
+      // Ingresos (Usando montos brutos de pagos)
       if (payments.length > 0) {
-        // Calculamos el total pagado en Bs para prorratear el descuento de delivery
-        const totalPaidInBs = payments.reduce(
-          (acc, p) => acc + (p.amount_bs || p.amountBs || 0),
-          0,
-        );
-
         payments.forEach((p) => {
           const mId = p.method_id || p.methodId;
           const amtBs = p.amount_bs || p.amountBs || 0;
           const amtRef = p.amount_ref || p.amountRef || 0;
 
-          // Si hay delivery, restamos la parte proporcional del pago
-          let finalAmtBs = amtBs;
-          let finalAmtRef = amtRef;
-
-          if (deliveryAmt > 0 && totalPaidInBs > 0) {
-            const factor = amtBs / totalPaidInBs;
-            const discountBs = deliveryAmt * factor;
-            finalAmtBs = Math.max(0, amtBs - discountBs);
-            finalAmtRef = Math.max(0, amtRef - discountBs / tasa);
-          }
-
-          if (mId === "pm") pmBs += finalAmtBs;
-          if (mId === "punto" || mId === "pv") pvBs += finalAmtBs;
-          if (mId === "ves" || mId === "bs") efBs += finalAmtBs;
-          if (mId === "usd") usdTotal += finalAmtRef;
+          if (mId === "pm") pmBs += amtBs;
+          if (mId === "punto" || mId === "pv") pvBs += amtBs;
+          if (mId === "ves" || mId === "bs") efBs += amtBs;
+          if (mId === "usd") usdTotal += amtRef;
         });
       } else {
         // Fallback para ventas sin desglose de pagos detallado
         const met = sale.method_id || sale.metodo;
-        const finalTotalBs = Math.max(0, totalBs - deliveryAmt);
-        const finalTotalUsd = Math.max(0, totalUsd - deliveryAmt / tasa);
-
-        if (met === "pm") pmBs += finalTotalBs;
-        if (met === "punto" || met === "pv") pvBs += finalTotalBs;
-        if (met === "ves" || met === "bs") efBs += finalTotalBs;
-        if (met === "usd") usdTotal += finalTotalUsd;
+        if (met === "pm") pmBs += totalBs;
+        if (met === "punto" || met === "pv") pvBs += totalBs;
+        if (met === "ves" || met === "bs") efBs += totalBs;
+        if (met === "usd") usdTotal += totalUsd;
       }
 
       // Deuda de Delivery (Cuentas por pagar)

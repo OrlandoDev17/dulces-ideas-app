@@ -121,19 +121,11 @@ export function RecentSaleCard({
               <span className="text-base font-black text-primary-600 leading-tight tabular-nums">
                 Bs.{" "}
                 {roundTo2Decimals(
-                  (sale.total_bs || sale.totalBs || 0) -
-                    (sale.delivery ? sale.delivery_amount || 0 : 0),
+                  sale.total_bs || sale.totalBs || 0,
                 ).toLocaleString("es-VE", { minimumFractionDigits: 2 })}
               </span>
               <span className="text-[9px] font-bold text-primary-400/80 tabular-nums leading-none">
-                $
-                {(
-                  (sale.total_usd || sale.totalUsd || 0) -
-                  (sale.delivery
-                    ? (sale.delivery_amount || 0) / (sale.tasa_bcv || 1)
-                    : 0)
-                ).toFixed(2)}{" "}
-                USD
+                ${(sale.total_usd || sale.totalUsd || 0).toFixed(2)} USD
               </span>
             </div>
           </div>
@@ -149,6 +141,10 @@ export function RecentSaleCard({
                   const method = paymentMethods?.find(
                     (m) => m.id === (p.method_id || p.methodId),
                   );
+
+                  const amtBs = p.amount_bs || p.amountBs || 0;
+                  const amtRef = p.amount_ref || p.amountRef || 0;
+
                   return (
                     <li
                       key={`${sale.id}-pay-${pIndex}`}
@@ -164,16 +160,6 @@ export function RecentSaleCard({
                           {method?.name || p.method_id || p.methodId}
                         </span>
                       </div>
-                      <span className="text-[10px] font-black text-zinc-800 tabular-nums shrink-0">
-                        {p.currency === "USD" ? "$" : "Bs. "}
-                        {Number(
-                          p.currency === "USD"
-                            ? p.amountRef || p.amount_ref
-                            : p.amountBs || p.amount_bs,
-                        ).toLocaleString("es-VE", {
-                          minimumFractionDigits: p.currency === "USD" ? 2 : 1,
-                        })}
-                      </span>
                     </li>
                   );
                 })
