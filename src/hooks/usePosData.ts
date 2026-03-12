@@ -21,8 +21,14 @@ export function usePosData() {
         options: data.filter((p) => p.category === cat),
       }));
     },
-    staleTime: 1000 * 60 * 60, // 1 hora
-    gcTime: 1000 * 60 * 60 * 24, // 1 dia
+    // 1. Los datos son viejos de inmediato (fuerza a re-verificar)
+    staleTime: 0,
+
+    // 2. Si el usuario cambia de pestaña a Supabase y vuelve, que se actualice solo
+    refetchOnWindowFocus: true,
+
+    // 3. Mantén los productos en memoria 10 minutos por si navegas a otra parte
+    gcTime: 1000 * 60 * 10,
   });
 
   // 2. Traer Metodos de pago
