@@ -5,7 +5,7 @@ import { useState } from "react";
 // Components
 import { OptionDropdown } from "@/components/common/OptionDropdown";
 // Icons
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Search } from "lucide-react";
 // Types
 // Types
 import type {
@@ -29,6 +29,11 @@ export function ProductSelector({
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState<string>("1");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredProducts = products.filter((p) =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   // Función para añadir el producto al carrito
   const handleAdd = () => {
@@ -37,6 +42,7 @@ export function ProductSelector({
       onAddToCart(selectedProduct, qtyNum);
       setQuantity("1");
       setSelectedProduct(null);
+      setSearchTerm("");
     }
   };
 
@@ -66,28 +72,61 @@ export function ProductSelector({
       </header>
 
       {/* Controles */}
-      <div className="flex gap-2 items-center">
+      <div className="flex gap-2 items-center relative">
         {/* Dropdown Personalizado */}
-        <div className={`relative flex-1 min-w-0`}>
-          <DropdownButton isOpen={isOpen} setIsOpen={setIsOpen}>
-            <span
-              className="truncate text-xs flex-1 min-w-0 mr-1"
-              title={selectedProduct ? selectedProduct.name : ""}
-            >
-              {selectedProduct
-                ? `${selectedProduct.name} (${selectedProduct.price})`
-                : "Seleccionar…"}
-            </span>
+        <div className={`flex-1 min-w-0`}>
+          <DropdownButton
+            isOpen={isOpen}
+            setIsOpen={(val) => {
+              setIsOpen(val);
+              if (!val) setSearchTerm("");
+            }}
+          >
+            {isOpen ? (
+              <div className="flex items-center gap-2 w-full animate-in fade-in duration-200">
+                <Search size={12} className="text-primary-400 shrink-0" />
+                <input
+                  type="text"
+                  autoFocus
+                  placeholder="Buscar..."
+                  className="bg-transparent border-none outline-none w-full text-xs text-primary-900 placeholder:text-zinc-400"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && filteredProducts.length > 0) {
+                      setSelectedProduct(filteredProducts[0]);
+                      setIsOpen(false);
+                      setSearchTerm("");
+                    }
+                  }}
+                />
+              </div>
+            ) : (
+              <span
+                className="truncate text-xs flex-1 min-w-0 mr-1"
+                title={selectedProduct ? selectedProduct.name : ""}
+              >
+                {selectedProduct
+                  ? `${selectedProduct.name} (${selectedProduct.price})`
+                  : "Seleccionar…"}
+              </span>
+            )}
           </DropdownButton>
 
           {/* Lista de Opciones Estilizada */}
           <OptionDropdown
             isOpen={isOpen}
             setIsOpen={setIsOpen}
-            onSelect={setSelectedProduct}
-            options={products}
+            onSelect={(p) => {
+              setSelectedProduct(p);
+              setSearchTerm("");
+              setIsOpen(false);
+            }}
+            options={filteredProducts}
             getLabel={(p) => p.name}
             getExtra={(p) => `${p.price} ${p.currency}`}
+            className="mt-2 w-full left-0 top-full"
           />
         </div>
 

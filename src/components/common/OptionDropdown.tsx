@@ -41,33 +41,39 @@ export function OptionDropdown<T>({
             initial={{ opacity: 0, y: yOffset }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: yOffset }}
-            className={`absolute z-50 w-fit bg-white border border-primary-200 shadow-lg shadow-primary-500/50 rounded-xl 
-            overflow-y-auto ${maxHeight} ${className}`}
+            className={`absolute z-50 bg-white border border-primary-200 shadow-lg shadow-primary-500/50 rounded-xl 
+            overflow-y-auto ${maxHeight} ${!className.includes("w-") ? "w-fit" : ""} ${className}`}
           >
-            {options.map((option: any, index: number) => (
-              <li
-                key={`${option.id || index}-${index}`}
-                onClick={() => {
-                  onSelect(option);
-                  setIsOpen(false);
-                }}
-                className="flex justify-between items-center px-3 py-2.5 text-sm rounded-lg hover:bg-primary-500 hover:text-white cursor-pointer transition-colors group"
-              >
-                <span
-                  className="font-medium truncate flex-1 min-w-0 mr-2"
-                  title={getLabel(option)}
+            {options.length > 0 ? (
+              options.map((option: any, index: number) => (
+                <li
+                  key={`${option.id || index}-${index}`}
+                  onClick={() => {
+                    onSelect(option);
+                    setIsOpen(false);
+                  }}
+                  className="flex justify-between items-center px-3 py-2.5 text-sm rounded-lg hover:bg-primary-500 hover:text-white cursor-pointer transition-colors group"
                 >
-                  {getLabel(option)}
-                </span>
-
-                {/* Solo renderiza la parte extra si la función existe */}
-                {getExtra && (
-                  <span className="text-xs opacity-70 group-hover:opacity-100">
-                    {getExtra(option)}
+                  <span
+                    className="font-medium truncate flex-1 min-w-0 mr-2"
+                    title={getLabel(option)}
+                  >
+                    {getLabel(option)}
                   </span>
-                )}
+
+                  {/* Solo renderiza la parte extra si la función existe */}
+                  {getExtra && (
+                    <span className="text-xs opacity-70 group-hover:opacity-100">
+                      {getExtra(option)}
+                    </span>
+                  )}
+                </li>
+              ))
+            ) : (
+              <li className="px-3 py-4 text-center text-zinc-400 text-xs italic">
+                No se encontraron resultados
               </li>
-            ))}
+            )}
           </motion.ul>
         </>
       )}
