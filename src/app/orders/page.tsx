@@ -1,5 +1,7 @@
 "use client";
 
+// Hooks
+import { useState } from "react";
 // Services
 import { getVenezuelaTime, formatVenezuelaDate } from "@/services/FechaYHora";
 // Framer Motion
@@ -7,12 +9,19 @@ import { motion } from "motion/react";
 // Animations
 import { staggerContainer, slideInLeft } from "@/lib/animations";
 // Icons
-import { Cake, Cookie, IceCream, Plus, HelpCircle } from "lucide-react";
+import { Cake } from "lucide-react";
 import { Button } from "@/components/common/Button";
-import { EmptyState } from "@/components/common/EmptyState";
+import { EmptyOrders } from "@/components/orders/EmptyOrders";
+import { AddOrderModal } from "@/components/orders/AddOrderModal";
 
 export default function OrdersPage() {
+  const [isOpen, setIsOpen] = useState(false);
+
   const fechaHoy = formatVenezuelaDate(getVenezuelaTime());
+
+  const handleOpenModal = () => {
+    setIsOpen(!isOpen);
+  };
 
   return (
     <motion.div
@@ -34,29 +43,17 @@ export default function OrdersPage() {
           </h2>
         </div>
 
-        <Button style="primary">
+        <Button style="primary" onClick={handleOpenModal}>
           Nuevo encargo
           <Cake />
         </Button>
       </motion.header>
 
       <section className="flex-1 flex flex-col items-center justify-center -mt-12">
-        <EmptyState
-          title="No hay encargos registrados todavía"
-          description="Tu agenda de pedidos está lista para llenarse de dulces momentos. Comienza gestionando tu primer encargo personalizado hoy mismo."
-          subIcons={[Cake, Cookie, IceCream]}
-          primaryAction={{
-            label: "Agregar Primer Encargo",
-            icon: Plus,
-            onClick: () => console.log("Nuevo encargo"),
-          }}
-          secondaryAction={{
-            label: "Ver Guía de Uso",
-            icon: HelpCircle,
-            onClick: () => console.log("Ver guía"),
-          }}
-        />
+        <EmptyOrders onClick={handleOpenModal} />
       </section>
+
+      <AddOrderModal isOpen={isOpen} onClose={handleOpenModal} />
     </motion.div>
   );
 }

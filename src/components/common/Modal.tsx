@@ -39,7 +39,8 @@ export function Modal({
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full md:max-w-md bg-white rounded-4xl shadow-2xl z-901 overflow-hidden border border-zinc-100 flex flex-col max-h-[90vh]"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full md:max-w-md bg-white rounded-4xl 
+            shadow-2xl z-901 overflow-hidden border border-zinc-100 flex flex-col max-h-[90vh]"
           >
             {/* Header - Fixed */}
             <div className="bg-primary-600 p-4 md:p-8 text-white relative overflow-hidden shrink-0">

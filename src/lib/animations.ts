@@ -58,3 +58,14 @@ export const slideInLeft: Variants = {
     transition,
   },
 };
+
+// ─── Variant: slide in from right ───────────────────────────────────────────
+
+export const slideInRight: Variants = {
+  hidden: { opacity: 0, x: 12 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition,
+  },
+};

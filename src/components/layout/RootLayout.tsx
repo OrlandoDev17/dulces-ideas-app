@@ -39,7 +39,9 @@ export function RootLayout({ children }: { children: ReactNode }) {
       <SessionProvider>
         <div className="flex">
           <Sidebar />
-          <main className="flex-1 pb-24 md:pb-0 md:pl-64">{children}</main>
+          <main className="flex-1 pb-24 md:pb-0 md:pl-64 2xl:pl-72">
+            {children}
+          </main>
           <BottomNav />
         </div>
       </SessionProvider>

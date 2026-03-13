@@ -59,7 +59,10 @@ export function Sidebar() {
   const isActive = (href: string) => path === href;
 
   return (
-    <aside className="fixed left-0 top-0 hidden md:flex flex-col gap-10 p-4 w-64 min-h-screen z-50 bg-white border-r-2 border-primary-500">
+    <aside
+      className="fixed left-0 top-0 hidden md:flex flex-col gap-10 p-4 w-64 2xl:w-72 min-h-screen z-50 bg-white 
+    border-r-2 border-primary-500"
+    >
       <header className="flex items-center gap-2">
         <CakeSlice
           className="size-10 text-primary-50 p-2 bg-primary-600 rounded-xl"
