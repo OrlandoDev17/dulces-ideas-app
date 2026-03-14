@@ -42,6 +42,7 @@ export function useSessions() {
   return {
     sessions,
     isLoading,
+    activeSessionId: sessions[0]?.id || null,
     createSession: createSessionMutation.mutateAsync,
   };
 }
