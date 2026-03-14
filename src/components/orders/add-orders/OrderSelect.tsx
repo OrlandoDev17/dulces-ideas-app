@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { OptionDropdown } from "../common/OptionDropdown";
+import { OptionDropdown } from "@/components/common/OptionDropdown";
 import { ChevronDown } from "lucide-react";
 
 interface OrderSelectProps<T> {
@@ -25,11 +25,11 @@ export function OrderSelect<T>({
   const containerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="flex flex-col gap-1 relative" ref={containerRef}>
+    <div className="flex flex-col gap-1 relative">
       <span className="text-xs font-bold text-primary-700 uppercase tracking-wide">
         {label}
       </span>
-      <div className="relative w-full">
+      <div className="relative w-full" ref={containerRef}>
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
@@ -45,17 +45,15 @@ export function OrderSelect<T>({
         <ChevronDown className="size-5 text-gray-700 absolute top-1/2 -translate-y-1/2 right-3 pointer-events-none" />
       </div>
 
-      <div className="relative">
-        <OptionDropdown
-          isOpen={isOpen}
-          setIsOpen={setIsOpen}
-          onSelect={onSelect}
-          options={options}
-          getLabel={getLabel}
-          className="w-full mt-1"
-          maxHeight="max-h-[120px]"
-        />
-      </div>
+      <OptionDropdown
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        onSelect={onSelect}
+        options={options}
+        getLabel={getLabel}
+        maxHeight="max-h-[120px]"
+        triggerRef={containerRef}
+      />
     </div>
   );
 }
