@@ -9,7 +9,11 @@ interface Props {
 export function DropdownButton({ isOpen, setIsOpen, children }: Props) {
   return (
     <button
-      onClick={() => setIsOpen(!isOpen)}
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setIsOpen(!isOpen);
+      }}
       className="w-full flex items-center justify-between bg-white border border-primary-200 rounded-xl p-4 text-sm font-bold text-primary-700 hover:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-600 transition-all cursor-pointer shadow-sm shadow-primary-500/30 overflow-hidden"
     >
       <div className="flex items-center gap-2 min-w-0">{children}</div>

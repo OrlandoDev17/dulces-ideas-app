@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnimatePresence, motion } from "motion/react";
+import { createPortal } from "react-dom";
+import { useState, useEffect } from "react";
 
 interface Props<T> {
   isOpen: boolean;
@@ -13,6 +15,7 @@ interface Props<T> {
   maxHeight?: string;
   className?: string;
   direction?: "up" | "down";
+  triggerRef?: React.RefObject<HTMLElement | null>;
 }
 
 export function OptionDropdown<T>({
@@ -25,24 +28,63 @@ export function OptionDropdown<T>({
   maxHeight = "max-h-[200px] md:max-h-[400px]",
   className = "mt-2",
   direction = "down",
+  triggerRef,
 }: Props<T>) {
+  const [mounted, setMounted] = useState(false);
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+
+  useEffect(() => {
+    const r = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(r);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen && triggerRef?.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setCoords({
+        top: direction === "down" ? rect.bottom + window.scrollY : rect.top + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
+    }
+  }, [isOpen, triggerRef, direction]);
+
   const yOffset = direction === "up" ? 10 : -10;
 
-  return (
+  if (!mounted) return null;
+
+  const dropdownContent = (
     <AnimatePresence>
       {isOpen && (
         <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-          />
+          {triggerRef && (
+            <div
+              className="fixed inset-0 z-1000"
+              onClick={() => setIsOpen(false)}
+            />
+          )}
 
           <motion.ul
             initial={{ opacity: 0, y: yOffset }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: yOffset }}
-            className={`absolute z-50 bg-white border border-primary-200 shadow-lg shadow-primary-500/50 rounded-xl 
-            overflow-y-auto ${maxHeight} ${!className.includes("w-") ? "w-fit" : ""} ${className}`}
+            style={
+              triggerRef
+                ? {
+                    top:
+                      direction === "down" ? coords.top : "auto",
+                    bottom:
+                      direction === "up"
+                        ? window.innerHeight - coords.top + window.scrollY
+                        : "auto",
+                    left: coords.left,
+                    width: coords.width,
+                    position: "absolute",
+                  }
+                : { position: "absolute" }
+            }
+            className={`${triggerRef ? "z-1001" : "z-50"} bg-white border border-primary-200 shadow-xl shadow-primary-500/30 rounded-2xl 
+            overflow-y-auto ${maxHeight} ${className}`}
           >
             {options.length > 0 ? (
               options.map((option: any, index: number) => (
@@ -79,4 +121,10 @@ export function OptionDropdown<T>({
       )}
     </AnimatePresence>
   );
+
+  if (triggerRef) {
+    return createPortal(dropdownContent, document.body);
+  }
+
+  return dropdownContent;
 }
