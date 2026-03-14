@@ -90,24 +90,31 @@ export function RecentSaleCard({
       </header>
 
       {/* 2. Lista de Productos */}
-      <ul
-        className="flex flex-wrap gap-1.5"
-        aria-label="Productos en esta venta"
-      >
-        {items.map((item: CartItem, i: number) => (
-          <li
-            key={`${sale.id}-item-${i}`}
-            className="inline-flex items-center px-2 py-0.5 rounded-lg bg-zinc-50/80 text-zinc-700 text-[10px] font-bold border border-zinc-100/50 shadow-sm"
-          >
-            <span className="text-primary-500 mr-1 font-black">
-              {item.quantity}x
-            </span>
-            <span className="truncate max-w-[100px]">
-              {getProductName(item.product_id || item.id)}
-            </span>
-          </li>
-        ))}
-      </ul>
+      <div className="flex flex-col gap-2">
+        {sale.order_id && (
+          <span className="self-start inline-flex items-center px-2 py-0.5 rounded-md bg-primary-500 text-white text-[9px] font-black uppercase tracking-widest shadow-sm">
+            Encargo
+          </span>
+        )}
+        <ul
+          className="flex flex-wrap gap-1.5"
+          aria-label="Productos en esta venta"
+        >
+          {items.map((item: CartItem, i: number) => (
+            <li
+              key={`${sale.id}-item-${i}`}
+              className="inline-flex items-center px-2 py-0.5 rounded-lg bg-zinc-50/80 text-zinc-700 text-[10px] font-bold border border-zinc-100/50 shadow-sm"
+            >
+              <span className="text-primary-500 mr-1 font-black">
+                {item.quantity}x
+              </span>
+              <span className="truncate max-w-[100px]">
+                {getProductName(item.product_id || item.id)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {/* 3. Totales y Pagos */}
       <section className="flex flex-col gap-3 pt-3 border-t border-zinc-50 border-dashed">
@@ -141,9 +148,6 @@ export function RecentSaleCard({
                   const method = paymentMethods?.find(
                     (m) => m.id === (p.method_id || p.methodId),
                   );
-
-                  const amtBs = p.amount_bs || p.amountBs || 0;
-                  const amtRef = p.amount_ref || p.amountRef || 0;
 
                   return (
                     <li

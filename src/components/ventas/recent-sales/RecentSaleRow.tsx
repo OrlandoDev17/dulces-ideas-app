@@ -79,7 +79,7 @@ export function RecentSaleRow({
       {/* 2. Columna: Productos (sale_items) */}
       <div className="flex flex-wrap gap-1.5 min-w-0">
         {/* Marcador de Encargo (Si mantuviste la columna 'type' en 'sales') */}
-        {sale.type === "order_payment" && (
+        {sale.order_id && (
           <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary-500 text-white text-xs font-black uppercase tracking-widest mb-1 shadow-sm">
             Encargo
           </span>

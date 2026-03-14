@@ -7,8 +7,8 @@ import {
 } from "lucide-react";
 import { DropdownButton } from "@/components/common/DropdownButton";
 import { OptionDropdown } from "@/components/common/OptionDropdown";
-
 import { PaymentMethod } from "@/lib/types";
+import { useRef } from "react";
 
 interface Props {
   amount: number | "";
@@ -52,6 +52,8 @@ export function PaymentForm({
   paymentOptions,
   onAdd,
 }: Props) {
+  const methodTriggerRef = useRef<HTMLDivElement>(null);
+
   return (
     <section className="flex flex-col gap-3">
       <label className="text-xs font-bold uppercase text-zinc-400 tracking-wider ml-1">
@@ -59,7 +61,7 @@ export function PaymentForm({
       </label>
       <div className="flex flex-col sm:flex-row gap-3">
         {/* Selector de Método */}
-        <div className="w-full sm:w-1/2 relative">
+        <div className="w-full sm:w-1/2 relative" ref={methodTriggerRef}>
           <DropdownButton isOpen={isOpenMethod} setIsOpen={setIsOpenMethod}>
             {getMethodIcon(selectedMethod.id)}
             <span className="truncate">{selectedMethod.name}</span>
@@ -81,7 +83,7 @@ export function PaymentForm({
                 {opt.currency}
               </span>
             )}
-            className="mt-2 w-full min-w-[200px]"
+            triggerRef={methodTriggerRef}
           />
         </div>
 
@@ -104,6 +106,7 @@ export function PaymentForm({
           </div>
           <button
             onClick={onAdd}
+            type="button"
             disabled={!amount || Number(amount) <= 0}
             className="p-2.5 bg-primary-500 text-primary-50 rounded-xl hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             title="Agregar pago"
