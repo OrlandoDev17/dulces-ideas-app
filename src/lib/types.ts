@@ -69,7 +69,8 @@ export interface Sale {
   status?: string;
   type?: "regular" | "order_payment";
   description?: string;
-  orderId?: string;
+  is_order?: boolean;
+  order_id?: string;
   session_id?: string | null;
   sale_items?: CartItem[];
   sale_payments?: Payment[];

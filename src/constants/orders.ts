@@ -26,4 +26,11 @@ export const CLIENT_FORM_FIELDS = [
     icon: Phone,
     placeholder: "Ej. 0412-1234567",
   },
+  {
+    name: "description",
+    label: "Descripción / Notas",
+    type: "text",
+    icon: User, // Using User as a fallback, maybe there's a better one
+    placeholder: "Ej. Forma de corazon... Etc",
+  },
 ];
