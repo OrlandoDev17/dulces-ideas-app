@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Cake, Phone, User, X, Calendar, Clock } from "lucide-react";
+import { Cake, X, ArrowRight } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { OrderInput } from "./OrderInput";
-import { OrderSelect } from "./OrderSelect";
-import { OrderDatePicker } from "./OrderDatePicker";
+import { OrderStep1Form } from "./OrderStep1Form";
+
+import { Button } from "../common/Button";
 
 interface AddOrderModalProps {
   isOpen: boolean;
@@ -14,37 +14,15 @@ export function AddOrderModal({ isOpen, onClose }: AddOrderModalProps) {
   const [deliveryDate, setDeliveryDate] = useState<Date | null>(null);
   const [deliveryTime, setDeliveryTime] = useState("");
 
-  const TIME_SLOTS: string[] = [];
-  for (let hour = 10; hour <= 21; hour++) {
-    for (let min = 0; min < 60; min += 30) {
-      if (hour === 21 && min > 0) continue;
-      const hour12 = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
-      const ampm = hour >= 12 ? "pm" : "am";
-      const minStr = min === 0 ? "00" : "30";
-      TIME_SLOTS.push(`${hour12}:${minStr} ${ampm}`);
-    }
-  }
+  const [step, setStep] = useState(1);
 
-  const CLIENT_DETAILS = [
-    {
-      name: "name",
-      label: "Nombre del cliente",
-      type: "text",
-      value: "",
-      onChange: () => {},
-      icon: User,
-      placeholder: "Ej. Jhon Doe",
-    },
-    {
-      name: "phone",
-      label: "Teléfono del cliente",
-      type: "text",
-      value: "",
-      onChange: () => {},
-      icon: Phone,
-      placeholder: "Ej. 0412-1234567",
-    },
-  ];
+  const handleNextStep = () => {
+    setStep(step + 1);
+  };
+
+  const handlePreviousStep = () => {
+    setStep(step - 1);
+  };
 
   return (
     <AnimatePresence>
@@ -64,56 +42,90 @@ export function AddOrderModal({ isOpen, onClose }: AddOrderModalProps) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full md:max-w-md bg-white 
-            rounded-xl shadow-2xl z-901 overflow-visible border border-zinc-100 flex flex-col max-h-[90vh]"
+            transition={{ type: "spring", bounce: 0.3, duration: 0.6 }}
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 max-w-md w-full max-h-[95vh] bg-white 
+            rounded-3xl shadow-xl shadow-primary-900/5 z-901 border border-zinc-100 flex flex-col overflow-visible"
           >
-            <header className="flex items-center justify-between p-4 border-b border-primary-400 mb-4">
-              <div className="flex items-center gap-2 text-primary-600">
-                <Cake className="size-7" />
-                <h2 className="text-xl font-bold">Nuevo Encargo</h2>
+            <header className="shrink-0 flex items-center justify-between p-4 sm:px-6 sm:py-4 border-b border-zinc-100">
+              <div className="flex items-center gap-3 text-primary-700">
+                <div className="bg-primary-50 p-2.5 rounded-2xl">
+                  <Cake className="size-6 text-primary-600" />
+                </div>
+                <h2 className="text-xl font-bold tracking-tight">
+                  Nuevo Encargo
+                </h2>
               </div>
-              <X
+              <button
+                type="button"
                 onClick={onClose}
-                className="size-11 p-2 rounded-full text-primary-700 hover:bg-black/20 cursor-pointer transition-all"
-              />
+                className="size-11 flex items-center justify-center rounded-full text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 cursor-pointer transition-colors"
+                aria-label="Cerrar modal"
+              >
+                <X className="size-6" />
+              </button>
             </header>
-            <div className="flex flex-col gap-6 px-4 pb-4">
-              <section className="flex flex-col gap-8">
-                <header className="flex flex-col gap-1">
-                  <h3 className="text-xl text-primary-700 font-bold">
-                    Nuevo Encargo - Paso 1 de 2
-                  </h3>
-                  <h4 className="text-sm text-primary-400">
-                    Detalles del cliente y entrega
-                  </h4>
+            <div className="flex flex-col gap-5 px-4 sm:px-6 pb-5 pt-4 overflow-visible">
+              <section className="flex flex-col gap-6">
+                <header className="flex flex-col items-start gap-2">
+                  <span className="bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-xs font-semibold tracking-wide">
+                    Paso {step} de 3
+                  </span>
+                  <div>
+                    <h3 className="text-lg text-zinc-900 font-bold">
+                      {step === 1
+                        ? "Detalles del cliente y entrega"
+                        : "Detalles del pedido"}
+                    </h3>
+                    <p className="text-sm text-zinc-500 mt-1">
+                      {step === 1
+                        ? "Ingresa la información para el pedido de este cliente."
+                        : "Ingresa los detalles del pedido."}
+                    </p>
+                  </div>
                 </header>
-                <div>
-                  <form className="flex flex-col gap-2">
-                    {CLIENT_DETAILS.map((field) => (
-                      <OrderInput key={field.name} {...field} />
-                    ))}
-                    <div className="grid md:grid-cols-2 gap-4 mt-4">
-                      <OrderDatePicker
-                        label="Fecha de entrega"
-                        selected={deliveryDate}
-                        onChange={(date) => setDeliveryDate(date)}
-                        icon={Calendar}
-                        placeholder="dd/mm/aaaa"
+                <div className="relative overflow-visible">
+                  <AnimatePresence mode="wait">
+                    {step === 1 && (
+                      <OrderStep1Form
+                        deliveryDate={deliveryDate}
+                        setDeliveryDate={setDeliveryDate}
+                        deliveryTime={deliveryTime}
+                        setDeliveryTime={setDeliveryTime}
                       />
-                      <OrderSelect
-                        label="Hora de entrega"
-                        value={deliveryTime}
-                        onSelect={setDeliveryTime}
-                        options={TIME_SLOTS}
-                        getLabel={(op) => op}
-                        icon={Clock}
-                        placeholder="Ej. 02:00 pm"
-                      />
-                    </div>
-                  </form>
+                    )}
+                    {step === 2 && <div>proximamente</div>}
+                  </AnimatePresence>
                 </div>
               </section>
             </div>
+            <footer className="shrink-0 flex justify-end items-center gap-3 p-4 sm:px-6 py-4 border-t border-zinc-100 bg-zinc-50/50 rounded-b-3xl">
+              {step === 1 && (
+                <Button size="small" style="secondary" onClick={onClose}>
+                  Cancelar
+                </Button>
+              )}
+              {step > 1 && (
+                <Button
+                  size="small"
+                  style="secondary"
+                  onClick={handlePreviousStep}
+                >
+                  Volver
+                </Button>
+              )}
+              <Button
+                size="small"
+                style="primary"
+                onClick={step === 3 ? onClose : handleNextStep}
+              >
+                {step === 1
+                  ? "Siguiente"
+                  : step === 2
+                    ? "Ver Resumen"
+                    : "Finalizar"}{" "}
+                {step !== 3 && <ArrowRight className="size-4 ml-1" />}
+              </Button>
+            </footer>
           </motion.article>
         </>
       )}

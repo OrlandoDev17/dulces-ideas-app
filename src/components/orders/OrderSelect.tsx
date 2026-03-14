@@ -26,14 +26,14 @@ export function OrderSelect<T>({
 
   return (
     <div className="flex flex-col gap-1 relative" ref={containerRef}>
-      <span className="text-sm font-bold text-primary-700 uppercase tracking-wide">
+      <span className="text-xs font-bold text-primary-700 uppercase tracking-wide">
         {label}
       </span>
       <div className="relative w-full">
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full px-4 py-2.5 pl-10 pr-10 border border-primary-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white text-left overflow-hidden whitespace-nowrap"
+          className="w-full px-4 py-2 pl-10 pr-10 border border-primary-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white text-left overflow-hidden whitespace-nowrap text-sm"
         >
           {value ? (
             <span className="text-foreground">{getLabel(value)}</span>
@@ -53,7 +53,7 @@ export function OrderSelect<T>({
           options={options}
           getLabel={getLabel}
           className="w-full mt-1"
-          maxHeight="max-h-[200px]"
+          maxHeight="max-h-[120px]"
         />
       </div>
     </div>

@@ -9,6 +9,7 @@ interface ButtonProps {
   disabled?: boolean;
   className?: string;
   type?: "button" | "submit" | "reset";
+  size?: "default" | "small";
 }
 
 export function Button({
@@ -20,9 +21,15 @@ export function Button({
   disabled = false,
   className,
   type = "button",
+  size = "default",
 }: ButtonProps) {
   const commonClasses =
     "flex items-center justify-center gap-2 px-4 py-3 text-base font-bold rounded-xl hover:-translate-y-1 active:scale-95 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none";
+
+  const sizeClasses =
+    size === "default"
+      ? "px-4 py-3 text-base font-bold"
+      : "px-2 py-1 text-sm font-bold";
 
   const styleClasses =
     style === "primary"
@@ -33,14 +40,14 @@ export function Button({
 
   return href ? (
     <Link
-      className={`${commonClasses} ${className} ${styleClasses}`}
+      className={`${commonClasses} ${className} ${styleClasses} ${sizeClasses}`}
       href={href}
     >
       {children}
     </Link>
   ) : (
     <button
-      className={`${commonClasses} ${className} ${styleClasses}`}
+      className={`${commonClasses} ${className} ${styleClasses} ${sizeClasses}`}
       onClick={onClick}
       disabled={disabled}
       form={form}
