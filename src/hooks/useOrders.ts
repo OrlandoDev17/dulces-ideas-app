@@ -11,27 +11,27 @@ export function useOrders(sessionId: string | null) {
       const { data, error } = await supabase
         .from("orders")
         .select(`*, order_items (*), order_payments (*)`)
-        .in("status", ["pending", "paid"])
+        .in("status", ["pending", "paid", "delivered"])
         .eq("is_archived", false);
       if (error) throw error;
       return data;
     },
   });
 
-  // --- MUTATION: Completar pago y cambiar a "paid" o "delivered" ---
+  // --- MUTATION: Registrar pago parcial o total ---
   const completeOrderPayment = useMutation({
     mutationFn: async ({
       orderId,
       payments,
-      status,
+      tasa,
     }: {
       orderId: string;
       payments: any[];
-      status: "paid" | "delivered";
+      tasa: number;
     }) => {
-      // 1. Crear nueva venta por el saldo restante
-      const totalBs = payments.reduce((acc, p) => acc + (p.amountBs || 0), 0);
-      const totalUsd = payments.reduce((acc, p) => acc + (p.amountRef || 0), 0);
+      // 1. Crear nueva venta por el pago realizado
+      const totalBs = payments.reduce((acc, p) => acc + (p.amount_bs || p.amountBs || 0), 0);
+      const totalUsd = payments.reduce((acc, p) => acc + (p.amount_ref || p.amountRef || 0), 0);
 
       const { data: sale, error: saleError } = await supabase
         .from("sales")
@@ -40,28 +40,55 @@ export function useOrders(sessionId: string | null) {
             session_id: sessionId,
             total_bs: totalBs,
             total_usd: totalUsd,
+            tasa_bcv: tasa,
             is_archived: false,
-            description: "Pago final encargo",
+            is_order_advance: true,
+            order_id: orderId,
           },
         ])
         .select()
         .single();
       if (saleError) throw saleError;
 
-      // 2. Registrar pagos
-      const paymentsInsert = payments.map((p) => ({
-        ...p,
+      // 2. Registrar en order_payments
+      const orderPaymentsInsert = payments.map((p) => ({
         order_id: orderId,
         sale_id: sale.id,
+        method_id: p.method_id || p.methodId,
+        amount_bs: p.amount_bs || p.amountBs,
+        amount_ref: p.amount_ref || p.amountRef,
+        currency: p.currency,
       }));
-      await supabase.from("order_payments").insert(paymentsInsert);
+      const { error: opError } = await supabase.from("order_payments").insert(orderPaymentsInsert);
+      if (opError) throw opError;
 
-      // 3. Actualizar estado del pedido
-      await supabase.from("orders").update({ status }).eq("id", orderId);
+      // 3. Registrar en sale_payments (necesario para el historial de ventas)
+      const salePaymentsInsert = payments.map((p) => ({
+        sale_id: sale.id,
+        method_id: p.method_id || p.methodId,
+        amount_bs: p.amount_bs || p.amountBs,
+        amount_ref: p.amount_ref || p.amountRef,
+        currency: p.currency,
+      }));
+      const { error: spError } = await supabase.from("sale_payments").insert(salePaymentsInsert);
+      if (spError) throw spError;
+
+      // 4. Actualizar estado del pedido a 'paid'
+      await supabase.from("orders").update({ status: "paid" }).eq("id", orderId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["sales"] });
+    },
+  });
+
+  // --- MUTATION: Marcar como entregado ---
+  const deliverOrder = useMutation({
+    mutationFn: async (orderId: string) => {
+      await supabase.from("orders").update({ status: "delivered" }).eq("id", orderId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
     },
   });
 
@@ -180,5 +207,5 @@ export function useOrders(sessionId: string | null) {
     },
   });
 
-  return { createOrder, activeOrders, completeOrderPayment, deleteOrder };
+  return { createOrder, activeOrders, completeOrderPayment, deleteOrder, deliverOrder };
 }

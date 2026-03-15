@@ -12,19 +12,30 @@ import { getVenezuelaTime, formatVenezuelaDate } from "@/services/FechaYHora";
 import { motion, AnimatePresence } from "motion/react";
 // Animations
 import { staggerContainer, slideInLeft } from "@/lib/animations";
-// Icons
-import { Cake, Loader2 } from "lucide-react";
+import { Cake, Loader2, Clock, Wallet, PackageCheck } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { EmptyOrders } from "@/components/orders/EmptyOrders";
 import { AddOrderModal } from "@/components/orders/AddOrderModal";
 import { OrderCard } from "@/components/orders/OrderCard";
+import { MixedPaymentModal } from "@/components/ventas/MixedPaymentModal";
+import { ConfirmActionModal } from "@/components/common/ConfirmActionModal";
+import { usePosData } from "@/hooks/usePosData";
 
 export default function OrdersPage() {
   const [isOpen, setIsOpen] = useState(false);
   const { activeSessionId } = useSessions();
-  const { activeOrders, deleteOrder, completeOrderPayment } =
+  const { activeOrders, deleteOrder, completeOrderPayment, deliverOrder } =
     useOrders(activeSessionId);
   const { tasa } = useTasaBCV();
+  const { paymentMethods } = usePosData();
+  const [filterStatus, setFilterStatus] = useState<
+    "pending" | "paid" | "delivered"
+  >("pending");
+
+  // Estados para Modales
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isDeliverModalOpen, setIsDeliverModalOpen] = useState(false);
 
   const fechaHoy = formatVenezuelaDate(getVenezuelaTime());
 
@@ -38,19 +49,65 @@ export default function OrdersPage() {
     }
   };
 
-  const handleCompletePayment = async (id: string) => {
-    // Aquí podrías abrir un modal de pago, por ahora simplificamos
-    // o enviamos a una lógica de pago pendiente
-    console.log("Complete payment for:", id);
+  const handleCompletePayment = (order: any) => {
+    setSelectedOrder(order);
+    setIsPaymentModalOpen(true);
   };
 
-  const handleDeliver = async (id: string) => {
-    await completeOrderPayment.mutateAsync({
-      orderId: id,
-      payments: [], // Si ya está pagado, no enviamos más pagos
-      status: "delivered",
-    });
+  const handleDeliver = (order: any) => {
+    setSelectedOrder(order);
+    setIsDeliverModalOpen(true);
   };
+
+  const onConfirmPayment = async (payments: any[]) => {
+    try {
+      await completeOrderPayment.mutateAsync({
+        orderId: selectedOrder.id,
+        payments: payments.map(p => ({
+          methodId: p.methodId,
+          amountBs: p.amountBs,
+          amountRef: p.amountRef,
+          currency: p.currency,
+        })),
+        tasa,
+      });
+      setIsPaymentModalOpen(false);
+      setSelectedOrder(null);
+    } catch (error) {
+      console.error("Error al registrar el pago", error);
+    }
+  };
+
+  const onConfirmDeliver = async () => {
+    try {
+      await deliverOrder.mutateAsync(selectedOrder.id);
+      setIsDeliverModalOpen(false);
+      setSelectedOrder(null);
+    } catch (error) {
+      console.error("Error al entregar el pedido", error);
+    }
+  };
+
+  const calculateRemainingBs = (order: any) => {
+    if (!order) return 0;
+    const paidUsd = order.order_payments?.reduce(
+      (acc: number, p: any) =>
+        acc + (p.currency?.toLowerCase() === "usd" ? p.amount_ref : p.amount_bs / tasa),
+      0,
+    ) || 0;
+    const totalUsd = order.total_amount_usd;
+    const remainingUsd = Math.max(0, totalUsd - paidUsd);
+    return remainingUsd * tasa;
+  };
+
+  const filteredOrders =
+    activeOrders?.filter((o: any) => o.status === filterStatus) || [];
+
+  const statuses = [
+    { id: "pending", label: "Pendientes", icon: <Clock size={16} /> },
+    { id: "paid", label: "Pagados", icon: <Wallet size={16} /> },
+    { id: "delivered", label: "Entregados", icon: <PackageCheck size={16} /> },
+  ];
 
   return (
     <motion.div
@@ -88,24 +145,95 @@ export default function OrdersPage() {
             <EmptyOrders onClick={handleOpenModal} />
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <AnimatePresence mode="popLayout">
-              {activeOrders.map((order: any) => (
-                <OrderCard
-                  key={order.id}
-                  order={order}
-                  onDelete={handleDelete}
-                  onCompletePayment={handleCompletePayment}
-                  onDeliver={handleDeliver}
-                  tasa={tasa}
-                />
+          <section className="flex flex-col gap-8">
+            <header className="flex bg-zinc-100/80 backdrop-blur-md p-2 rounded-[24px] w-fit border border-zinc-200/50 gap-2 relative shadow-inner">
+              {statuses.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => setFilterStatus(s.id as any)}
+                  className={`relative px-8 py-3.5 text-sm font-black transition-all duration-300 rounded-[18px] z-10 flex items-center gap-2.5 ${
+                    filterStatus === s.id
+                      ? "text-primary-800 scale-105"
+                      : "text-zinc-400 hover:text-zinc-600 hover:bg-zinc-200/50"
+                  }`}
+                >
+                  <span
+                    className={`${filterStatus === s.id ? "text-primary-500" : "text-zinc-300"}`}
+                  >
+                    {s.icon}
+                  </span>
+                  {s.label}
+                  {filterStatus === s.id && (
+                    <motion.div
+                      layoutId="active-pill"
+                      className="absolute inset-0 bg-white rounded-[18px] shadow-[0_4px_12px_rgba(0,0,0,0,05)] border border-zinc-200/50 -z-10"
+                      transition={{
+                        type: "spring",
+                        bounce: 0.15,
+                        duration: 0.5,
+                      }}
+                    />
+                  )}
+                </button>
               ))}
-            </AnimatePresence>
-          </div>
+            </header>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <AnimatePresence mode="popLayout">
+                {filteredOrders.length > 0 ? (
+                  filteredOrders.map((order: any) => (
+                    <OrderCard
+                      key={order.id}
+                      order={order}
+                      onDelete={handleDelete}
+                      onCompletePayment={() => handleCompletePayment(order)}
+                      onDeliver={() => handleDeliver(order)}
+                      tasa={tasa}
+                    />
+                  ))
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="col-span-full py-20 text-center"
+                  >
+                    <p className="text-zinc-400 font-bold italic">
+                      No hay encargos en este estado.
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </section>
         )}
       </section>
 
       <AddOrderModal isOpen={isOpen} onClose={handleOpenModal} />
+
+      {/* Modal de Pago Mixto */}
+      {selectedOrder && (
+        <MixedPaymentModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          totalToPayBs={calculateRemainingBs(selectedOrder)}
+          tasa={tasa}
+          paymentMethods={paymentMethods || []}
+          onConfirm={onConfirmPayment}
+        />
+      )}
+
+      {/* Modal de Confirmación de Entrega */}
+      <ConfirmActionModal
+        isOpen={isDeliverModalOpen}
+        onClose={() => setIsDeliverModalOpen(false)}
+        onConfirm={onConfirmDeliver}
+        title="Confirmar Entrega"
+        message={`¿Estás seguro de marcar el pedido de ${selectedOrder?.customer_name} como ENTREGADO?`}
+        confirmText="Sí, Entregar"
+        type="success"
+        icon={<PackageCheck size={32} />}
+        isPending={deliverOrder.isPending}
+      />
     </motion.div>
   );
 }
