@@ -2,6 +2,7 @@ import { CircleDollarSign, Trash2 } from "lucide-react";
 import { Button } from "../../common/Button";
 import { Sale, Cierre } from "@/lib/types";
 import { exportSalesToPDF } from "@/services/pdfService";
+import { usePosData } from "@/hooks/usePosData";
 
 interface Props {
   sales: Sale[];
@@ -20,6 +21,9 @@ export function RecentSalesHeader({
   onClearAll,
   handleEndDay,
 }: Props) {
+  // Bug 2 Fix: obtener categorías de productos para resolver nombres en el PDF
+  const { productCategories } = usePosData();
+
   return (
     <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 gap-6">
       <div className="flex flex-col gap-0.5">
@@ -46,7 +50,7 @@ export function RecentSalesHeader({
 
         <Button
           style="primary"
-          onClick={() => exportSalesToPDF(sales, cierres)}
+          onClick={() => exportSalesToPDF(sales, cierres, productCategories ?? [])}
           disabled={sales.length === 0}
           className="flex-1 sm:flex-none h-full px-4 rounded-2xl shadow-lg shadow-primary-500/20 text-xs font-black uppercase tracking-wider"
         >

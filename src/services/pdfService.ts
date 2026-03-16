@@ -1,17 +1,39 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { Sale, Cierre } from "../lib/types";
-import { formatVenezuelaDate } from "./FechaYHora";
+import { Sale, Cierre, Category } from "../lib/types";
+import { formatVenezuelaDate, getVenezuelaTime } from "./FechaYHora";
+
+/**
+ * Busca el nombre de un producto por su ID dentro de las categorías de productos.
+ */
+const getProductName = (
+  id: string | number | undefined,
+  productCategories: Category[],
+): string => {
+  if (!id || !productCategories?.length) return "Producto";
+  const searchId = String(id);
+  for (const cat of productCategories) {
+    const found = cat.options.find((p) => String(p.id) === searchId);
+    if (found) return found.name;
+  }
+  return `Producto`;
+};
 
 /**
  * Exporta el reporte de cierre de caja en formato PDF con el diseño solicitado.
  * Incluye ventas detalladas y cierres registrados.
  * @param sales Lista de ventas del día
  * @param cierres Lista de cierres de caja registrados
+ * @param productCategories Lista de categorías con productos para resolver nombres
  */
-export const exportSalesToPDF = (sales: Sale[], cierres: Cierre[] = []) => {
+export const exportSalesToPDF = (
+  sales: Sale[],
+  cierres: Cierre[] = [],
+  productCategories: Category[] = [],
+) => {
   const doc = new jsPDF();
-  const now = new Date();
+  // Bug 1 Fix: usar hora de Venezuela (UTC-4) en vez de hora del servidor
+  const now = getVenezuelaTime();
   const fechaHoy = formatVenezuelaDate(now);
   const horaActual = now.toLocaleTimeString("es-VE", {
     hour: "2-digit",
@@ -19,6 +41,8 @@ export const exportSalesToPDF = (sales: Sale[], cierres: Cierre[] = []) => {
     second: "2-digit",
     hour12: true,
   });
+  // Fecha corta para el nombre del archivo (YYYY-MM-DD en Venezuela)
+  const fechaArchivo = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
   // Configuración de Colores (Marrón solicitado)
   const PRIMARY_BROWN: [number, number, number] = [139, 109, 97]; // #8B6D61
@@ -196,7 +220,13 @@ export const exportSalesToPDF = (sales: Sale[], cierres: Cierre[] = []) => {
           hour12: true,
         },
       ),
-      saleItems.map((i) => `${i.quantity}x ${i.name || "Prod."}`).join(", "),
+      // Bug 2 Fix: resolver nombre del producto por product_id
+      saleItems
+        .map(
+          (i) =>
+            `${i.quantity}x ${getProductName(i.product_id || i.id, productCategories)}`,
+        )
+        .join(", "),
       salePayments.length > 1
         ? "Mixto"
         : salePayments[0]?.method_id === "pm" || sale.metodo === "pm"
@@ -225,5 +255,5 @@ export const exportSalesToPDF = (sales: Sale[], cierres: Cierre[] = []) => {
     margin: { left: 14, right: 14 },
   });
 
-  doc.save(`Cierre_Caja_${now.toISOString().split("T")[0]}.pdf`);
+  doc.save(`Cierre_Caja_${fechaArchivo}.pdf`);
 };

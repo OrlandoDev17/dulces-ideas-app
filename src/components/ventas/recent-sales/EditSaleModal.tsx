@@ -9,9 +9,13 @@ interface Props {
   sale: Sale;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (bs: number, usd: number) => void;
-  editValues: { bs: number; usd: number };
-  onEditChange: { bs: (v: number) => void; usd: (v: number) => void };
+  onSave: (bs: number, usd: number, usdPaymentRef?: number) => void;
+  editValues: { bs: number; usd: number; usdPaymentRef: number | null };
+  onEditChange: {
+    bs: (v: number) => void;
+    usd: (v: number) => void;
+    usdPaymentRef: (v: number) => void;
+  };
 }
 
 export function EditSaleModal({
@@ -29,6 +33,12 @@ export function EditSaleModal({
     minute: "2-digit",
   });
 
+  // Bug 3: detectar si la venta tiene un pago en divisas
+  const payments = sale.sale_payments || sale.payments || [];
+  const hasUsdPayment = payments.some(
+    (p) => p.currency === "USD" || p.method_id === "usd" || p.methodId === "usd",
+  );
+
   return (
     <Modal
       isOpen={isOpen}
@@ -40,7 +50,13 @@ export function EditSaleModal({
         <>
           <Button
             style="primary"
-            onClick={() => onSave(editValues.bs, editValues.usd)}
+            onClick={() =>
+              onSave(
+                editValues.bs,
+                editValues.usd,
+                hasUsdPayment ? (editValues.usdPaymentRef ?? undefined) : undefined,
+              )
+            }
             className="w-full py-4 rounded-2xl shadow-xl shadow-primary-500/10"
           >
             <Save size={20} className="mr-2" />
@@ -83,7 +99,7 @@ export function EditSaleModal({
           </div>
         </div>
 
-        {/* USD Input */}
+        {/* USD Input (siempre visible para referencia) */}
         <div className="flex flex-col gap-2">
           <label className="text-xs font-black uppercase tracking-widest text-zinc-400 ml-1">
             Monto en Dólares ($)
@@ -109,6 +125,38 @@ export function EditSaleModal({
             />
           </div>
         </div>
+
+        {/* Bug 3 Fix: Campo editable del pago en divisas cuando la venta fue pagada en USD */}
+        {hasUsdPayment && (
+          <div className="flex flex-col gap-2 border-t border-zinc-100 pt-4">
+            <label className="text-xs font-black uppercase tracking-widest text-green-600 ml-1">
+              💵 Pago en Divisas — Monto recibido ($)
+            </label>
+            <p className="text-[10px] text-zinc-400 font-bold ml-1 -mt-1">
+              Edita el monto exacto recibido en dólares
+            </p>
+            <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-green-500 font-bold">
+                <DollarSign size={20} />
+              </div>
+              <input
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                value={
+                  editValues.usdPaymentRef !== null && editValues.usdPaymentRef !== undefined
+                    ? Math.round(editValues.usdPaymentRef * 100) / 100
+                    : ""
+                }
+                onChange={(e) => {
+                  const val = e.target.value === "" ? 0 : Number(e.target.value);
+                  onEditChange.usdPaymentRef(Math.round(val * 100) / 100);
+                }}
+                className="w-full bg-green-50 border-2 border-green-200 rounded-2xl pl-12 pr-4 py-4 text-lg font-black text-zinc-800 focus:border-green-500 focus:bg-white transition-all outline-none font-mono"
+              />
+            </div>
+          </div>
+        )}
       </div>
     </Modal>
   );

@@ -100,9 +100,12 @@ export function useSales(sessionId: string | null) {
     mutationFn: async ({
       id,
       updates,
+      usdPaymentRef,
     }: {
       id: string;
       updates: Partial<Sale>;
+      // Bug 3 Fix: monto directo en USD para actualizar sale_payments sin reescalado
+      usdPaymentRef?: number;
     }) => {
       // 1. Filtrar solo los campos válidos para 'sales' (Evita errores de Supabase con campos extra)
       const filteredUpdates: Record<string, unknown> = {};
@@ -135,38 +138,55 @@ export function useSales(sessionId: string | null) {
         .single();
       if (saleError) throw saleError;
 
-      // 2. Sincronizar pagos: Ajustar montos si el total cambió
+      // 2. Sincronizar pagos
       const { data: currentPayments } = await supabase
         .from("sale_payments")
         .select("*")
         .eq("sale_id", id);
 
       if (currentPayments && currentPayments.length > 0) {
-        const totalPaidBS = currentPayments.reduce(
-          (acc, p) => acc + (p.amount_bs || 0),
-          0,
-        );
-
-        // Si estamos guardando netos, el total pagado esperado es Net + Delivery
-        const deliveryAmt =
-          filteredUpdates.delivery_amount ?? sale.delivery_amount ?? 0;
-        const expectedTotalPaidBS =
-          (filteredUpdates.total_bs ?? sale.total_bs ?? 0) + deliveryAmt;
-
-        const factor =
-          totalPaidBS > 0 && expectedTotalPaidBS !== totalPaidBS
-            ? expectedTotalPaidBS / totalPaidBS
-            : 1;
-
-        if (factor !== 1) {
-          for (const p of currentPayments) {
+        // Bug 3 Fix: Si hay un monto USD directo, actualizar el pago en divisas sin reescalado
+        if (usdPaymentRef !== undefined) {
+          const usdPayment = currentPayments.find(
+            (p) => p.currency === "USD" || p.method_id === "usd",
+          );
+          if (usdPayment) {
+            const tasa = sale.tasa_bcv || 1;
             await supabase
               .from("sale_payments")
               .update({
-                amount_bs: (p.amount_bs || 0) * factor,
-                amount_ref: (p.amount_ref || 0) * factor,
+                amount_ref: usdPaymentRef,
+                amount_bs: usdPaymentRef * tasa,
               })
-              .eq("id", p.id);
+              .eq("id", usdPayment.id);
+          }
+        } else {
+          // Reescalado proporcional para pagos en Bs (comportamiento original)
+          const totalPaidBS = currentPayments.reduce(
+            (acc, p) => acc + (p.amount_bs || 0),
+            0,
+          );
+
+          const deliveryAmt =
+            filteredUpdates.delivery_amount ?? sale.delivery_amount ?? 0;
+          const expectedTotalPaidBS =
+            (filteredUpdates.total_bs ?? sale.total_bs ?? 0) + deliveryAmt;
+
+          const factor =
+            totalPaidBS > 0 && expectedTotalPaidBS !== totalPaidBS
+              ? expectedTotalPaidBS / totalPaidBS
+              : 1;
+
+          if (factor !== 1) {
+            for (const p of currentPayments) {
+              await supabase
+                .from("sale_payments")
+                .update({
+                  amount_bs: (p.amount_bs || 0) * factor,
+                  amount_ref: (p.amount_ref || 0) * factor,
+                })
+                .eq("id", p.id);
+            }
           }
         }
       }

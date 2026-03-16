@@ -110,9 +110,9 @@ export default function VentasPage() {
   };
 
   // 2. Actualizar Venta
-  const handleUpdateSale = (updatedSale: Sale) => {
+  const handleUpdateSale = (updatedSale: Sale, usdPaymentRef?: number) => {
     const { id, ...updates } = updatedSale;
-    updateSale.mutate({ id, updates });
+    updateSale.mutate({ id, updates, usdPaymentRef });
   };
 
   // 3. Eliminar Venta

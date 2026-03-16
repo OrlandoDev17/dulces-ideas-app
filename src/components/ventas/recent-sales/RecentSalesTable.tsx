@@ -14,7 +14,7 @@ interface Props {
   sales: Sale[];
   paymentMethods: PaymentMethod[];
   onDeleteSale: (id: string) => void;
-  onUpdateSale?: (sale: Sale) => void;
+  onUpdateSale?: (sale: Sale, usdPaymentRef?: number) => void;
 }
 
 /**
@@ -33,6 +33,8 @@ export function RecentSalesTable({
     setEditTotalBS,
     editTotalUSD,
     setEditTotalUSD,
+    editUsdPaymentRef,
+    setEditUsdPaymentRef,
     startEdit,
     saveEdit,
     cancelEdit,
@@ -131,9 +133,13 @@ export function RecentSalesTable({
           sale={activeEditingSale}
           isOpen={true}
           onClose={cancelEdit}
-          onSave={() => saveEdit(activeEditingSale)}
-          editValues={{ bs: editTotalBS, usd: editTotalUSD }}
-          onEditChange={{ bs: setEditTotalBS, usd: setEditTotalUSD }}
+          onSave={(_bs, _usd, usdPaymentRef) => saveEdit(activeEditingSale, usdPaymentRef)}
+          editValues={{ bs: editTotalBS, usd: editTotalUSD, usdPaymentRef: editUsdPaymentRef }}
+          onEditChange={{
+            bs: setEditTotalBS,
+            usd: setEditTotalUSD,
+            usdPaymentRef: setEditUsdPaymentRef,
+          }}
         />
       )}
     </div>

@@ -7,7 +7,7 @@ interface Props {
   cierres: Cierre[];
   paymentMethods: PaymentMethod[];
   onDeleteSale: (id: string) => void;
-  onUpdateSale?: (sale: Sale) => void;
+  onUpdateSale?: (sale: Sale, usdPaymentRef?: number) => void;
   onClearAll: () => void;
   onArchiveDay: () => void;
 }
