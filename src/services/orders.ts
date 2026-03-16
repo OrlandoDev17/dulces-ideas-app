@@ -118,7 +118,7 @@ export const ordersService = {
       delivery: false,
       type: "order_payment",
       description: `${concept} a encargo #${order.id.slice(0, 8)}`,
-      orderId: order.id,
+      order_id: order.id,
     };
 
     const storedSales = JSON.parse(localStorage.getItem(SALES_KEY) || "[]");
