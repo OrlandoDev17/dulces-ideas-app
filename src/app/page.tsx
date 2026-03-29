@@ -110,9 +110,13 @@ export default function VentasPage() {
   };
 
   // 2. Actualizar Venta
-  const handleUpdateSale = (updatedSale: Sale) => {
-    const { id, ...updates } = updatedSale;
-    updateSale.mutate({ id, updates });
+  const handleEditAmount = (sale: Sale, usdPaymentRef?: number) => {
+    updateSale.mutate({
+      id: sale.id,
+      totalBs: sale.totalBs || sale.total_bs || 0,
+      totalUsd: sale.totalUsd || sale.total_usd || 0,
+      usdPaymentRef: usdPaymentRef,
+    });
   };
 
   // 3. Eliminar Venta
@@ -301,7 +305,7 @@ export default function VentasPage() {
         cierres={cierres}
         paymentMethods={currentPaymentMethods}
         onDeleteSale={handleDeleteSale}
-        onUpdateSale={handleUpdateSale}
+        onUpdateSale={handleEditAmount}
         onClearAll={handleClearAllRecent}
         onArchiveDay={handleArchiveDay}
       />

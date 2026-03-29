@@ -1,5 +1,5 @@
 import { supabase } from "@/shared/config/supabase";
-import type { CartItem, Payment, Sale } from "@/shared/types";
+import type { CartItem, Payment } from "@/shared/types";
 
 export const salesApi = {
   // 1. Obtener ventas recientes
@@ -91,15 +91,69 @@ export const salesApi = {
   },
 
   // 3. Actualizar una venta existente
-  async updateSale(id: string, updates: Partial<Sale>) {
-    const { error } = await supabase
+  async updateSaleAmount(
+    id: string,
+    newTotalBs: number,
+    newTotalUsd: number,
+    usdPaymentRef?: number,
+  ) {
+    // 1. Actualizamos la cabecera de la venta
+    const { data: sale, error: saleError } = await supabase
       .from("sales")
       .update({
-        total_bs: updates.totalBs,
-        total_usd: updates.totalUsd,
+        total_bs: newTotalBs,
+        total_usd: newTotalUsd,
       })
-      .eq("id", id);
-    if (error) throw error;
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (saleError) throw saleError;
+
+    // 2. Sincronizamos los pagos
+    const { data: payments } = await supabase
+      .from("sale_payments")
+      .select("*")
+      .eq("sale_id", id);
+
+    if (payments && payments.length > 0) {
+      // Caso A: Es un solo método de pago (Lo más común)
+      if (payments.length === 1) {
+        const updateData: { amount_bs: number; amount_ref: number } = {
+          amount_bs: newTotalBs,
+          amount_ref:
+            usdPaymentRef !== undefined &&
+            (payments[0].currency === "USD" || payments[0].method_id === "usd")
+              ? usdPaymentRef
+              : newTotalUsd,
+        };
+
+        await supabase
+          .from("sale_payments")
+          .update(updateData)
+          .eq("id", payments[0].id);
+      }
+      // Caso B: Pagos mixtos (Reescalamos proporcionalmente)
+      else {
+        const currentTotalBs = payments.reduce(
+          (acc, p) => acc + p.amount_bs,
+          0,
+        );
+        const factor = newTotalBs / (currentTotalBs || 1);
+
+        for (const p of payments) {
+          await supabase
+            .from("sale_payments")
+            .update({
+              amount_bs: p.amount_bs * factor,
+              amount_ref: p.amount_ref * factor,
+            })
+            .eq("id", p.id);
+        }
+      }
+    }
+
+    return sale;
   },
 
   // 4. Eliminar una sola venta

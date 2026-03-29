@@ -2,7 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { salesApi } from "@/api/sales";
 import { useStore } from "@/context/StoreContext";
-import type { Sale, CartItem, Payment } from "@/shared/types";
+import type { CartItem, Payment } from "@/shared/types";
 
 export function useSales(sessionId: string | null) {
   const queryClient = useQueryClient();
@@ -39,9 +39,22 @@ export function useSales(sessionId: string | null) {
 
   // ACTUALIZAR
   const updateSale = useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: Partial<Sale> }) =>
-      salesApi.updateSale(id, updates),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sales"] }),
+    mutationFn: async ({
+      id,
+      totalBs,
+      totalUsd,
+      usdPaymentRef,
+    }: {
+      id: string;
+      totalBs: number;
+      totalUsd: number;
+      usdPaymentRef?: number;
+    }) => {
+      return salesApi.updateSaleAmount(id, totalBs, totalUsd, usdPaymentRef);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sales"] });
+    },
   });
 
   // ELIMINAR UNA
