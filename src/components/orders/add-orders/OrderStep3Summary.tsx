@@ -129,7 +129,7 @@ export function OrderStep3Summary({
               initial={{ width: 0 }}
               animate={{ width: `${Math.min(100, paymentPercentage)}%` }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className="absolute top-0 left-0 h-full bg-gradient-to-r from-green-400 to-green-600"
+              className="absolute top-0 left-0 h-full bg-linear-to-r from-green-400 to-green-600"
             />
           </div>
           <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-tighter">

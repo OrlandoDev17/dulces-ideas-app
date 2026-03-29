@@ -24,7 +24,7 @@ export const StoreContext = createContext<StoreContextType | undefined>(
 
 export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   const [activeStore, setActiveStore] = useState<Store | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const savedStore = sessionStorage.getItem("active_store");

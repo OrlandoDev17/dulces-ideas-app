@@ -1,28 +1,33 @@
-"use client";
-
-import React, { createContext, useContext, useState, useEffect } from "react";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { createContext, useContext, useState, useEffect } from "react";
+import { useStore } from "./StoreContext";
 
 interface SessionContextType {
   currentSessionId: string | null;
   setCurrentSessionId: (id: string | null) => void;
+  isLoading: boolean;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { activeStore } = useStore();
 
-  // Intentar recuperar de localStorage al cargar
   useEffect(() => {
-    const saved = localStorage.getItem("active_session_id");
-    if (saved) {
-      Promise.resolve().then(() => {
-        setCurrentSessionId(saved);
-      });
-    }
-  }, []);
+    const savedSessionId = localStorage.getItem("active_session_id");
 
-  // Guardar en localStorage cuando cambie
+    if (activeStore?.id && savedSessionId) {
+      setCurrentSessionId(savedSessionId);
+    } else if (!activeStore?.id) {
+      setCurrentSessionId(null);
+      localStorage.removeItem("active_session_id");
+    }
+
+    setIsLoading(false);
+  }, [activeStore?.id]);
+
   const handleSetCurrentSessionId = (id: string | null) => {
     setCurrentSessionId(id);
     if (id) {
@@ -37,6 +42,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       value={{
         currentSessionId,
         setCurrentSessionId: handleSetCurrentSessionId,
+        isLoading,
       }}
     >
       {children}
@@ -46,8 +52,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
 export function useSession() {
   const context = useContext(SessionContext);
-  if (context === undefined) {
+  if (!context)
     throw new Error("useSession must be used within a SessionProvider");
-  }
   return context;
 }

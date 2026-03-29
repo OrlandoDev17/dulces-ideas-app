@@ -32,7 +32,7 @@ export function ProductSelector({
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredProducts = products.filter((p) =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    p.name?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   // Función para añadir el producto al carrito

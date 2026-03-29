@@ -14,8 +14,11 @@ import { CreateSessionModal } from "@/components/layout/CreateSessionModal";
 // Constants
 import { NAV_LINKS } from "@/shared/config/constants";
 // Icons
-import { CakeSlice, Loader, Plus, Store } from "lucide-react";
+import { CakeSlice, Loader, LogOut, Plus, Store } from "lucide-react";
+// Types
 import { Session } from "@/shared/types";
+// Context
+import { useStore } from "@/context/StoreContext";
 
 export function Sidebar() {
   // Estados
@@ -28,6 +31,7 @@ export function Sidebar() {
   // 1. Integracion de React Query
   const { sessions, isLoading, createSession } = useSessions();
   const { currentSessionId, setCurrentSessionId } = useSession();
+  const { logoutFromStore, activeStore } = useStore();
 
   const currentSession =
     sessions.find((s) => s.id === currentSessionId) || null;
@@ -67,7 +71,9 @@ export function Sidebar() {
           className="size-10 text-primary-50 p-2 bg-primary-600 rounded-xl"
           aria-hidden="true"
         />
-        <h2 className="text-primary-600 font-bold text-lg">Dulces Ideas</h2>
+        <h2 className="text-primary-600 font-bold text-lg">
+          {activeStore?.name}
+        </h2>
       </header>
 
       <nav aria-label="Navegación principal">
@@ -132,6 +138,14 @@ export function Sidebar() {
           <Plus className="size-5 transition-transform group-hover:rotate-90" />
           <span>Nueva Sesión</span>
         </Button>
+
+        <button
+          onClick={logoutFromStore}
+          className="flex items-center justify-center gap-2 p-3 w-full text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-300 font-bold text-sm border-2 border-transparent hover:border-red-100"
+        >
+          <LogOut className="size-4" />
+          <span>Cerrar Sistema</span>
+        </button>
       </footer>
 
       <CreateSessionModal
