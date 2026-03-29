@@ -2,25 +2,25 @@
 
 // Hooks
 import { useMemo, useState } from "react";
-import { useTasaBCV } from "@/hooks/useTasaBCV";
-import { usePosData } from "@/hooks/usePosData";
-import { useSales } from "@/hooks/useSales";
+import { useTasaBCV } from "@/hooks/ui/useTasaBCV";
+import { usePosData } from "@/hooks/api/usePosData";
+import { useSales } from "@/hooks/api/useSales";
 import { useSession } from "@/context/SessionContext";
 // Services
 import { getVenezuelaTime, formatVenezuelaDate } from "@/services/FechaYHora";
 // Components
-import { BCVCard } from "@/components/ventas/BCVCard";
+import { BCVCard } from "@/components/pos/BCVCard";
 import {
   ProductSelector,
   ProductSelectorSkeleton,
-} from "@/components/ventas/ProductSelector";
-import { ActiveSale } from "@/components/ventas/active-sale/ActiveSale";
-import { FinancialSummary } from "@/components/ventas/recent-sales/FinancialSummary";
-import { AddCierreModal } from "@/components/ventas/recent-sales/AddCierreModal";
-import { ArchiveDayModal } from "@/components/ventas/recent-sales/ArchiveDayModal";
+} from "@/components/pos/ProductSelector";
+import { ActiveSale } from "@/components/pos/active-sale/ActiveSale";
+import { FinancialSummary } from "@/components/pos/recent-sales/FinancialSummary";
+import { AddCierreModal } from "@/components/pos/recent-sales/AddCierreModal";
+import { ArchiveDayModal } from "@/components/pos/recent-sales/ArchiveDayModal";
 import { ConfirmDeleteModal } from "@/components/common/ConfirmDeleteModal";
 import { SuccessModal } from "@/components/common/SuccessModal";
-import { RecentSales } from "@/components/ventas/RecentSales";
+import { RecentSales } from "@/components/pos/RecentSales";
 // Icons
 import { CakeSlice, Cake, CupSoda } from "lucide-react";
 // Framer Motion
@@ -28,8 +28,8 @@ import { motion } from "motion/react";
 // Animations
 import { fadeUp, staggerContainer, slideInLeft } from "@/lib/animations";
 // Types
-import { CartItem, Cierre, Payment, Product, Sale } from "@/lib/types";
-import { generateId } from "@/lib/utils";
+import { CartItem, Cierre, Payment, Product, Sale } from "@/shared/types";
+import { generateId } from "@/shared/utils/utils";
 import { LucideIcon } from "lucide-react";
 
 export default function VentasPage() {

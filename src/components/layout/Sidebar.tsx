@@ -1,22 +1,21 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 // Hooks
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useSessions } from "@/hooks/useSessions";
+import { useSessions } from "@/hooks/api/useSessions";
 import { useSession } from "@/context/SessionContext";
 // Components
 import Link from "next/link";
-import { Button } from "../common/Button";
-import { DropdownButton } from "../common/DropdownButton";
-import { OptionDropdown } from "../common/OptionDropdown";
-import { CreateSessionModal } from "./CreateSessionModal";
+import { Button } from "@/components/common/Button";
+import { DropdownButton } from "@/components/common/DropdownButton";
+import { OptionDropdown } from "@/components/common/OptionDropdown";
+import { CreateSessionModal } from "@/components/layout/CreateSessionModal";
 // Constants
-import { NAV_LINKS } from "@/lib/constants";
+import { NAV_LINKS } from "@/shared/config/constants";
 // Icons
 import { CakeSlice, Loader, Plus, Store } from "lucide-react";
-import { Session } from "@/lib/types";
+import { Session } from "@/shared/types";
 
 export function Sidebar() {
   // Estados

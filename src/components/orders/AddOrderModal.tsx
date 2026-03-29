@@ -4,10 +4,10 @@ import { OrderStep1Form } from "./add-orders/OrderStep1Form";
 
 import { Button } from "../common/Button";
 import { OrderStep2Form } from "./add-orders/OrderStep2Form";
-import { usePosData } from "@/hooks/usePosData";
-import { useOrderForm } from "@/hooks/useOrderForm";
-import { useTasaBCV } from "@/hooks/useTasaBCV";
-import { useSessions } from "@/hooks/useSessions";
+import { usePosData } from "@/hooks/api/usePosData";
+import { useOrderForm } from "@/hooks/ui/useOrderForm";
+import { useTasaBCV } from "@/hooks/ui/useTasaBCV";
+import { useSessions } from "@/hooks/api/useSessions";
 import { OrderStep3Summary } from "./add-orders/OrderStep3Summary";
 
 interface AddOrderModalProps {

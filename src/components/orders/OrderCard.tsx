@@ -4,7 +4,7 @@ import { Trash2, Phone, Calendar, Clock } from "lucide-react";
 import { formatVenezuelaDate } from "@/services/FechaYHora";
 import { StatusBadge } from "./StatusBadge";
 import { ActionButtons } from "./ActionButtons";
-import { usePosData } from "@/hooks/usePosData";
+import { usePosData } from "@/hooks/api/usePosData";
 
 // Interfaces Semánticas
 interface OrderItem {
@@ -48,7 +48,8 @@ interface Props {
 const calculateFinancials = (order: Order, tasa: number) => {
   const paidUsd = order.order_payments.reduce(
     (acc, p) =>
-      acc + (p.currency.toLowerCase() === "usd" ? p.amount_ref : p.amount_bs / tasa),
+      acc +
+      (p.currency.toLowerCase() === "usd" ? p.amount_ref : p.amount_bs / tasa),
     0,
   );
 
@@ -73,10 +74,12 @@ export function OrderCard({
   tasa,
 }: Props) {
   const { productCategories, paymentMethods } = usePosData();
-  const allProducts = productCategories?.flatMap(cat => cat.options) || [];
-  
-  const { paidUsd, progress, remainingUsd, remainingBs } =
-    calculateFinancials(order, tasa);
+  const allProducts = productCategories?.flatMap((cat) => cat.options) || [];
+
+  const { paidUsd, progress, remainingUsd, remainingBs } = calculateFinancials(
+    order,
+    tasa,
+  );
 
   return (
     <motion.article
@@ -91,13 +94,16 @@ export function OrderCard({
           </h3>
           <div className="flex flex-wrap gap-x-3 gap-y-1">
             <p className="flex items-center gap-1 text-[11px] font-medium text-zinc-500">
-              <Phone size={10} className="text-primary-400" /> {order.customer_phone || "Sin contacto"}
+              <Phone size={10} className="text-primary-400" />{" "}
+              {order.customer_phone || "Sin contacto"}
             </p>
             <p className="flex items-center gap-1 text-[11px] font-medium text-zinc-500">
-              <Calendar size={10} className="text-primary-400" /> {formatVenezuelaDate(new Date(order.delivery_date))}
+              <Calendar size={10} className="text-primary-400" />{" "}
+              {formatVenezuelaDate(new Date(order.delivery_date))}
             </p>
             <p className="flex items-center gap-1 text-[11px] font-medium text-zinc-500">
-              <Clock size={10} className="text-primary-400" /> {order.delivery_hour}
+              <Clock size={10} className="text-primary-400" />{" "}
+              {order.delivery_hour}
             </p>
           </div>
         </div>
@@ -118,14 +124,23 @@ export function OrderCard({
         {/* Productos */}
         {order.order_items?.length > 0 && (
           <div className="flex flex-col gap-1.5">
-            <span className="text-[9px] font-bold uppercase text-zinc-400 px-1">Productos</span>
+            <span className="text-[9px] font-bold uppercase text-zinc-400 px-1">
+              Productos
+            </span>
             <div className="bg-zinc-50/50 rounded-xl border border-zinc-100 p-2.5 space-y-1">
               {order.order_items.map((item, idx) => {
-                const product = allProducts.find(p => String(p.id) === String(item.product_id));
+                const product = allProducts.find(
+                  (p) => String(p.id) === String(item.product_id),
+                );
                 return (
-                  <div key={idx} className="flex justify-between items-center text-xs">
+                  <div
+                    key={idx}
+                    className="flex justify-between items-center text-xs"
+                  >
                     <span className="text-zinc-700 font-semibold truncate flex-1 mr-2">
-                      <span className="text-primary-600 font-bold mr-1">{item.quantity}x</span> 
+                      <span className="text-primary-600 font-bold mr-1">
+                        {item.quantity}x
+                      </span>
                       {product?.name || "Producto desconocido"}
                     </span>
                     <span className="text-zinc-400 font-bold whitespace-nowrap">
@@ -140,24 +155,35 @@ export function OrderCard({
 
         {/* Pagos / Abonos */}
         <div className="flex flex-col gap-1.5">
-          <span className="text-[9px] font-bold uppercase text-zinc-400 px-1">Abonos</span>
+          <span className="text-[9px] font-bold uppercase text-zinc-400 px-1">
+            Abonos
+          </span>
           <div className="bg-emerald-50/30 rounded-xl border border-emerald-100 p-2.5 space-y-1">
             {order.order_payments?.length > 0 ? (
               order.order_payments.map((p, idx) => {
-                const method = paymentMethods?.find(m => m.id === p.method_id);
+                const method = paymentMethods?.find(
+                  (m) => m.id === p.method_id,
+                );
                 return (
-                  <div key={idx} className="flex justify-between items-center text-xs">
+                  <div
+                    key={idx}
+                    className="flex justify-between items-center text-xs"
+                  >
                     <span className="text-emerald-700 font-semibold">
                       {method?.name || "Pago"}
                     </span>
                     <span className="text-emerald-600 font-bold">
-                      {p.currency.toLowerCase() === "usd" ? `$${p.amount_ref.toFixed(2)}` : `Bs ${p.amount_bs.toLocaleString()}`}
+                      {p.currency.toLowerCase() === "usd"
+                        ? `$${p.amount_ref.toFixed(2)}`
+                        : `Bs ${p.amount_bs.toLocaleString()}`}
                     </span>
                   </div>
                 );
               })
             ) : (
-              <p className="text-[11px] text-zinc-400 italic">Sin abonos previos</p>
+              <p className="text-[11px] text-zinc-400 italic">
+                Sin abonos previos
+              </p>
             )}
           </div>
         </div>
@@ -185,9 +211,13 @@ export function OrderCard({
       <div className="space-y-1.5">
         <div className="flex justify-between items-end px-1">
           <div className="flex flex-col">
-            <span className="text-[9px] font-bold text-zinc-400 uppercase">Estado de Ingresos</span>
+            <span className="text-[9px] font-bold text-zinc-400 uppercase">
+              Estado de Ingresos
+            </span>
             <span className="text-xs font-bold text-zinc-600">
-              Ingresado: ${paidUsd.toFixed(2)} / Bs {Math.round(paidUsd * tasa).toLocaleString()} ({progress.toFixed(0)}%)
+              Ingresado: ${paidUsd.toFixed(2)} / Bs{" "}
+              {Math.round(paidUsd * tasa).toLocaleString()} (
+              {progress.toFixed(0)}%)
             </span>
           </div>
         </div>
@@ -222,7 +252,9 @@ export function OrderCard({
 }
 
 const FinanceMetric = ({ label, usd, bs, color, bg = "bg-zinc-50" }: any) => (
-  <div className={`${bg} p-3 rounded-2xl border border-transparent flex flex-col gap-0.5`}>
+  <div
+    className={`${bg} p-3 rounded-2xl border border-transparent flex flex-col gap-0.5`}
+  >
     <p className="text-[9px] font-bold text-zinc-400 uppercase">{label}</p>
     <p className={`text-sm font-black ${color}`}>${usd.toFixed(2)}</p>
     <p className="text-[10px] font-bold text-zinc-500/70">

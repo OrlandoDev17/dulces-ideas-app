@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { Sale, Cierre, Category } from "../lib/types";
+import { Sale, Cierre, Category } from "../shared/types";
 import { formatVenezuelaDate, getVenezuelaTime } from "./FechaYHora";
 
 /**

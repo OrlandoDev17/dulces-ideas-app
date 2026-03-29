@@ -10,6 +10,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createIDBPersister } from "@/lib/Persister";
 import { SessionProvider } from "@/context/SessionContext";
+import { StoreProvider } from "@/context/StoreContext";
 
 export function RootLayout({ children }: { children: ReactNode }) {
   // 1. Creamos el QueryClient con configuraciones de cache agresivas para offline
@@ -36,15 +37,17 @@ export function RootLayout({ children }: { children: ReactNode }) {
       client={queryClient}
       persistOptions={{ persister: persister! }}
     >
-      <SessionProvider>
-        <div className="flex">
-          <Sidebar />
-          <main className="flex-1 pb-24 md:pb-0 md:pl-64 2xl:pl-72">
-            {children}
-          </main>
-          <BottomNav />
-        </div>
-      </SessionProvider>
+      <StoreProvider>
+        <SessionProvider>
+          <div className="flex">
+            <Sidebar />
+            <main className="flex-1 pb-24 md:pb-0 md:pl-64 2xl:pl-72">
+              {children}
+            </main>
+            <BottomNav />
+          </div>
+        </SessionProvider>
+      </StoreProvider>
     </PersistQueryClientProvider>
   );
 }

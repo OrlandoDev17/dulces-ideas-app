@@ -1,5 +1,5 @@
-import { Order, OrderPayment, Sale } from "@/lib/types";
-import { generateId } from "@/lib/utils";
+import { Order, OrderPayment, Sale } from "@/shared/types";
+import { generateId } from "@/shared/utils/utils";
 
 const ORDERS_KEY = "orders";
 const SALES_KEY = "sales";

@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useState, useRef } from "react";
-import { CartItem, Payment, PaymentMethod, Product } from "@/lib/types";
+import { CartItem, Payment, PaymentMethod, Product } from "@/shared/types";
 import { OptionDropdown } from "@/components/common/OptionDropdown";
 import { DropdownButton } from "@/components/common/DropdownButton";
 import { DollarSign, Minus, Package, Plus, Search, Trash } from "lucide-react";
@@ -218,17 +218,19 @@ export function OrderStep2Form({
         {/* Lista de Productos (Carrito) */}
         <div className="bg-zinc-50/50 border border-zinc-100 rounded-[1.8rem] p-5 flex flex-col gap-4">
           <div className="flex items-center justify-between px-1">
-             <div className="flex items-center gap-2 text-zinc-500">
-               <Package size={14} />
-               <h4 className="text-[10px] font-bold uppercase tracking-widest">Resumen de Productos</h4>
-             </div>
-             {cart.length > 0 && (
-               <span className="bg-white px-2 py-0.5 rounded-full text-[9px] font-bold border border-zinc-100 text-zinc-400">
-                 {cart.length} items
-               </span>
-             )}
+            <div className="flex items-center gap-2 text-zinc-500">
+              <Package size={14} />
+              <h4 className="text-[10px] font-bold uppercase tracking-widest">
+                Resumen de Productos
+              </h4>
+            </div>
+            {cart.length > 0 && (
+              <span className="bg-white px-2 py-0.5 rounded-full text-[9px] font-bold border border-zinc-100 text-zinc-400">
+                {cart.length} items
+              </span>
+            )}
           </div>
-          
+
           <ul className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
             {cart.length > 0 ? (
               cart.map((item) => (
@@ -268,7 +270,9 @@ export function OrderStep2Form({
             ) : (
               <div className="flex flex-col items-center justify-center py-8 gap-2 opacity-40">
                 <Package size={32} />
-                <p className="text-xs font-bold italic">El carrito está vacío</p>
+                <p className="text-xs font-bold italic">
+                  El carrito está vacío
+                </p>
               </div>
             )}
           </ul>
@@ -296,7 +300,9 @@ export function OrderStep2Form({
             </h3>
             {payments.length > 0 && (
               <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                Total registrado: Bs {(totalAdvancesBs + (totalAdvancesUsd * tasa)).toLocaleString()} (${(totalAdvancesUsd + (totalAdvancesBs / tasa)).toFixed(2)})
+                Total registrado: Bs{" "}
+                {(totalAdvancesBs + totalAdvancesUsd * tasa).toLocaleString()}{" "}
+                (${(totalAdvancesUsd + totalAdvancesBs / tasa).toFixed(2)})
               </span>
             )}
           </div>
@@ -372,7 +378,10 @@ export function OrderStep2Form({
                       className={`flex flex-col sm:flex-row gap-3 w-full ${isOpenMethod ? "z-50" : "z-10"}`}
                     >
                       {/* Selector de Método */}
-                      <div className="w-full sm:w-1/2 relative" ref={methodTriggerRef}>
+                      <div
+                        className="w-full sm:w-1/2 relative"
+                        ref={methodTriggerRef}
+                      >
                         <DropdownButton
                           isOpen={isOpenMethod}
                           setIsOpen={setIsOpenMethod}

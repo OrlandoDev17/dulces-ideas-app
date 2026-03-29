@@ -2,7 +2,7 @@ import { Calendar, Clock, User } from "lucide-react";
 import { OrderInput } from "./OrderInput";
 import { OrderSelect } from "./OrderSelect";
 import { OrderDatePicker } from "./OrderDatePicker";
-import { CLIENT_FORM_FIELDS, TIME_SLOTS } from "@/constants/orders";
+import { CLIENT_FORM_FIELDS, TIME_SLOTS } from "@/shared/config/orders";
 import { motion } from "motion/react";
 
 interface OrderStep1FormProps {

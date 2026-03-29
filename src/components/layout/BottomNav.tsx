@@ -1,9 +1,9 @@
 "use client";
 
-import { NAV_LINKS } from "@/lib/constants";
+import { NAV_LINKS } from "@/shared/config/constants";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSessions } from "@/hooks/useSessions";
+import { useSessions } from "@/hooks/api/useSessions";
 import { useSession } from "@/context/SessionContext";
 import { useState } from "react";
 import { Plus, Store, Loader2, X } from "lucide-react";

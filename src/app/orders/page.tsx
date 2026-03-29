@@ -3,9 +3,9 @@
 
 // Hooks
 import { useState } from "react";
-import { useOrders } from "@/hooks/useOrders";
-import { useTasaBCV } from "@/hooks/useTasaBCV";
-import { useSessions } from "@/hooks/useSessions";
+import { useOrders } from "@/hooks/api/useOrders";
+import { useTasaBCV } from "@/hooks/ui/useTasaBCV";
+import { useSessions } from "@/hooks/api/useSessions";
 // Services
 import { getVenezuelaTime, formatVenezuelaDate } from "@/services/FechaYHora";
 // Framer Motion
@@ -17,9 +17,9 @@ import { Button } from "@/components/common/Button";
 import { EmptyOrders } from "@/components/orders/EmptyOrders";
 import { AddOrderModal } from "@/components/orders/AddOrderModal";
 import { OrderCard } from "@/components/orders/OrderCard";
-import { MixedPaymentModal } from "@/components/ventas/MixedPaymentModal";
+import { MixedPaymentModal } from "@/components/pos/MixedPaymentModal";
 import { ConfirmActionModal } from "@/components/common/ConfirmActionModal";
-import { usePosData } from "@/hooks/usePosData";
+import { usePosData } from "@/hooks/api/usePosData";
 
 export default function OrdersPage() {
   const [isOpen, setIsOpen] = useState(false);
@@ -63,7 +63,7 @@ export default function OrdersPage() {
     try {
       await completeOrderPayment.mutateAsync({
         orderId: selectedOrder.id,
-        payments: payments.map(p => ({
+        payments: payments.map((p) => ({
           methodId: p.methodId,
           amountBs: p.amountBs,
           amountRef: p.amountRef,
@@ -90,11 +90,15 @@ export default function OrdersPage() {
 
   const calculateRemainingBs = (order: any) => {
     if (!order) return 0;
-    const paidUsd = order.order_payments?.reduce(
-      (acc: number, p: any) =>
-        acc + (p.currency?.toLowerCase() === "usd" ? p.amount_ref : p.amount_bs / tasa),
-      0,
-    ) || 0;
+    const paidUsd =
+      order.order_payments?.reduce(
+        (acc: number, p: any) =>
+          acc +
+          (p.currency?.toLowerCase() === "usd"
+            ? p.amount_ref
+            : p.amount_bs / tasa),
+        0,
+      ) || 0;
     const totalUsd = order.total_amount_usd;
     const remainingUsd = Math.max(0, totalUsd - paidUsd);
     return remainingUsd * tasa;
