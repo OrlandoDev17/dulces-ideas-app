@@ -1,10 +1,10 @@
-import { Sale, Cierre, PaymentMethod } from "@/shared/types";
+import { Sale, PointClosing, PaymentMethod } from "@/shared/types";
 import { RecentSalesHeader } from "./recent-sales/RecentSalesHeader";
 import { RecentSalesTable } from "./recent-sales/RecentSalesTable";
 
 interface Props {
   sales: Sale[];
-  cierres: Cierre[];
+  cierres: PointClosing[];
   paymentMethods: PaymentMethod[];
   onDeleteSale: (id: string) => void;
   onUpdateSale?: (sale: Sale, usdPaymentRef?: number) => void;

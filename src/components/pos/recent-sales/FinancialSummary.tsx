@@ -1,14 +1,12 @@
-import { Sale, Cierre } from "@/shared/types";
-import { Calculator, Bike, Info, History, Pencil, Trash2 } from "lucide-react";
-import { useMemo, useState, useSyncExternalStore } from "react";
-import { AddCierreModal } from "./AddCierreModal";
+import { Sale, PointClosing } from "@/shared/types";
+import { Calculator, Bike, Info, History, Trash2 } from "lucide-react";
+import { useMemo, useSyncExternalStore } from "react";
 import { fmtBs, fmtUSD } from "@/shared/utils/formatters";
 
 interface Props {
   sales: Sale[];
-  cierres: Cierre[];
+  cierres: PointClosing[];
   onAddCierre: () => void;
-  onUpdateCierre?: (cierre: Cierre) => void;
   onDeleteCierre?: (id: string) => void;
 }
 
@@ -20,11 +18,8 @@ export function FinancialSummary({
   sales,
   cierres,
   onAddCierre,
-  onUpdateCierre,
   onDeleteCierre,
 }: Props) {
-  const [editingCierre, setEditingCierre] = useState<Cierre | null>(null);
-
   // Hook para evitar errores de hidratación sin disparar cascadas de renderizado
   const isMounted = useSyncExternalStore(
     () => () => {},
@@ -228,23 +223,16 @@ export function FinancialSummary({
                   >
                     <div className="flex flex-col">
                       <span className="text-sm font-black tracking-wide tabular-nums text-white">
-                        Bs. {fmtBs(c.monto)}
+                        Bs. {fmtBs(c.total_bs_point)}
                       </span>
                       <span className="text-[8px] font-bold text-white/60 tabular-nums uppercase">
-                        {new Date(c.fecha).toLocaleTimeString("es-VE", {
+                        {new Date(c.created_at).toLocaleTimeString("es-VE", {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
                       </span>
                     </div>
                     <div className="flex items-center gap-1 bg-black/20 rounded-md p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => setEditingCierre(c)}
-                        className="p-1 hover:text-white transition-colors"
-                        title="Editar cierre"
-                      >
-                        <Pencil size={12} />
-                      </button>
                       <button
                         onClick={() => onDeleteCierre?.(c.id)}
                         className="p-1 hover:text-red-400 transition-colors"
@@ -260,18 +248,6 @@ export function FinancialSummary({
           )}
         </footer>
       </article>
-
-      {/* Modal para editar cierres */}
-      {editingCierre && (
-        <AddCierreModal
-          isOpen={true}
-          onClose={() => setEditingCierre(null)}
-          onConfirm={(monto) => {
-            onUpdateCierre?.({ ...editingCierre, monto });
-            setEditingCierre(null);
-          }}
-        />
-      )}
 
       {/* Panel de Cuentas x Pagar (Deliverys) */}
       <article className="bg-white rounded-3xl p-6 border-l-4 border-l-red-500 shadow-xl border border-zinc-100 flex flex-col gap-4 relative overflow-hidden">

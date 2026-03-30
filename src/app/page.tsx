@@ -6,6 +6,7 @@ import { useTasaBCV } from "@/hooks/ui/useTasaBCV";
 import { usePosData } from "@/hooks/api/usePosData";
 import { useSales } from "@/hooks/api/useSales";
 import { useSession } from "@/context/SessionContext";
+import { usePointClosings } from "@/hooks/api/usePointClosings";
 // Services
 import { getVenezuelaTime, formatVenezuelaDate } from "@/services/FechaYHora";
 // Components
@@ -23,18 +24,17 @@ import { SuccessModal } from "@/components/common/SuccessModal";
 import { RecentSales } from "@/components/pos/RecentSales";
 // Icons
 import { CakeSlice, Cake, CupSoda } from "lucide-react";
+import { LucideIcon } from "lucide-react";
 // Framer Motion
 import { motion } from "motion/react";
 // Animations
 import { fadeUp, staggerContainer, slideInLeft } from "@/lib/animations";
 // Types
-import { CartItem, Cierre, Payment, Product, Sale } from "@/shared/types";
-import { generateId } from "@/shared/utils/utils";
-import { LucideIcon } from "lucide-react";
+import { CartItem, Payment, Product, Sale } from "@/shared/types";
+// Utils
 
 export default function VentasPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [cierres, setCierres] = useState<Cierre[]>([]);
   const [showCierreModal, setShowCierreModal] = useState(false);
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -56,6 +56,8 @@ export default function VentasPage() {
   const { productCategories, paymentMethods } = usePosData();
   const { tasa } = useTasaBCV();
   const fechaHoy = formatVenezuelaDate(getVenezuelaTime());
+  const { cierres, createClosing, deleteClosing, archiveClosings } =
+    usePointClosings(currentSessionId);
 
   const currentPaymentMethods = paymentMethods || [];
 
@@ -154,12 +156,10 @@ export default function VentasPage() {
     setShowArchiveModal(true);
   };
 
-  const confirmArchiveDay = () => {
-    archiveSales.mutate(undefined, {
-      onSuccess: () => {
-        setShowArchiveModal(false);
-      },
-    });
+  const confirmArchiveDay = async () => {
+    await archiveSales.mutateAsync();
+    await archiveClosings.mutateAsync();
+    setShowArchiveModal(false);
   };
 
   const cierreResumen = useMemo(() => {
@@ -202,24 +202,16 @@ export default function VentasPage() {
     );
   }, [recentSales]);
 
-  // --- GESTIÓN DE CIERRES (Temporalmente Local) ---
+  // --- GESTIÓN DE CIERRES ---
+
+  // 1. Crear Cierre
   const addCierre = (monto: number) => {
-    const nuevoCierre: Cierre = {
-      id: generateId(),
-      monto,
-      fecha: new Date().toISOString(),
-    };
-    setCierres((prev) => [...prev, nuevoCierre]);
+    createClosing.mutate(monto);
   };
 
-  const updateCierre = (updatedCierre: Cierre) => {
-    setCierres((prev) =>
-      prev.map((c) => (c.id === updatedCierre.id ? updatedCierre : c)),
-    );
-  };
-
+  // 2. Eliminar Cierre
   const deleteCierre = (id: string) => {
-    setCierres((prev) => prev.filter((c) => c.id !== id));
+    deleteClosing.mutate(id);
   };
 
   return (
@@ -292,9 +284,8 @@ export default function VentasPage() {
         <motion.div variants={fadeUp} className="w-full">
           <FinancialSummary
             sales={recentSales || []}
-            cierres={cierres}
+            cierres={cierres || []}
             onAddCierre={() => setShowCierreModal(true)}
-            onUpdateCierre={updateCierre}
             onDeleteCierre={deleteCierre}
           />
         </motion.div>
@@ -302,7 +293,7 @@ export default function VentasPage() {
 
       <RecentSales
         sales={recentSales || []}
-        cierres={cierres}
+        cierres={cierres || []}
         paymentMethods={currentPaymentMethods}
         onDeleteSale={handleDeleteSale}
         onUpdateSale={handleEditAmount}
@@ -314,6 +305,7 @@ export default function VentasPage() {
         isOpen={showCierreModal}
         onClose={() => setShowCierreModal(false)}
         onConfirm={addCierre}
+        isLoading={createClosing.isPending}
       />
 
       <ArchiveDayModal

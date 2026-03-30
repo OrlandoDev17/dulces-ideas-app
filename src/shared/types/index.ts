@@ -103,10 +103,13 @@ export interface Order {
   estado: OrderStatus;
 }
 
-export interface Cierre {
+export interface PointClosing {
   id: string;
-  monto: number;
-  fecha: string;
+  store_id: string;
+  session_id: string;
+  total_bs_point: number;
+  created_at: string;
+  is_archived: boolean;
 }
 
 export interface Session {

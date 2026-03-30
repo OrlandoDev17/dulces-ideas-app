@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { Sale, Cierre, Category } from "../shared/types";
+import { Sale, PointClosing, Category } from "../shared/types";
 import { formatVenezuelaDate, getVenezuelaTime } from "./FechaYHora";
 
 /**
@@ -28,7 +28,7 @@ const getProductName = (
  */
 export const exportSalesToPDF = (
   sales: Sale[],
-  cierres: Cierre[] = [],
+  cierres: PointClosing[] = [],
   productCategories: Category[] = [],
 ) => {
   const doc = new jsPDF();
@@ -175,11 +175,11 @@ export const exportSalesToPDF = (
     doc.text("Cierres de Caja Registrados", 14, currentY);
 
     const cierreRows = cierres.map((c) => [
-      new Date(c.fecha).toLocaleTimeString("es-VE", {
+      new Date(c.created_at).toLocaleTimeString("es-VE", {
         hour: "2-digit",
         minute: "2-digit",
       }),
-      `Bs. ${c.monto.toLocaleString("es-VE", { minimumFractionDigits: 2 })}`,
+      `Bs. ${c.total_bs_point.toLocaleString("es-VE", { minimumFractionDigits: 2 })}`,
     ]);
 
     autoTable(doc, {

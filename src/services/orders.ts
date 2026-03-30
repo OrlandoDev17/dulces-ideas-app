@@ -25,7 +25,7 @@ export const ordersService = {
   /**
    * Agrega un nuevo encargo y registra la venta inicial si aplica
    */
-  addOrder(order: Order, tasa: number) {
+  addOrder(order: Order) {
     const orders = this.getOrders();
     const updated = [...orders, order];
     this.saveOrders(updated);

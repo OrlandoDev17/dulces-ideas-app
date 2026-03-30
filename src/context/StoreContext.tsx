@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react-hooks/set-state-in-effect */
 import { createContext, useContext, useState, useEffect } from "react";
 import { storesApi } from "@/api/store";
 

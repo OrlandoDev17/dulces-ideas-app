@@ -1,19 +1,25 @@
 import { CheckCircle2, Calculator } from "lucide-react";
 import { useState } from "react";
-import { Button } from "../../common/Button";
-import { Modal } from "../../common/Modal";
+import { Button } from "@/components/common/Button";
+import { Modal } from "@/components/common/Modal";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (monto: number) => void;
+  isLoading: boolean;
 }
 
 /**
  * Modal para registrar el monto de un cierre de caja.
  * Permite ingresar el monto recolectado en Bolívares.
  */
-export function AddCierreModal({ isOpen, onClose, onConfirm }: Props) {
+export function AddCierreModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  isLoading,
+}: Props) {
   const [monto, setMonto] = useState<number | "">("");
 
   // Función para cerrar el modal y resetear el estado
@@ -43,7 +49,7 @@ export function AddCierreModal({ isOpen, onClose, onConfirm }: Props) {
             style="primary"
             type="submit"
             form="add-cierre-form"
-            disabled={!monto || Number(monto) <= 0}
+            disabled={!monto || Number(monto) <= 0 || isLoading}
             className="w-full py-4 rounded-2xl shadow-xl shadow-primary-500/20"
           >
             <CheckCircle2 size={20} className="mr-2" />

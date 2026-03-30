@@ -1,12 +1,12 @@
 import { CircleDollarSign, Trash2 } from "lucide-react";
-import { Button } from "../../common/Button";
-import { Sale, Cierre } from "@/shared/types";
+import { Button } from "@/components/common/Button";
+import { Sale, PointClosing } from "@/shared/types";
 import { exportSalesToPDF } from "@/services/pdfService";
 import { usePosData } from "@/hooks/api/usePosData";
 
 interface Props {
   sales: Sale[];
-  cierres: Cierre[];
+  cierres: PointClosing[];
   onClearAll: () => void;
   handleEndDay: () => void;
 }
