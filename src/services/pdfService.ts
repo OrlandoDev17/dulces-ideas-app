@@ -78,31 +78,48 @@ export const exportSalesToPDF = (
 
     // Ingresos (Descontando Delivery si aplica)
     if (payments.length > 0) {
-      const totalPaidInBs = payments.reduce(
-        (acc, p) => acc + (p.amount_bs || p.amountBs || 0),
-        0,
-      );
+      let sPm = 0;
+      let sPv = 0;
+      let sEf = 0;
+      let sUsd = 0;
 
       payments.forEach((p) => {
         const mId = p.method_id || p.methodId;
         const amtBs = p.amount_bs || p.amountBs || 0;
         const amtRef = p.amount_ref || p.amountRef || 0;
 
-        let finalAmtBs = amtBs;
-        let finalAmtRef = amtRef;
-
-        if (deliveryAmt > 0 && totalPaidInBs > 0) {
-          const factor = amtBs / totalPaidInBs;
-          const discountBs = deliveryAmt * factor;
-          finalAmtBs = Math.max(0, amtBs - discountBs);
-          finalAmtRef = Math.max(0, amtRef - discountBs / tasa);
-        }
-
-        if (mId === "pm") pmBs += finalAmtBs;
-        if (mId === "punto" || mId === "pv") pvBs += finalAmtBs;
-        if (mId === "ves" || mId === "bs") efBs += finalAmtBs;
-        if (mId === "usd") usdTotal += finalAmtRef;
+        if (mId === "pm") sPm += amtBs;
+        else if (mId === "punto" || mId === "pv") sPv += amtBs;
+        else if (mId === "ves" || mId === "bs") sEf += amtBs;
+        else if (mId === "usd") sUsd += amtRef;
       });
+
+      // "No sumes el delivery nunca": Restamos el monto de delivery de los ingresos
+      // Prioridad: P. Móvil -> Punto -> Efectivo -> Divisas
+      let toSubtract = deliveryAmt;
+      if (toSubtract > 0) {
+        const subPm = Math.min(sPm, toSubtract);
+        sPm -= subPm;
+        toSubtract -= subPm;
+
+        const subPv = Math.min(sPv, toSubtract);
+        sPv -= subPv;
+        toSubtract -= subPv;
+
+        const subEf = Math.min(sEf, toSubtract);
+        sEf -= subEf;
+        toSubtract -= subEf;
+
+        if (toSubtract > 0 && sUsd > 0) {
+          const subUsd = Math.min(sUsd, toSubtract / tasa);
+          sUsd -= subUsd;
+        }
+      }
+
+      pmBs += sPm;
+      pvBs += sPv;
+      efBs += sEf;
+      usdTotal += sUsd;
     } else {
       const met = sale.method_id || sale.metodo;
       const finalTotalBs = Math.max(0, totalBs - deliveryAmt);

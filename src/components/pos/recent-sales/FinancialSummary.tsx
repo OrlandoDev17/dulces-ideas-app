@@ -62,7 +62,7 @@ export function FinancialSummary({
         });
 
         // "No sumes el delivery nunca": Restamos el monto de delivery de los ingresos en Bs
-        // Prioridad de resta: Pago Móvil -> Punto -> Efectivo
+        // Prioridad de resta: Pago Móvil -> Punto -> Efectivo -> Divisas
         let toSubtract = deliveryAmt;
         if (toSubtract > 0) {
           const subPm = Math.min(sPm, toSubtract);
@@ -76,6 +76,14 @@ export function FinancialSummary({
           const subEf = Math.min(sEf, toSubtract);
           sEf -= subEf;
           toSubtract -= subEf;
+
+          // Si aún falta restar (el delivery se pagó con divisas)
+          if (toSubtract > 0 && sUsd > 0) {
+            const tasa = sale.tasa_bcv || 1;
+            const subUsd = Math.min(sUsd, toSubtract / tasa);
+            sUsd -= subUsd;
+            // toSubtract -= subUsd * tasa; // Opcional, ya terminamos
+          }
         }
 
         pmBs += sPm;
@@ -83,12 +91,16 @@ export function FinancialSummary({
         efBs += sEf;
         usdTotal += sUsd;
       } else {
-        // Fallback para ventas sin desglose detallado (totalBs ya es NETO según nuevas reglas)
+        // Fallback para ventas sin desglose detallado
         const met = sale.method_id || sale.metodo;
-        if (met === "pm") pmBs += totalBs;
-        if (met === "punto" || met === "pv") pvBs += totalBs;
-        if (met === "ves" || met === "bs") efBs += totalBs;
-        if (met === "usd") usdTotal += totalUsd;
+        const tasa = sale.tasa_bcv || 1;
+        const finalTotalBs = Math.max(0, totalBs - deliveryAmt);
+        const finalTotalUsd = Math.max(0, totalUsd - deliveryAmt / tasa);
+
+        if (met === "pm") pmBs += finalTotalBs;
+        if (met === "punto" || met === "pv") pvBs += finalTotalBs;
+        if (met === "ves" || met === "bs") efBs += finalTotalBs;
+        if (met === "usd") usdTotal += finalTotalUsd;
       }
 
       // Agrupación de Delivery (se mantiene el desglose por persona pero no se sumará al total de ingresos)

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { usePosData } from "@/hooks/api/usePosData";
 import { Clock, CreditCard, MapPin, Pencil, Trash2 } from "lucide-react";
 import {
@@ -59,7 +60,53 @@ export function RecentSaleRow({
 
   // --- EXTRACCIÓN DE DATOS RELACIONADOS ---
   const items: CartItem[] = sale.sale_items || [];
-  const payments: Payment[] = sale.sale_payments || [];
+  const deliveryAmt = sale.delivery_amount || sale.deliveryAmount || 0;
+  const tasa = sale.tasa_bcv || 1;
+
+  // Calculamos los totales netos (Total - Delivery)
+  const totalBsNeto = (sale.total_bs || sale.totalBs || 0) - deliveryAmt;
+  const totalUsdNeto =
+    (sale.total_usd || sale.totalUsd || 0) - deliveryAmt / tasa;
+
+  // Calculamos el desglose de pagos neto (descontando delivery)
+  const payments = useMemo(() => {
+    const rawPayments = sale.sale_payments || [];
+    if (!deliveryAmt || rawPayments.length === 0) return rawPayments;
+
+    const netPayments = rawPayments.map((p) => ({ ...p }));
+    let toSubtract = deliveryAmt;
+
+    // Prioridad: PM -> Punto -> Efectivo -> USD
+    const methods = [
+      ["pm"],
+      ["punto", "pv"],
+      ["ves", "bs"],
+      ["usd"],
+    ];
+
+    for (const group of methods) {
+      if (toSubtract <= 0) break;
+      for (const p of netPayments) {
+        const mId = p.method_id || p.methodId;
+        if (group.includes(mId || "")) {
+          if (p.currency === "USD" || mId === "usd") {
+            const currentRef = p.amount_ref || p.amountRef || 0;
+            const subUsd = Math.min(currentRef, toSubtract / tasa);
+            p.amount_ref = currentRef - subUsd;
+            p.amountRef = p.amount_ref;
+            toSubtract -= subUsd * tasa;
+          } else {
+            const currentBs = p.amount_bs || p.amountBs || 0;
+            const subBs = Math.min(currentBs, toSubtract);
+            p.amount_bs = currentBs - subBs;
+            p.amountBs = p.amount_bs;
+            toSubtract -= subBs;
+          }
+        }
+      }
+    }
+    return netPayments;
+  }, [sale.sale_payments, deliveryAmt, tasa]);
 
   return (
     <div
@@ -110,10 +157,10 @@ export function RecentSaleRow({
 
       <div className="flex flex-col">
         <span className="text-primary-500 font-black text-sm tracking-tight tabular-nums">
-          Bs. {roundTo2Decimals(sale.total_bs || sale.totalBs || 0)}
+          Bs. {roundTo2Decimals(totalBsNeto)}
         </span>
         <span className="text-zinc-400 font-bold text-xs tracking-tighter tabular-nums">
-          ${(sale.total_usd || sale.totalUsd || 0).toFixed(2)} USD
+          ${Math.max(0, totalUsdNeto).toFixed(2)} USD
         </span>
       </div>
 
@@ -121,27 +168,35 @@ export function RecentSaleRow({
       <div className="flex flex-wrap gap-1.5 items-center">
         {payments.length > 0 ? (
           <>
-            {payments.map((p: Payment, pIndex: number) => (
-              <div
-                key={`${sale.id}-pay-${pIndex}`}
-                className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-50 border-[1.5px] border-primary-200 rounded-full shadow-sm hover:scale-[1.02] transition-transform"
-              >
-                <CreditCard
-                  size={14}
-                  className="text-primary-800"
-                  strokeWidth={2.5}
-                  aria-hidden="true"
-                />
-                <span className="font-black text-primary-900 text-[11px] uppercase tracking-wide mt-0.5">
-                  {getMethodLabel(p.method_id || p.methodId)}:
-                </span>
-                <span className="font-black text-primary-600 text-[11px] tabular-nums mt-0.5">
-                  {p.currency === "USD"
-                    ? `$${(p.amount_ref || p.amountRef || 0).toFixed(2)}`
-                    : `Bs. ${roundTo2Decimals(p.amount_bs || p.amountBs || 0)}`}
-                </span>
-              </div>
-            ))}
+            {payments.map((p: Payment, pIndex: number) => {
+              const amtBs = p.amount_bs || p.amountBs || 0;
+              const amtRef = p.amount_ref || p.amountRef || 0;
+
+              // No mostrar pagos que quedaron en 0 (porque eran solo para el delivery)
+              if (amtBs <= 0 && amtRef <= 0) return null;
+
+              return (
+                <div
+                  key={`${sale.id}-pay-${pIndex}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-50 border-[1.5px] border-primary-200 rounded-full shadow-sm hover:scale-[1.02] transition-transform"
+                >
+                  <CreditCard
+                    size={14}
+                    className="text-primary-800"
+                    strokeWidth={2.5}
+                    aria-hidden="true"
+                  />
+                  <span className="font-black text-primary-900 text-[11px] uppercase tracking-wide mt-0.5">
+                    {getMethodLabel(p.method_id || p.methodId)}:
+                  </span>
+                  <span className="font-black text-primary-600 text-[11px] tabular-nums mt-0.5">
+                    {p.currency === "USD"
+                      ? `$${amtRef.toFixed(2)}`
+                      : `Bs. ${roundTo2Decimals(amtBs)}`}
+                  </span>
+                </div>
+              );
+            })}
           </>
         ) : (
           /* Fallback por si la venta no tiene pagos registrados aún */

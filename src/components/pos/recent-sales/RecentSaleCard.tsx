@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Clock, CreditCard, MapPin, Pencil, Trash2 } from "lucide-react";
 import { usePosData } from "@/hooks/api/usePosData";
 import type {
@@ -48,7 +49,47 @@ export function RecentSaleCard({
 
   // --- EXTRACCIÓN DE DATOS DE RELACIONES ---
   const items: CartItem[] = sale.sale_items || [];
-  const payments: Payment[] = sale.sale_payments || [];
+  const deliveryAmt = sale.delivery_amount || sale.deliveryAmount || 0;
+  const tasa = sale.tasa_bcv || 1;
+
+  // Totales netos
+  const totalBsNeto = (sale.total_bs || sale.totalBs || 0) - deliveryAmt;
+  const totalUsdNeto = (sale.total_usd || sale.totalUsd || 0) - deliveryAmt / tasa;
+
+  // Calculamos el desglose de pagos neto (descontando delivery)
+  const payments = useMemo(() => {
+    const rawPayments = sale.sale_payments || [];
+    if (!deliveryAmt || rawPayments.length === 0) return rawPayments;
+
+    const netPayments = rawPayments.map((p) => ({ ...p }));
+    let toSubtract = deliveryAmt;
+
+    // Prioridad: PM -> Punto -> Efectivo -> USD
+    const methods = [["pm"], ["punto", "pv"], ["ves", "bs"], ["usd"]];
+
+    for (const group of methods) {
+      if (toSubtract <= 0) break;
+      for (const p of netPayments) {
+        const mId = p.method_id || p.methodId;
+        if (group.includes(mId || "")) {
+          if (p.currency === "USD" || mId === "usd") {
+            const currentRef = p.amount_ref || p.amountRef || 0;
+            const subUsd = Math.min(currentRef, toSubtract / tasa);
+            p.amount_ref = currentRef - subUsd;
+            p.amountRef = p.amount_ref;
+            toSubtract -= subUsd * tasa;
+          } else {
+            const currentBs = p.amount_bs || p.amountBs || 0;
+            const subBs = Math.min(currentBs, toSubtract);
+            p.amount_bs = currentBs - subBs;
+            p.amountBs = p.amount_bs;
+            toSubtract -= subBs;
+          }
+        }
+      }
+    }
+    return netPayments;
+  }, [sale.sale_payments, deliveryAmt, tasa]);
 
   return (
     <article className="group flex flex-col gap-3.5 p-2 bg-white rounded-3xl border border-zinc-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
@@ -127,12 +168,12 @@ export function RecentSaleCard({
             <div className="flex flex-col">
               <span className="text-base font-black text-primary-600 leading-tight tabular-nums">
                 Bs.{" "}
-                {roundTo2Decimals(
-                  sale.total_bs || sale.totalBs || 0,
-                ).toLocaleString("es-VE", { minimumFractionDigits: 2 })}
+                {roundTo2Decimals(totalBsNeto).toLocaleString("es-VE", {
+                  minimumFractionDigits: 2,
+                })}
               </span>
               <span className="text-[9px] font-bold text-primary-400/80 tabular-nums leading-none">
-                ${(sale.total_usd || sale.totalUsd || 0).toFixed(2)} USD
+                ${Math.max(0, totalUsdNeto).toFixed(2)} USD
               </span>
             </div>
           </div>
@@ -145,6 +186,12 @@ export function RecentSaleCard({
             <ul className="flex flex-col gap-1">
               {payments.length > 0 ? (
                 payments.map((p: Payment, pIndex: number) => {
+                  const amtBs = p.amount_bs || p.amountBs || 0;
+                  const amtRef = p.amount_ref || p.amountRef || 0;
+
+                  // No mostrar pagos que quedaron en 0 (porque eran solo para el delivery)
+                  if (amtBs <= 0 && amtRef <= 0) return null;
+
                   const method = paymentMethods?.find(
                     (m) => m.id === (p.method_id || p.methodId),
                   );
@@ -169,8 +216,8 @@ export function RecentSaleCard({
                         </span>
                         <span className="text-[10px] font-black text-primary-600 tabular-nums">
                           {p.currency === "USD"
-                            ? `$${(p.amount_ref || p.amountRef || 0).toFixed(2)}`
-                            : `Bs. ${(p.amount_bs || p.amountBs || 0).toLocaleString("es-VE", { minimumFractionDigits: 2 })}`}
+                            ? `$${amtRef.toFixed(2)}`
+                            : `Bs. ${amtBs.toLocaleString("es-VE", { minimumFractionDigits: 2 })}`}
                         </span>
                       </div>
                     </li>
