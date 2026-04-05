@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../../node_modules/@tremor/react";
 
 @theme {
   --color-primary-50: #f5f4f1;
@@ -12,6 +13,45 @@
   --color-primary-800: #57423c;
   --color-primary-900: #4c3b37;
   --color-dark: #444;
+
+  --color-emerald-50: #ecfdf5;
+  --color-emerald-100: #d1fae5;
+  --color-emerald-200: #a7f3d0;
+  --color-emerald-300: #6ee7b7;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-emerald-600: #059669;
+  --color-emerald-700: #047857;
+  --color-emerald-800: #065f46;
+  --color-emerald-900: #064e3b;
+  --color-emerald-950: #022c22;
+
+  --shadow-bento: 10px 10px 20px #d1d1d1, -10px -10px 20px #ffffff;
+
+  /* Tremor Essential Colors */
+  --color-tremor-brand-faint: #ecfdf5;
+  --color-tremor-brand-muted: #10b981;
+  --color-tremor-brand-subtle: #34d399;
+  --color-tremor-brand-default: #10b981;
+  --color-tremor-brand-emphasis: #059669;
+  --color-tremor-brand-inverted: #ffffff;
+
+  --color-tremor-background-canvas: #ffffff;
+  --color-tremor-background-muted: #f9fafb;
+  --color-tremor-background-subtle: #f3f4f6;
+  --color-tremor-background-default: #ffffff;
+  --color-tremor-background-emphasis: #374151;
+
+  --color-tremor-border-muted: #e5e7eb;
+  --color-tremor-border-subtle: #f3f4f6;
+  --color-tremor-border-default: #e5e7eb;
+  --color-tremor-border-emphasis: #4b5563;
+
+  --color-tremor-content-subtle: #9ca3af;
+  --color-tremor-content-default: #6b7280;
+  --color-tremor-content-emphasis: #374151;
+  --color-tremor-content-strong: #111827;
+  --color-tremor-content-inverted: #ffffff;
 }
 
 body {
