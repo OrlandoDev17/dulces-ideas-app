@@ -85,8 +85,8 @@ export function useAnalytics(range: "7d" | "30d") {
       chartMap[label].count += 1;
 
       sale.sale_items?.forEach((item: any) => {
-        productMap[item.product_name] =
-          (productMap[item.product_name] || 0) + item.quantity;
+        const pid = String(item.product_id);
+        productMap[pid] = (productMap[pid] || 0) + item.quantity;
       });
 
       sale.sale_payments?.forEach((p: any) => {
@@ -142,9 +142,9 @@ export function useAnalytics(range: "7d" | "30d") {
     }
 
     const topProducts = Object.entries(productMap)
-      .map(([name, units]) => ({ name, units }))
+      .map(([id, units]) => ({ id, units }))
       .sort((a, b) => b.units - a.units)
-      .slice(0, 3);
+      .slice(0, 5);
 
     const paymentMethods = Object.entries(paymentMap).map(([name, value]) => {
       const pmLabel = globalPaymentMethods.find((m: any) => m.id === name)?.name || name;

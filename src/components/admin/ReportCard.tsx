@@ -2,7 +2,13 @@
 import { motion } from "motion/react";
 import { AreaChart } from "@tremor/react";
 import { CustomChartTooltip } from "./CustomChartTooltip";
-import { TrendingUp, TrendingDown, RefreshCw, Wallet, DollarSign } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  RefreshCw,
+  Wallet,
+  DollarSign,
+} from "lucide-react";
 
 interface ReportCardProps {
   chartData: any[];
@@ -60,7 +66,7 @@ export function ReportCard({
   });
 
   return (
-    <motion.article className="col-span-3 row-span-2 p-6 rounded-3xl bg-white shadow-xl shadow-slate-200/50 flex flex-col justify-between">
+    <motion.article className="col-span-3 row-span-2 p-6 rounded-3xl bg-white shadow-xl shadow-primary-500/50 flex flex-col justify-between">
       <header className="flex items-center justify-between">
         <h3 className="uppercase font-bold tracking-wide text-slate-800">
           Ingresos Totales
@@ -81,7 +87,7 @@ export function ReportCard({
           </span>
         </div>
       </header>
-      
+
       <div className="flex-1 flex flex-col justify-between">
         <motion.header
           variants={containerVariants}
@@ -93,21 +99,20 @@ export function ReportCard({
           <motion.div
             variants={itemVariants}
             whileHover={{ y: -4, transition: { duration: 0.2 } }}
-            className="px-5 py-4 border border-slate-100 rounded-3xl bg-white flex flex-col justify-between shadow-sm min-w-[220px] w-1/3 transition-shadow hover:shadow-md"
+            className="px-5 py-4 border border-slate-100 rounded-xl bg-white flex flex-col justify-between shadow-sm min-w-[220px] w-1/3 transition-shadow hover:shadow-md"
           >
             <div className="flex items-center justify-between gap-4 mb-3">
-              <span className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500 tracking-wider">
-                <Wallet size={14} className="text-slate-400" />
+              <span className="flex items-center gap-1.5 text-xs font-bold text-primary-500 tracking-wider">
+                <Wallet size={14} className="text-primary-500" />
                 EN BS.
               </span>
-              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Punto + Pago Móvil</span>
             </div>
             <div className="flex flex-col">
               <span className="text-2xl font-black text-slate-800 tracking-tight">
                 {formatBs.format(totalsByCurrency.bs)}
               </span>
-              <span className="text-xs text-slate-500 mt-1 flex items-center gap-1.5 font-medium">
-                <RefreshCw size={12} className="text-slate-400" /> 
+              <span className="text-sm text-primary-500 mt-1 flex items-center gap-1.5 font-semibold">
+                <RefreshCw size={12} className="text-primary-500" />
                 Eq. a ~{formatUsd.format(totalsByCurrency.bsEqUsd)}
               </span>
             </div>
@@ -117,19 +122,19 @@ export function ReportCard({
           <motion.div
             variants={itemVariants}
             whileHover={{ y: -4, transition: { duration: 0.2 } }}
-            className="px-5 py-4 border border-slate-100 rounded-3xl bg-white flex flex-col justify-between shadow-sm min-w-[220px] w-1/3 transition-shadow hover:shadow-md"
+            className="px-5 py-4 border border-slate-100 rounded-xl bg-white flex flex-col justify-between shadow-sm min-w-[220px] w-1/3 transition-shadow hover:shadow-md"
           >
             <div className="flex items-center justify-between gap-4 mb-3">
-              <span className="flex items-center gap-1.5 text-[12px] font-bold text-emerald-600/80 tracking-wider uppercase">
+              <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600/80 tracking-wider uppercase">
                 <DollarSign size={14} />
                 En USD
               </span>
-              <span className="text-[10px] font-bold px-2 py-1 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-md">
+              <span className="text-xs font-bold px-2 py-1 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-md">
                 CASH / DIVISAS
               </span>
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-black text-slate-800 tracking-tight">
+              <span className="text-2xl font-black text-primary-600 tracking-tight">
                 {formatUsd.format(totalsByCurrency.usd)}
               </span>
               <span className="text-[11px] text-slate-500 mt-1 font-medium tracking-wide">
@@ -138,7 +143,7 @@ export function ReportCard({
             </div>
           </motion.div>
         </motion.header>
-        <div className="relative h-80 w-full">
+        <div className="relative h-50 w-full">
           {/* Elementos para forzar a Tailwind a generar las clases dinamicas de Tremor */}
           <div className="hidden stroke-emerald-500 fill-emerald-500 bg-emerald-500 text-emerald-500"></div>
           <AreaChart

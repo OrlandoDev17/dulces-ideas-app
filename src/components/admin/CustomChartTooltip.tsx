@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from "react";
 
 export const CustomChartTooltip = (props: any) => {
   const { payload, active, label } = props;
@@ -27,7 +26,7 @@ export const CustomChartTooltip = (props: any) => {
           {data.Ventas} {data.Ventas === 1 ? "Venta" : "Ventas"}
         </span>
       </div>
-      
+
       <div className="flex flex-col gap-3">
         <div className="flex justify-between items-center gap-4">
           <span className="text-xs text-dark/50 font-semibold tracking-wide">
@@ -37,7 +36,7 @@ export const CustomChartTooltip = (props: any) => {
             {formatBs.format(data.Ingresos || 0)}
           </span>
         </div>
-        
+
         <div className="flex justify-between items-center gap-4">
           <span className="text-xs text-emerald-600/70 font-bold tracking-wide">
             EN DIVISAS

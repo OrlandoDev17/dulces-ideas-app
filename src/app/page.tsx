@@ -228,9 +228,7 @@ export default function VentasPage() {
         <h1 className="text-2xl font-bold text-primary-800 tracking-tight">
           Panel de Ventas
         </h1>
-        <h2 className="text-sm md:text-base text-primary-300 font-bold uppercase">
-          {fechaHoy}
-        </h2>
+        <h2 className="w">{fechaHoy}</h2>
       </motion.header>
 
       <section className="flex flex-col gap-4 md:gap-8 mt-4">

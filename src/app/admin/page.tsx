@@ -42,9 +42,14 @@ export default function AdminPage() {
     setSelectedOption(option);
   };
 
-  const { chartData, totals, totalsByCurrency, percentageChange, isLoading } = useAnalytics(
-    selectedOption.value,
-  );
+  const {
+    chartData,
+    totals,
+    totalsByCurrency,
+    percentageChange,
+    isLoading,
+    topProducts,
+  } = useAnalytics(selectedOption.value);
 
   return (
     <motion.div
@@ -108,6 +113,7 @@ export default function AdminPage() {
           totalsByCurrency={totalsByCurrency}
           selectedOption={selectedOption}
           percentageChange={percentageChange}
+          topProducts={topProducts}
         />
       )}
     </motion.div>
