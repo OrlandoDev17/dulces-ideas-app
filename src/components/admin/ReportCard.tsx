@@ -155,7 +155,7 @@ export function ReportCard({
           </motion.div>
         </motion.header>
 
-        <div className="relative flex-1 min-h-[100px] -mt-40">
+        <div className="relative flex-1 min-h-[120px] mt-2">
           <div className="hidden stroke-emerald-500 fill-emerald-500 bg-emerald-500 text-emerald-500"></div>
           <AreaChart
             className="h-full w-full"
