@@ -13,7 +13,7 @@ const ICONS: Record<string, React.ComponentType<{ size?: number; className?: str
   "EFECTIVO USD": Wallet,
 };
 
-const COLORS = ["emerald", "amber", "cyan", "violet", "rose"] as const;
+const COLORS = ["emerald", "amber", "cyan", "violet", "rose"];
 const BAR_COLORS = ["#10b981", "#f59e0b", "#06b6d4", "#8b5cf6", "#f43f5e"] as const;
 
 export function PaymentMethodChart({ data }: any) {
@@ -61,7 +61,6 @@ export function PaymentMethodChart({ data }: any) {
             showAnimation={true}
             animationDuration={1200}
             showTooltip={true}
-            arcWidth={0.35}
           />
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20">
             <span className="text-base font-black text-slate-800 leading-none">
