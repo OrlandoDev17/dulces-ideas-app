@@ -49,6 +49,8 @@ export default function AdminPage() {
     percentageChange,
     isLoading,
     topProducts,
+    paymentMethods,
+    dateRange,
   } = useAnalytics(selectedOption.value);
 
   return (
@@ -56,7 +58,7 @@ export default function AdminPage() {
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
-      className="flex flex-col gap-2 w-full md:gap-4 md:max-w-7xl md:mx-auto p-2 md:p-6"
+      className="flex flex-col gap-3 h-screen w-full md:max-w-7xl md:mx-auto p-4 overflow-hidden"
     >
       <motion.header className="flex items-center justify-between">
         <motion.div
@@ -114,6 +116,9 @@ export default function AdminPage() {
           selectedOption={selectedOption}
           percentageChange={percentageChange}
           topProducts={topProducts}
+          paymentMethods={paymentMethods}
+          range={selectedOption.value}
+          dateRange={dateRange || { start: new Date(), end: new Date() }}
         />
       )}
     </motion.div>

@@ -2,6 +2,7 @@
 import { motion } from "motion/react";
 import { ReportCard } from "./ReportCard";
 import { BestSellers } from "./BestSellers";
+import { PaymentMethodChart } from "./PaymentMethodChart";
 
 interface BentoGridProps {
   chartData: any[];
@@ -20,6 +21,9 @@ interface BentoGridProps {
   };
   percentageChange: number;
   topProducts: any[];
+  paymentMethods: any[];
+  range: "7d" | "30d";
+  dateRange: { start: Date; end: Date } | null;
 }
 
 export function BentoGrid({
@@ -29,18 +33,21 @@ export function BentoGrid({
   selectedOption,
   percentageChange,
   topProducts,
+  paymentMethods,
+  dateRange,
 }: BentoGridProps) {
   return (
-    <motion.section className="grid grid-cols-4 grid-rows-4 gap-6 mt-8 2xl:mt-12">
-      {/* Card Principal */}
+    <motion.section className="grid grid-cols-4 grid-rows-4 gap-4 flex-1 min-h-0 mt-6">
       <ReportCard
         chartData={chartData}
         totals={totals}
         totalsByCurrency={totalsByCurrency}
         selectedOption={selectedOption}
         percentageChange={percentageChange}
+        dateRange={dateRange}
       />
       <BestSellers topProducts={topProducts} selectedOption={selectedOption} />
+      <PaymentMethodChart data={paymentMethods} />
     </motion.section>
   );
 }

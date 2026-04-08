@@ -154,6 +154,13 @@ export function useAnalytics(range: "7d" | "30d") {
       };
     });
 
+    const dateRange = currentPeriodSales.length > 0
+      ? {
+          start: new Date(Math.min(...currentPeriodSales.map((s: any) => new Date(s.created_at).getTime()))),
+          end: new Date(Math.max(...currentPeriodSales.map((s: any) => new Date(s.created_at).getTime()))),
+        }
+      : null;
+
     return {
       chartData,
       totals,
@@ -161,6 +168,7 @@ export function useAnalytics(range: "7d" | "30d") {
       topProducts,
       paymentMethods,
       percentageChange,
+      dateRange,
     };
   }, [sales, globalPaymentMethods, tasa, range]);
 

@@ -5,10 +5,12 @@ import { CustomChartTooltip } from "./CustomChartTooltip";
 import {
   TrendingUp,
   TrendingDown,
-  RefreshCw,
   Wallet,
   DollarSign,
+  CalendarRange,
 } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 interface ReportCardProps {
   chartData: any[];
@@ -26,6 +28,7 @@ interface ReportCardProps {
     value: "7d" | "30d";
   };
   percentageChange: number;
+  dateRange: { start: Date; end: Date } | null;
 }
 
 const containerVariants = {
@@ -52,8 +55,13 @@ export function ReportCard({
   totalsByCurrency,
   selectedOption,
   percentageChange,
+  dateRange,
 }: ReportCardProps) {
   const isPositive = percentageChange >= 0;
+
+  const dateRangeText = dateRange
+    ? `${format(dateRange.start, "d MMM", { locale: es })} - ${format(dateRange.end, "d MMM", { locale: es })}`
+    : "Sin datos";
 
   const formatBs = new Intl.NumberFormat("es-VE", {
     style: "currency",
@@ -66,20 +74,26 @@ export function ReportCard({
   });
 
   return (
-    <motion.article className="col-span-3 row-span-2 p-6 rounded-3xl bg-white shadow-xl shadow-primary-500/50 flex flex-col justify-between">
+    <motion.article className="col-span-3 row-span-2 p-4 rounded-3xl bg-white shadow-xl shadow-primary-500/50 flex flex-col gap-4">
       <header className="flex items-center justify-between">
-        <h3 className="uppercase font-bold tracking-wide text-slate-800">
-          Ingresos Totales
-        </h3>
+        <div className="flex flex-col gap-0.5">
+          <h3 className="uppercase font-bold tracking-wide text-slate-800 text-sm">
+            Ingresos Totales
+          </h3>
+          <span className="flex items-center gap-1 text-xs font-medium text-slate-400">
+            <CalendarRange size={11} />
+            {dateRangeText}
+          </span>
+        </div>
         <div className="flex flex-col items-end">
           <span
-            className={`flex items-center gap-1 font-bold ${isPositive ? "text-emerald-600" : "text-rose-600"}`}
+            className={`flex items-center gap-1 font-bold text-sm ${isPositive ? "text-emerald-600" : "text-rose-600"}`}
           >
-            {isPositive ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+            {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
             {isPositive ? "+" : ""}
             {percentageChange.toFixed(1)}%
           </span>
-          <span className="text-sm font-medium text-slate-400">
+          <span className="text-xs font-medium text-slate-400">
             vs.{" "}
             {selectedOption.label === "Últimos 7 días"
               ? "Semana anterior"
@@ -88,66 +102,63 @@ export function ReportCard({
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col justify-between">
+      <div className="flex-1 flex flex-col justify-between min-h-0">
         <motion.header
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="flex items-stretch justify-start gap-5 mt-6"
+          className="flex items-stretch justify-start gap-4 mt-3"
         >
-          {/* Card Bs */}
           <motion.div
             variants={itemVariants}
-            whileHover={{ y: -4, transition: { duration: 0.2 } }}
-            className="px-5 py-4 border border-slate-100 rounded-xl bg-white flex flex-col justify-between shadow-sm min-w-[220px] w-1/3 transition-shadow hover:shadow-md"
+            whileHover={{ y: -2 }}
+            className="px-4 py-3 border border-slate-100 rounded-xl bg-white flex flex-col justify-between shadow-sm w-2/5 transition-shadow hover:shadow-md"
           >
-            <div className="flex items-center justify-between gap-4 mb-3">
-              <span className="flex items-center gap-1.5 text-xs font-bold text-primary-500 tracking-wider">
-                <Wallet size={14} className="text-primary-500" />
+            <div className="flex items-center gap-2 mb-1">
+              <Wallet size={13} className="text-primary-500" />
+              <span className="text-[10px] font-bold text-primary-500 tracking-wider">
                 EN BS.
               </span>
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-black text-slate-800 tracking-tight">
+              <span className="text-xl font-black text-slate-800 tracking-tight">
                 {formatBs.format(totalsByCurrency.bs)}
               </span>
-              <span className="text-sm text-primary-500 mt-1 flex items-center gap-1.5 font-semibold">
-                <RefreshCw size={12} className="text-primary-500" />
-                Eq. a ~{formatUsd.format(totalsByCurrency.bsEqUsd)}
+              <span className="text-[11px] text-primary-500 font-medium">
+                Eq. ~{formatUsd.format(totalsByCurrency.bsEqUsd)}
               </span>
             </div>
           </motion.div>
 
-          {/* Card USD */}
           <motion.div
             variants={itemVariants}
-            whileHover={{ y: -4, transition: { duration: 0.2 } }}
-            className="px-5 py-4 border border-slate-100 rounded-xl bg-white flex flex-col justify-between shadow-sm min-w-[220px] w-1/3 transition-shadow hover:shadow-md"
+            whileHover={{ y: -2 }}
+            className="px-4 py-3 border border-slate-100 rounded-xl bg-white flex flex-col justify-between shadow-sm w-2/5 transition-shadow hover:shadow-md"
           >
-            <div className="flex items-center justify-between gap-4 mb-3">
-              <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600/80 tracking-wider uppercase">
-                <DollarSign size={14} />
+            <div className="flex items-center gap-2 mb-1">
+              <DollarSign size={13} className="text-emerald-600" />
+              <span className="text-[10px] font-bold text-emerald-600 tracking-wider uppercase">
                 En USD
               </span>
-              <span className="text-xs font-bold px-2 py-1 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-md">
-                CASH / DIVISAS
+              <span className="text-[9px] font-bold px-1.5 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-md ml-auto">
+                CASH
               </span>
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-black text-primary-600 tracking-tight">
+              <span className="text-xl font-black text-primary-600 tracking-tight">
                 {formatUsd.format(totalsByCurrency.usd)}
               </span>
-              <span className="text-[11px] text-slate-500 mt-1 font-medium tracking-wide">
-                Flujo directo en caja chica
+              <span className="text-[10px] text-slate-500 font-medium">
+                Caja chica
               </span>
             </div>
           </motion.div>
         </motion.header>
-        <div className="relative h-50 w-full">
-          {/* Elementos para forzar a Tailwind a generar las clases dinamicas de Tremor */}
+
+        <div className="relative flex-1 min-h-[100px] -mt-40">
           <div className="hidden stroke-emerald-500 fill-emerald-500 bg-emerald-500 text-emerald-500"></div>
           <AreaChart
-            className="h-full w-full mt-10"
+            className="h-full w-full"
             data={chartData}
             index="date"
             categories={["Ingresos"]}

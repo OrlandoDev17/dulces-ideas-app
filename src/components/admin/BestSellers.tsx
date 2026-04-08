@@ -216,40 +216,37 @@ export function BestSellers({ topProducts, selectedOption }: BestSellersProps) {
       className="col-span-1 row-span-2 flex flex-col rounded-3xl bg-white shadow-xl shadow-primary-500/30 border border-zinc-100 overflow-hidden"
     >
       {/* --- Header --- */}
-      <header className="px-5 pt-5 pb-4 flex items-start justify-between gap-3">
-        <div className="flex flex-col gap-1 min-w-0">
+      <header className="px-4 pt-4 pb-3 flex items-start justify-between gap-2">
+        <div className="flex flex-col gap-0.5 min-w-0">
           <div className="flex items-center gap-2">
             <span
-              className="flex items-center justify-center w-8 h-8 rounded-xl bg-primary-100 text-primary-600 shrink-0"
+              className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary-100 text-primary-600 shrink-0"
               aria-hidden="true"
             >
-              <TrendingUp size={16} strokeWidth={2.2} />
+              <TrendingUp size={14} strokeWidth={2.2} />
             </span>
-            <h3 className="text-sm font-bold uppercase tracking-widest text-primary-800 truncate">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-primary-800 truncate">
               Top 5 Más Vendidos
             </h3>
           </div>
-          <p className="text-xs font-medium text-primary-300 ml-10 text-pretty">
-            Tendencia en{"\u00a0"}
-            <span className="text-primary-500 font-semibold">
-              {selectedOption.label}
-            </span>
+          <p className="text-[11px] font-medium text-primary-300 ml-9">
+            {selectedOption.label}
           </p>
         </div>
 
         {totalUnits > 0 && (
           <span
-            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-50 border border-primary-100 text-primary-600 text-xs font-semibold shrink-0 mt-0.5 tabular-nums"
+            className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-50 border border-primary-100 text-primary-600 text-[11px] font-semibold shrink-0 tabular-nums"
             aria-label={`${totalUnits} unidades vendidas en total`}
           >
-            <BarChart2 size={12} aria-hidden="true" />
+            <BarChart2 size={10} aria-hidden="true" />
             {totalUnits}
           </span>
         )}
       </header>
 
       {/* ── Body ──────────────────────────────────────────────────────── */}
-      <div className="flex-1 px-5 pb-5 overflow-y-auto overscroll-contain pretty-scrollbar">
+      <div className="flex-1 px-4 pb-4 overflow-y-auto overscroll-contain pretty-scrollbar">
         {isLoading ? (
           <SkeletonList />
         ) : topProducts.length === 0 ? (
@@ -259,7 +256,7 @@ export function BestSellers({ topProducts, selectedOption }: BestSellersProps) {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-3"
             aria-label="Ranking de productos más vendidos"
           >
             {topProducts.map((product, index) => {
