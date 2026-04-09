@@ -31,7 +31,7 @@ export function PaymentMethodChart({ data }: any) {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.15, duration: 0.4 }}
-      className="col-span-2 row-span-1 p-4 rounded-3xl bg-gradient-to-br from-slate-50 to-white shadow-xl shadow-primary-500/30 border border-slate-100/80 flex flex-col"
+      className="col-span-1 md:col-span-2 row-span-1 p-4 rounded-3xl bg-gradient-to-br from-slate-50 to-white shadow-xl shadow-primary-500/30 border border-slate-100/80 flex flex-col min-h-[200px]"
     >
       <header className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
@@ -47,10 +47,10 @@ export function PaymentMethodChart({ data }: any) {
         </span>
       </header>
 
-      <div className="flex-1 flex items-center gap-3 min-h-0">
+      <div className="flex-1 flex flex-col md:flex-row items-center gap-3 min-h-0">
         <div className="relative flex-shrink-0 flex items-center justify-center">
           <DonutChart
-            className="h-28 w-28 relative z-10"
+            className="h-24 w-24 sm:h-28 sm:w-28 relative z-10"
             data={data}
             category="value"
             index="name"

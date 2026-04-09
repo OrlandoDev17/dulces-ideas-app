@@ -22,7 +22,6 @@ export const productsApi = {
       options: data.filter((p) => p.category === label),
     }));
 
-    console.log("API: Datos procesados y ordenados", formattedData);
     return formattedData;
   },
 

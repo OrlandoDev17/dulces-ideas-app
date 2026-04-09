@@ -37,7 +37,7 @@ export function useAnalytics(range: "7d" | "30d") {
   const isLoading = isLoadingSales || isLoadingMethods;
 
   const processedData = useMemo(() => {
-    console.log("[useAnalytics] Procesando registros:", sales);
+
     if (!sales.length)
       return {
         chartData: [],

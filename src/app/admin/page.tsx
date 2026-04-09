@@ -58,14 +58,14 @@ export default function AdminPage() {
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
-      className="flex flex-col gap-3 h-screen w-full md:max-w-7xl md:mx-auto p-4 overflow-hidden"
+      className="flex flex-col gap-3 min-h-screen w-full md:max-w-7xl md:mx-auto p-4 md:overflow-hidden pb-24 md:pb-4"
     >
-      <motion.header className="flex items-center justify-between">
+      <motion.header className="flex flex-col sm:flex-row items-center sm:items-center justify-between gap-4">
         <motion.div
           variants={slideInLeft}
-          className="flex flex-col items-center md:items-start gap-1"
+          className="flex flex-col items-center sm:items-start gap-1"
         >
-          <h1 className="text-2xl font-bold text-primary-800 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold text-primary-800 tracking-tight">
             Panel de Reportes
           </h1>
           <h2 className="text-sm md:text-base text-primary-300 font-bold uppercase">
@@ -77,7 +77,7 @@ export default function AdminPage() {
             variants={staggerContainer}
             initial="hidden"
             animate="visible"
-            className="flex items-center gap-6"
+            className="flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6"
           >
             {OPTIONS.map((opt, index) => (
               <motion.li key={index} variants={fadeUp}>
@@ -109,6 +109,7 @@ export default function AdminPage() {
           <Loader2 className="animate-spin" size={40} />
         </div>
       ) : (
+        <div className="flex-1 overflow-y-auto md:overflow-hidden pb-4">
         <BentoGrid
           chartData={chartData}
           totals={totals}
@@ -120,6 +121,7 @@ export default function AdminPage() {
           range={selectedOption.value}
           dateRange={dateRange || { start: new Date(), end: new Date() }}
         />
+        </div>
       )}
     </motion.div>
   );

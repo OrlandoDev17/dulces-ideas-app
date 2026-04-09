@@ -213,7 +213,7 @@ export function BestSellers({ topProducts, selectedOption }: BestSellersProps) {
       initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="col-span-1 row-span-2 flex flex-col rounded-3xl bg-white shadow-xl shadow-primary-500/30 border border-zinc-100 overflow-hidden"
+      className="col-span-1 lg:col-span-1 lg:row-span-2 flex flex-col rounded-3xl bg-white shadow-xl shadow-primary-500/30 border border-zinc-100 overflow-hidden min-h-[280px] lg:min-h-0"
     >
       {/* --- Header --- */}
       <header className="px-4 pt-4 pb-3 flex items-start justify-between gap-2">

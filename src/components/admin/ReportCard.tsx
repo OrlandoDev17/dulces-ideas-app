@@ -74,7 +74,7 @@ export function ReportCard({
   });
 
   return (
-    <motion.article className="col-span-3 row-span-2 p-4 rounded-3xl bg-white shadow-xl shadow-primary-500/50 flex flex-col gap-4">
+    <motion.article className="col-span-1 lg:col-span-3 row-span-1 lg:row-span-2 p-4 rounded-3xl bg-white shadow-xl shadow-primary-500/50 flex flex-col gap-4">
       <header className="flex items-center justify-between">
         <div className="flex flex-col gap-0.5">
           <h3 className="uppercase font-bold tracking-wide text-slate-800 text-sm">
@@ -107,12 +107,12 @@ export function ReportCard({
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="flex items-stretch justify-start gap-4 mt-3"
+          className="flex flex-col sm:flex-row items-stretch justify-start gap-4 mt-3"
         >
           <motion.div
             variants={itemVariants}
             whileHover={{ y: -2 }}
-            className="px-4 py-3 border border-slate-100 rounded-xl bg-white flex flex-col justify-between shadow-sm w-2/5 transition-shadow hover:shadow-md"
+            className="px-4 py-3 border border-slate-100 rounded-xl bg-white flex flex-col justify-between shadow-sm sm:w-2/5 transition-shadow hover:shadow-md"
           >
             <div className="flex items-center gap-2 mb-1">
               <Wallet size={13} className="text-primary-500" />
@@ -133,7 +133,7 @@ export function ReportCard({
           <motion.div
             variants={itemVariants}
             whileHover={{ y: -2 }}
-            className="px-4 py-3 border border-slate-100 rounded-xl bg-white flex flex-col justify-between shadow-sm w-2/5 transition-shadow hover:shadow-md"
+            className="px-4 py-3 border border-slate-100 rounded-xl bg-white flex flex-col justify-between shadow-sm sm:w-2/5 transition-shadow hover:shadow-md"
           >
             <div className="flex items-center gap-2 mb-1">
               <DollarSign size={13} className="text-emerald-600" />
@@ -155,7 +155,7 @@ export function ReportCard({
           </motion.div>
         </motion.header>
 
-        <div className="relative flex-1 min-h-[120px] mt-2">
+        <div className="relative flex-1 min-h-[150px] sm:min-h-[120px] mt-2">
           <div className="hidden stroke-emerald-500 fill-emerald-500 bg-emerald-500 text-emerald-500"></div>
           <AreaChart
             className="h-full w-full"
