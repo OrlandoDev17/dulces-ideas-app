@@ -1,15 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
-import { usePosData } from "@/hooks/api/usePosData";
 import { Clock, CreditCard, MapPin, Pencil, Trash2 } from "lucide-react";
-import {
-  PaymentMethod,
-  Sale,
-  Product,
-  CartItem,
-  Payment,
-} from "@/shared/types";
+import { useProductName } from "@/hooks/ui/useProductName";
+import { useSaleTotals } from "@/hooks/ui/useSaleTotals";
+import { usePaymentMethodLabel } from "@/hooks/ui/usePaymentMethodLabel";
+import type { PaymentMethod, Sale, CartItem, Payment } from "@/shared/types";
 
 interface Props {
   sale: Sale;
@@ -28,92 +23,15 @@ export function RecentSaleRow({
   onStartEdit,
   onDelete,
 }: Props) {
-  const { productCategories } = usePosData();
-
-  const roundTo2Decimals = (value: number) => {
-    return Math.round(value * 100) / 100;
-  };
-
-  const getMethodLabel = (id: string) => {
-    const method = paymentMethods?.find((m) => m.id === id);
-    if (!method) return id;
-    return method.name.replace(/Punto de Venta/gi, "Punto");
-  };
-
-  // Funcion para buscar el nombre del producto
-  const getProductName = (id: string | number) => {
-    if (!productCategories) return "Cargando...";
-
-    // Convertimos el ID recibido a string para comparar con seguridad
-    const searchId = String(id);
-
-    for (const category of productCategories) {
-      // Buscamos el producto convirtiendo también su ID a string
-      const product = category.options.find(
-        (p: Product) => String(p.id) === searchId,
-      );
-      if (product) return product.name;
-    }
-
-    return `ID: ${id}`; // Retornamos el ID si no se encuentra para poder debuguear
-  };
-
-  // --- EXTRACCIÓN DE DATOS RELACIONADOS ---
-  const items: CartItem[] = sale.sale_items || [];
-  const deliveryAmt = sale.delivery_amount || sale.deliveryAmount || 0;
-  const tasa = sale.tasa_bcv || 1;
-
-  // Calculamos los totales netos (Total - Delivery)
-  const totalBsNeto = (sale.total_bs || sale.totalBs || 0) - deliveryAmt;
-  const totalUsdNeto =
-    (sale.total_usd || sale.totalUsd || 0) - deliveryAmt / tasa;
-
-  // Calculamos el desglose de pagos neto (descontando delivery)
-  const payments = useMemo(() => {
-    const rawPayments = sale.sale_payments || [];
-    if (!deliveryAmt || rawPayments.length === 0) return rawPayments;
-
-    const netPayments = rawPayments.map((p) => ({ ...p }));
-    let toSubtract = deliveryAmt;
-
-    // Prioridad: PM -> Punto -> Efectivo -> USD
-    const methods = [
-      ["pm"],
-      ["punto", "pv"],
-      ["ves", "bs"],
-      ["usd"],
-    ];
-
-    for (const group of methods) {
-      if (toSubtract <= 0) break;
-      for (const p of netPayments) {
-        const mId = p.method_id || p.methodId;
-        if (group.includes(mId || "")) {
-          if (p.currency === "USD" || mId === "usd") {
-            const currentRef = p.amount_ref || p.amountRef || 0;
-            const subUsd = Math.min(currentRef, toSubtract / tasa);
-            p.amount_ref = currentRef - subUsd;
-            p.amountRef = p.amount_ref;
-            toSubtract -= subUsd * tasa;
-          } else {
-            const currentBs = p.amount_bs || p.amountBs || 0;
-            const subBs = Math.min(currentBs, toSubtract);
-            p.amount_bs = currentBs - subBs;
-            p.amountBs = p.amount_bs;
-            toSubtract -= subBs;
-          }
-        }
-      }
-    }
-    return netPayments;
-  }, [sale.sale_payments, deliveryAmt, tasa]);
+  const { getProductName } = useProductName();
+  const { getMethodLabel } = usePaymentMethodLabel(paymentMethods);
+  const { items, totalBs, totalUsd, payments, deliveryAmt } = useSaleTotals(sale);
 
   return (
     <div
       role="row"
       className="grid grid-cols-recent-sales gap-4 px-6 py-5 items-center bg-white hover:bg-zinc-50/50 rounded-2xl transition-all border border-zinc-100 hover:border-primary-200 hover:shadow-lg hover:shadow-primary-500/5 group"
     >
-      {/* 1. Columna: Hora (created_at) */}
       <div className="flex items-center gap-2 text-zinc-600 font-bold text-sm tabular-nums">
         <div className="p-1.5 bg-zinc-100 rounded-lg text-zinc-400">
           <Clock size={14} aria-hidden="true" />
@@ -129,9 +47,7 @@ export function RecentSaleRow({
         </span>
       </div>
 
-      {/* 2. Columna: Productos (sale_items) */}
       <div className="flex flex-wrap gap-1.5 min-w-0">
-        {/* Marcador de Encargo (Si mantuviste la columna 'type' en 'sales') */}
         {sale.order_id && (
           <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary-500 text-white text-xs font-black uppercase tracking-widest mb-1 shadow-sm">
             Encargo
@@ -157,14 +73,13 @@ export function RecentSaleRow({
 
       <div className="flex flex-col">
         <span className="text-primary-500 font-black text-sm tracking-tight tabular-nums">
-          Bs. {roundTo2Decimals(totalBsNeto)}
+          Bs. {totalBs}
         </span>
         <span className="text-zinc-400 font-bold text-xs tracking-tighter tabular-nums">
-          ${Math.max(0, totalUsdNeto).toFixed(2)} USD
+          ${Math.max(0, totalUsd).toFixed(2)} USD
         </span>
       </div>
 
-      {/* 4. Columna: Métodos de pago (sale_payments) */}
       <div className="flex flex-wrap gap-1.5 items-center">
         {payments.length > 0 ? (
           <>
@@ -172,7 +87,6 @@ export function RecentSaleRow({
               const amtBs = p.amount_bs || p.amountBs || 0;
               const amtRef = p.amount_ref || p.amountRef || 0;
 
-              // No mostrar pagos que quedaron en 0 (porque eran solo para el delivery)
               if (amtBs <= 0 && amtRef <= 0) return null;
 
               return (
@@ -192,14 +106,13 @@ export function RecentSaleRow({
                   <span className="font-black text-primary-600 text-[11px] tabular-nums mt-0.5">
                     {p.currency === "USD"
                       ? `$${amtRef.toFixed(2)}`
-                      : `Bs. ${roundTo2Decimals(amtBs)}`}
+                      : `Bs. ${amtBs}`}
                   </span>
                 </div>
               );
             })}
           </>
         ) : (
-          /* Fallback por si la venta no tiene pagos registrados aún */
           <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-50 border-[1.5px] border-primary-200 rounded-full shadow-sm text-primary-900 text-[11px] font-black uppercase tracking-wide">
             <CreditCard
               size={14}
@@ -214,24 +127,21 @@ export function RecentSaleRow({
         )}
       </div>
 
-      {/* 5. Columna: Estado de Delivery (Nuevo Diseño Premium) */}
       <div className="flex items-center justify-center min-w-[120px]">
         {sale.delivery ? (
           <div className="flex items-center gap-3 bg-green-50/50 px-3 py-2 rounded-xl border border-green-100/50 hover:bg-green-50 transition-colors group/delivery-row w-full">
-            {/* Pequeño círculo con Icono */}
             <div className="size-8 rounded-lg bg-white flex items-center justify-center shadow-sm border border-green-100 group-hover/delivery-row:scale-105 transition-transform">
               <div className="size-6 rounded-md bg-green-400/10 flex items-center justify-center text-green-600">
                 <MapPin size={14} strokeWidth={2.5} />
               </div>
             </div>
 
-            {/* Texto de Delivery */}
             <div className="flex flex-col min-w-0">
               <span className="text-[11px] font-black text-zinc-800 leading-none truncate mb-0.5">
                 {sale.delivery_name || "Delivery"}
               </span>
               <span className="text-[10px] font-black text-green-600 tabular-nums">
-                +Bs. {Number(sale.delivery_amount || 0).toFixed(2)}
+                +Bs. {Number(deliveryAmt).toFixed(2)}
               </span>
             </div>
           </div>
@@ -242,7 +152,6 @@ export function RecentSaleRow({
         )}
       </div>
 
-      {/* 6. Columna: Acciones */}
       <div className="flex justify-end gap-1">
         <button
           onClick={onStartEdit}

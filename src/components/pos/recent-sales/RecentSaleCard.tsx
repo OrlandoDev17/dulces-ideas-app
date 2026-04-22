@@ -1,15 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
 import { Clock, CreditCard, MapPin, Pencil, Trash2 } from "lucide-react";
-import { usePosData } from "@/hooks/api/usePosData";
-import type {
-  Sale,
-  Product,
-  CartItem,
-  Payment,
-  PaymentMethod,
-} from "@/shared/types";
+import { useProductName } from "@/hooks/ui/useProductName";
+import { useSaleTotals } from "@/hooks/ui/useSaleTotals";
+import { usePaymentMethodLabel } from "@/hooks/ui/usePaymentMethodLabel";
+import type { Sale, CartItem, Payment, PaymentMethod } from "@/shared/types";
 
 interface Props {
   sale: Sale;
@@ -27,73 +22,12 @@ export function RecentSaleCard({
   onStartEdit,
   onDelete,
 }: Props) {
-  const { productCategories } = usePosData();
-
-  const roundTo2Decimals = (value: number) => {
-    return Math.round(value * 100) / 100;
-  };
-
-  // Funcion para buscar el nombre del producto
-  const getProductName = (id: string | number) => {
-    if (!productCategories) return "Cargando...";
-
-    const searchId = String(id);
-    for (const category of productCategories) {
-      const product = category.options.find(
-        (p: Product) => String(p.id) === searchId,
-      );
-      if (product) return product.name;
-    }
-    return `ID: ${id}`;
-  };
-
-  // --- EXTRACCIÓN DE DATOS DE RELACIONES ---
-  const items: CartItem[] = sale.sale_items || [];
-  const deliveryAmt = sale.delivery_amount || sale.deliveryAmount || 0;
-  const tasa = sale.tasa_bcv || 1;
-
-  // Totales netos
-  const totalBsNeto = (sale.total_bs || sale.totalBs || 0) - deliveryAmt;
-  const totalUsdNeto = (sale.total_usd || sale.totalUsd || 0) - deliveryAmt / tasa;
-
-  // Calculamos el desglose de pagos neto (descontando delivery)
-  const payments = useMemo(() => {
-    const rawPayments = sale.sale_payments || [];
-    if (!deliveryAmt || rawPayments.length === 0) return rawPayments;
-
-    const netPayments = rawPayments.map((p) => ({ ...p }));
-    let toSubtract = deliveryAmt;
-
-    // Prioridad: PM -> Punto -> Efectivo -> USD
-    const methods = [["pm"], ["punto", "pv"], ["ves", "bs"], ["usd"]];
-
-    for (const group of methods) {
-      if (toSubtract <= 0) break;
-      for (const p of netPayments) {
-        const mId = p.method_id || p.methodId;
-        if (group.includes(mId || "")) {
-          if (p.currency === "USD" || mId === "usd") {
-            const currentRef = p.amount_ref || p.amountRef || 0;
-            const subUsd = Math.min(currentRef, toSubtract / tasa);
-            p.amount_ref = currentRef - subUsd;
-            p.amountRef = p.amount_ref;
-            toSubtract -= subUsd * tasa;
-          } else {
-            const currentBs = p.amount_bs || p.amountBs || 0;
-            const subBs = Math.min(currentBs, toSubtract);
-            p.amount_bs = currentBs - subBs;
-            p.amountBs = p.amount_bs;
-            toSubtract -= subBs;
-          }
-        }
-      }
-    }
-    return netPayments;
-  }, [sale.sale_payments, deliveryAmt, tasa]);
+  const { getProductName } = useProductName();
+  const { getMethodLabel } = usePaymentMethodLabel(paymentMethods);
+  const { items, totalBs, totalUsd, payments, deliveryAmt } = useSaleTotals(sale);
 
   return (
     <article className="group flex flex-col gap-3.5 p-2 bg-white rounded-3xl border border-zinc-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-      {/* 1. Cabecera: Hora y Acciones */}
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 bg-zinc-50 px-2 py-1.5 rounded-xl border border-zinc-100/50 shrink-0">
           <Clock size={11} className="text-zinc-400" aria-hidden="true" />
@@ -130,7 +64,6 @@ export function RecentSaleCard({
         </nav>
       </header>
 
-      {/* 2. Lista de Productos */}
       <div className="flex flex-col gap-2">
         {sale.order_id && (
           <span className="self-start inline-flex items-center px-2 py-0.5 rounded-md bg-primary-500 text-white text-[9px] font-black uppercase tracking-widest shadow-sm">
@@ -157,28 +90,25 @@ export function RecentSaleCard({
         </ul>
       </div>
 
-      {/* 3. Totales y Pagos */}
       <section className="flex flex-col gap-3 pt-3 border-t border-zinc-50 border-dashed">
         <div className="flex flex-col xs:flex-row justify-between items-start gap-3">
-          {/* Col Izquierda: Total */}
           <div className="flex flex-col bg-primary-50/50 px-3 py-2 rounded-xl border border-primary-100/50 w-full xs:w-auto min-w-[100px]">
             <h3 className="text-[8px] font-black uppercase text-primary-400 tracking-widest mb-0.5">
-              Neto Venta
+              Total
             </h3>
             <div className="flex flex-col">
               <span className="text-base font-black text-primary-600 leading-tight tabular-nums">
                 Bs.{" "}
-                {roundTo2Decimals(totalBsNeto).toLocaleString("es-VE", {
+                {totalBs.toLocaleString("es-VE", {
                   minimumFractionDigits: 2,
                 })}
               </span>
               <span className="text-[9px] font-bold text-primary-400/80 tabular-nums leading-none">
-                ${Math.max(0, totalUsdNeto).toFixed(2)} USD
+                ${Math.max(0, totalUsd).toFixed(2)} USD
               </span>
             </div>
           </div>
 
-          {/* Col Derecha: Pagos */}
           <div className="w-full flex-1 flex flex-col gap-1.5 min-w-0">
             <h3 className="text-[8px] font-black uppercase text-zinc-400 tracking-widest px-0.5">
               Pagos
@@ -189,12 +119,7 @@ export function RecentSaleCard({
                   const amtBs = p.amount_bs || p.amountBs || 0;
                   const amtRef = p.amount_ref || p.amountRef || 0;
 
-                  // No mostrar pagos que quedaron en 0 (porque eran solo para el delivery)
                   if (amtBs <= 0 && amtRef <= 0) return null;
-
-                  const method = paymentMethods?.find(
-                    (m) => m.id === (p.method_id || p.methodId),
-                  );
 
                   return (
                     <li
@@ -208,11 +133,7 @@ export function RecentSaleCard({
                           aria-hidden="true"
                         />
                         <span className="text-[10px] font-black text-zinc-700 uppercase truncate">
-                          {(method?.name || p.method_id || p.methodId).replace(
-                            /Punto de Venta/gi,
-                            "Punto",
-                          )}
-                          :
+                          {getMethodLabel(p.method_id || p.methodId)}:
                         </span>
                         <span className="text-[10px] font-black text-primary-600 tabular-nums">
                           {p.currency === "USD"
@@ -231,7 +152,6 @@ export function RecentSaleCard({
         </div>
       </section>
 
-      {/* 4. Sección de Delivery */}
       <footer className="flex flex-col gap-2 pt-2 border-t border-zinc-50 border-dashed">
         {sale.delivery && (
           <div className="flex items-center gap-2.5 bg-green-50/30 p-2 rounded-xl border border-green-100/30">
@@ -250,7 +170,7 @@ export function RecentSaleCard({
               </span>
               <span className="text-[10px] font-bold text-green-600 tabular-nums leading-none">
                 +Bs.{" "}
-                {Number(sale.delivery_amount || 0).toLocaleString("es-VE", {
+                {Number(deliveryAmt).toLocaleString("es-VE", {
                   minimumFractionDigits: 2,
                 })}
               </span>
