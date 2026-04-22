@@ -22,7 +22,8 @@ export function ActionButtons({ order, onPay, onDeliver }: Props) {
       {status === "pending" && (
         <button
           onClick={() => onPay(id)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition-colors active:scale-95"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition-colors active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-400"
+          aria-label="Completar pago"
         >
           Completar Pago
           <DollarSign size={14} />
@@ -32,7 +33,8 @@ export function ActionButtons({ order, onPay, onDeliver }: Props) {
       {(status === "paid" || status === "pending") && (
         <button
           onClick={() => onDeliver(id)}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-xl text-xs font-bold hover:bg-primary-600 transition-colors active:scale-95 shadow-md shadow-primary-500/20"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-xl text-xs font-bold hover:bg-primary-600 transition-colors active:scale-95 shadow-md shadow-primary-500/20 focus-visible:ring-2 focus-visible:ring-primary-400"
+          aria-label="Marcar como entregado"
         >
           Entregar
           <ChevronRight size={14} />
@@ -40,7 +42,10 @@ export function ActionButtons({ order, onPay, onDeliver }: Props) {
       )}
 
       {status === "delivered" && (
-        <div className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 rounded-xl text-xs font-bold">
+        <div
+          className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 rounded-xl text-xs font-bold"
+          aria-label="Entregado"
+        >
           Entregado
           <CheckCircle size={14} />
         </div>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CartItem, Payment, PaymentMethod, Product } from "@/shared/types";
 import { useOrders } from "../api/useOrders";
+import { useStore } from "@/context/StoreContext";
 
 export function useOrderForm(sessionId: string | null) {
   const [step, setStep] = useState(1);
@@ -13,7 +14,10 @@ export function useOrderForm(sessionId: string | null) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
 
-  const { createOrder } = useOrders(sessionId);
+  const { activeStore } = useStore();
+  const storeId = activeStore?.id || null;
+  
+  const { createOrder } = useOrders(sessionId, storeId);
   const isSubmitting = createOrder.isPending;
 
   const nextStep = () => setStep((s) => s + 1);

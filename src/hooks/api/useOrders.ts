@@ -2,20 +2,24 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/shared/config/supabase";
 
-export function useOrders(sessionId: string | null) {
+export function useOrders(sessionId: string | null, storeId: string | null) {
   const queryClient = useQueryClient();
 
   const { data: activeOrders } = useQuery({
-    queryKey: ["orders", "active"],
+    queryKey: ["orders", "active", storeId, sessionId],
     queryFn: async () => {
+      if (!storeId || !sessionId) return [];
       const { data, error } = await supabase
         .from("orders")
         .select(`*, order_items (*), order_payments (*)`)
         .in("status", ["pending", "paid", "delivered"])
-        .eq("is_archived", false);
+        .eq("is_archived", false)
+        .eq("store_id", storeId)
+        .eq("session_id", sessionId);
       if (error) throw error;
       return data;
     },
+    enabled: !!storeId && !!sessionId,
   });
 
   // --- MUTATION: Registrar pago parcial o total ---
@@ -121,12 +125,14 @@ export function useOrders(sessionId: string | null) {
 
   const createOrder = useMutation({
     mutationFn: async (orderData: any) => {
+      if (!storeId) throw new Error("No hay tienda activa");
       // 1. Insertar Cabecera del Pedido
       const { data: order, error: orderError } = await supabase
         .from("orders")
         .insert([
           {
             session_id: sessionId,
+            store_id: storeId,
             customer_name: orderData.customer_name,
             customer_phone: orderData.customer_phone,
             delivery_date: orderData.delivery_date,

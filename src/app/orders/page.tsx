@@ -1,51 +1,75 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-// Hooks
+/* ========================================
+   Imports
+======================================== */
 import { useState } from "react";
 import { useOrders } from "@/hooks/api/useOrders";
 import { useTasaBCV } from "@/hooks/ui/useTasaBCV";
 import { useSessions } from "@/hooks/api/useSessions";
-// Services
+import { useStore } from "@/context/StoreContext";
+import { usePosData } from "@/hooks/api/usePosData";
 import { getVenezuelaTime, formatVenezuelaDate } from "@/services/FechaYHora";
-// Framer Motion
 import { motion, AnimatePresence } from "motion/react";
-// Animations
 import { staggerContainer, slideInLeft } from "@/lib/animations";
-import { Cake, Loader2, Clock, Wallet, PackageCheck } from "lucide-react";
+import { Cake, Loader2, PackageCheck } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { EmptyOrders } from "@/components/orders/EmptyOrders";
 import { AddOrderModal } from "@/components/orders/AddOrderModal";
 import { OrderCard } from "@/components/orders/OrderCard";
+import { OrderCalendar } from "@/components/orders/OrderCalendar";
 import { MixedPaymentModal } from "@/components/pos/MixedPaymentModal";
 import { ConfirmActionModal } from "@/components/common/ConfirmActionModal";
-import { usePosData } from "@/hooks/api/usePosData";
 
+/* ========================================
+   Constantes
+======================================== */
+const STATUS_TABS = [
+  { value: "all", label: "Todas" },
+  { value: "pending", label: "Pendientes" },
+  { value: "paid", label: "Pagadas" },
+  { value: "delivered", label: "Entregadas" },
+];
+
+/* ========================================
+   Componente Principal
+======================================== */
 export default function OrdersPage() {
+  /* ---- Estado ---- */
   const [isOpen, setIsOpen] = useState(false);
-  const { activeSessionId } = useSessions();
-  const { activeOrders, deleteOrder, completeOrderPayment, deliverOrder } =
-    useOrders(activeSessionId);
-  const { tasa } = useTasaBCV();
-  const { paymentMethods } = usePosData();
-  const [filterStatus, setFilterStatus] = useState<
-    "pending" | "paid" | "delivered"
-  >("pending");
-
-  // Estados para Modales
+  const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isDeliverModalOpen, setIsDeliverModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
+
+  /* ---- Hooks ---- */
+  const { activeStore } = useStore();
+  const { activeSessionId } = useSessions();
+  const { tasa } = useTasaBCV();
+  const { paymentMethods } = usePosData();
+  const storeId = activeStore?.id || null;
+  const sessionId = activeSessionId;
+  const { activeOrders, deleteOrder, completeOrderPayment, deliverOrder } =
+    useOrders(sessionId, storeId);
 
   const fechaHoy = formatVenezuelaDate(getVenezuelaTime());
 
-  const handleOpenModal = () => {
-    setIsOpen(!isOpen);
+  /* ---- Handlers ---- */
+  const handleOpenModal = () => setIsOpen(!isOpen);
+
+  const handleDeleteClick = (id: string) => {
+    setOrderToDelete(id);
+    setIsDeleteModalOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("¿Estás seguro de que deseas cancelar este encargo?")) {
-      await deleteOrder.mutateAsync(id);
+  const handleConfirmDelete = async () => {
+    if (orderToDelete) {
+      await deleteOrder.mutateAsync(orderToDelete);
+      setIsDeleteModalOpen(false);
+      setOrderToDelete(null);
     }
   };
 
@@ -104,117 +128,116 @@ export default function OrdersPage() {
     return remainingUsd * tasa;
   };
 
+  /* ---- Filtros ---- */
   const filteredOrders =
-    activeOrders?.filter((o: any) => o.status === filterStatus) || [];
+    filterStatus === "all"
+      ? activeOrders || []
+      : (activeOrders || []).filter((o: any) => o.status === filterStatus);
 
-  const statuses = [
-    { id: "pending", label: "Pendientes", icon: <Clock size={16} /> },
-    { id: "paid", label: "Pagados", icon: <Wallet size={16} /> },
-    { id: "delivered", label: "Entregados", icon: <PackageCheck size={16} /> },
-  ];
-
+  /* ========================================
+     Render
+  ========================================= */
   return (
-    <motion.div
-      className="flex flex-col gap-2 w-full md:gap-4 md:max-w-7xl md:mx-auto p-2 md:p-6 min-h-[90vh]"
+    <motion.main
+      className="flex flex-col gap-4 w-full md:max-w-[1400px] md:mx-auto p-2 md:p-6 min-h-[90vh]"
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
     >
-      <motion.header
-        variants={slideInLeft}
-        className="flex flex-row items-center justify-between gap-1 mb-2 md:mb-6"
-      >
+      {/* ---- Header ---- */}
+      <header className="flex flex-row items-center justify-between gap-1">
         <div className="flex flex-col items-start gap-1">
           <h1 className="text-2xl font-bold text-primary-800 tracking-tight">
             Panel de Encargos
           </h1>
-          <h2 className="text-sm md:text-base text-primary-300 font-bold uppercase">
+          <p className="text-sm md:text-base text-primary-300 font-bold uppercase">
             {fechaHoy}
-          </h2>
+          </p>
         </div>
 
         <Button style="primary" onClick={handleOpenModal}>
           Nuevo encargo
           <Cake />
         </Button>
-      </motion.header>
+      </header>
 
-      <section className="flex-1 w-full">
-        {!activeOrders ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="animate-spin text-primary-500" size={40} />
-          </div>
-        ) : activeOrders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <EmptyOrders onClick={handleOpenModal} />
-          </div>
-        ) : (
-          <section className="flex flex-col gap-8">
-            <header className="flex bg-zinc-100/80 backdrop-blur-md p-2 rounded-[24px] w-fit border border-zinc-200/50 gap-2 relative shadow-inner">
-              {statuses.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => setFilterStatus(s.id as any)}
-                  className={`relative px-8 py-3.5 text-sm font-black transition-all duration-300 rounded-[18px] z-10 flex items-center gap-2.5 ${
-                    filterStatus === s.id
-                      ? "text-primary-800 scale-105"
-                      : "text-zinc-400 hover:text-zinc-600 hover:bg-zinc-200/50"
-                  }`}
-                >
-                  <span
-                    className={`${filterStatus === s.id ? "text-primary-500" : "text-zinc-300"}`}
-                  >
-                    {s.icon}
-                  </span>
-                  {s.label}
-                  {filterStatus === s.id && (
-                    <motion.div
-                      layoutId="active-pill"
-                      className="absolute inset-0 bg-white rounded-[18px] shadow-[0_4px_12px_rgba(0,0,0,0,05)] border border-zinc-200/50 -z-10"
-                      transition={{
-                        type: "spring",
-                        bounce: 0.15,
-                        duration: 0.5,
-                      }}
-                    />
-                  )}
-                </button>
-              ))}
-            </header>
+      {/* ---- Contenido Principal ---- */}
+      {!activeOrders ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="animate-spin text-primary-500" size={40} />
+        </div>
+      ) : activeOrders.length === 0 ? (
+        <section className="flex flex-col items-center justify-center py-20">
+          <EmptyOrders onClick={handleOpenModal} />
+        </section>
+      ) : (
+        <section className="flex flex-col lg:flex-row gap-6 mt-6">
+          {/* ---- Panel Izquierdo: Filtros + Cards ---- */}
+          <div className="flex-1 flex flex-col gap-6">
+            {/* Filtros de estado */}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <AnimatePresence mode="popLayout">
-                {filteredOrders.length > 0 ? (
-                  filteredOrders.map((order: any) => (
-                    <OrderCard
-                      key={order.id}
-                      order={order}
-                      onDelete={handleDelete}
-                      onCompletePayment={() => handleCompletePayment(order)}
-                      onDeliver={() => handleDeliver(order)}
-                      tasa={tasa}
-                    />
-                  ))
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="col-span-full py-20 text-center"
+            <div className="flex flex-wrap items-center gap-2">
+              {STATUS_TABS.map((tab) => {
+                const isSelected = filterStatus === tab.value;
+                return (
+                  <button
+                    key={tab.value}
+                    onClick={() => setFilterStatus(tab.value)}
+                    className={`
+                        px-4 py-2 rounded-xl text-sm font-bold transition-all
+                        ${
+                          isSelected
+                            ? "bg-primary-500 text-white shadow-md shadow-primary-500/30"
+                            : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                        }`}
                   >
-                    <p className="text-zinc-400 font-bold italic">
-                      No hay encargos en este estado.
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    {tab.label}
+                  </button>
+                );
+              })}
             </div>
-          </section>
-        )}
-      </section>
 
+            {/* Lista de Encargos */}
+            <AnimatePresence mode="popLayout">
+              {filteredOrders.length > 0 ? (
+                filteredOrders.map((order: any) => (
+                  <OrderCard
+                    key={order.id}
+                    order={order}
+                    onDelete={handleDeleteClick}
+                    onCompletePayment={() => handleCompletePayment(order)}
+                    onDeliver={() => handleDeliver(order)}
+                    tasa={tasa}
+                  />
+                ))
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="py-20 text-center bg-white rounded-2xl border border-zinc-200/80"
+                >
+                  <p className="text-zinc-400 font-bold italic">
+                    No hay encargos con estos filtros.
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* ---- Panel Derecho: Calendario ---- */}
+          <aside className="lg:w-72 shrink-0">
+            <motion.div variants={slideInLeft} className="sticky top-6">
+              <OrderCalendar orders={activeOrders} />
+            </motion.div>
+          </aside>
+        </section>
+      )}
+
+      {/* ========================================
+         Modales
+      ========================================= */}
       <AddOrderModal isOpen={isOpen} onClose={handleOpenModal} />
 
-      {/* Modal de Pago Mixto */}
       {selectedOrder && (
         <MixedPaymentModal
           isOpen={isPaymentModalOpen}
@@ -226,7 +249,6 @@ export default function OrdersPage() {
         />
       )}
 
-      {/* Modal de Confirmación de Entrega */}
       <ConfirmActionModal
         isOpen={isDeliverModalOpen}
         onClose={() => setIsDeliverModalOpen(false)}
@@ -238,6 +260,20 @@ export default function OrdersPage() {
         icon={<PackageCheck size={32} />}
         isPending={deliverOrder.isPending}
       />
-    </motion.div>
+
+      <ConfirmActionModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setOrderToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Cancelar Encargo"
+        message="¿Estás seguro de que deseas cancelar este encargo? Esta acción no se puede deshacer."
+        confirmText="Sí, Cancelar"
+        type="warning"
+        isPending={deleteOrder.isPending}
+      />
+    </motion.main>
   );
 }

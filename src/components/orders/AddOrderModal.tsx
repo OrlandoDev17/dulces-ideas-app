@@ -28,37 +28,39 @@ export function AddOrderModal({ isOpen, onClose }: AddOrderModalProps) {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
+            role="presentation"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-900 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-900 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overscroll-none"
           />
 
-          {/* Modal */}
           <motion.article
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-title"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", bounce: 0.3, duration: 0.6 }}
             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 max-w-md w-full max-h-[90vh] bg-white 
-            rounded-3xl shadow-xl shadow-primary-900/5 z-901 border border-zinc-100 flex flex-col overflow-hidden"
+            rounded-3xl shadow-xl shadow-primary-900/5 z-901 border border-zinc-100 flex flex-col overflow-hidden overscroll-contain"
           >
             <header className="shrink-0 flex items-center justify-between p-4 sm:px-6 sm:py-4 border-b border-zinc-100">
               <div className="flex items-center gap-3 text-primary-700">
                 <div className="bg-primary-50 p-2.5 rounded-2xl">
                   <Cake className="size-6 text-primary-600" />
                 </div>
-                <h2 className="text-xl font-bold tracking-tight">
+                <h2 id="modal-title" className="text-xl font-bold tracking-tight">
                   Nuevo Encargo
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="size-11 flex items-center justify-center rounded-full text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 cursor-pointer transition-colors"
+                className="size-11 flex items-center justify-center rounded-full text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary-400"
                 aria-label="Cerrar modal"
               >
                 <X className="size-6" />
