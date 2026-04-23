@@ -16,6 +16,7 @@ interface Props<T> {
   className?: string;
   direction?: "up" | "down";
   triggerRef?: React.RefObject<HTMLElement | null>;
+  widthMultiplier?: number;
 }
 
 export function OptionDropdown<T>({
@@ -29,6 +30,7 @@ export function OptionDropdown<T>({
   className = "mt-2",
   direction = "down",
   triggerRef,
+  widthMultiplier = 1,
 }: Props<T>) {
   const [mounted, setMounted] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
@@ -42,12 +44,15 @@ export function OptionDropdown<T>({
     if (isOpen && triggerRef?.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       setCoords({
-        top: direction === "down" ? rect.bottom + window.scrollY : rect.top + window.scrollY,
+        top:
+          direction === "down"
+            ? rect.bottom + window.scrollY
+            : rect.top + window.scrollY,
         left: rect.left + window.scrollX,
-        width: rect.width,
+        width: rect.width * widthMultiplier,
       });
     }
-  }, [isOpen, triggerRef, direction]);
+  }, [isOpen, triggerRef, direction, widthMultiplier]);
 
   const yOffset = direction === "up" ? 10 : -10;
 
@@ -71,8 +76,7 @@ export function OptionDropdown<T>({
             style={
               triggerRef
                 ? {
-                    top:
-                      direction === "down" ? coords.top : "auto",
+                    top: direction === "down" ? coords.top : "auto",
                     bottom:
                       direction === "up"
                         ? window.innerHeight - coords.top + window.scrollY

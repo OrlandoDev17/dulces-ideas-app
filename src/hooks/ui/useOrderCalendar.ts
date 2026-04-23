@@ -44,7 +44,12 @@ export function useOrderCalendar(
     }
 
     orders.forEach((order) => {
-      const deliveryDate = order.delivery_date;
+      const deliveryDateRaw = order.delivery_date;
+      // Normalizar: extraer solo YYYY-MM-DD de fechas ISO
+      const deliveryDate = deliveryDateRaw
+        ? deliveryDateRaw.split("T")[0]
+        : null;
+
       if (deliveryDate && dayMap[deliveryDate]) {
         dayMap[deliveryDate].orders.push(order);
         dayMap[deliveryDate].count += 1;

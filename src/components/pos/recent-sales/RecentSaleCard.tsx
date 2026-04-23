@@ -1,9 +1,10 @@
 "use client";
 
-import { Clock, CreditCard, MapPin, Pencil, Trash2 } from "lucide-react";
+import { Clock, CreditCard, MapPin, Pencil, Trash2, Phone, Calendar, Cake } from "lucide-react";
 import { useProductName } from "@/hooks/ui/useProductName";
 import { useSaleTotals } from "@/hooks/ui/useSaleTotals";
 import { usePaymentMethodLabel } from "@/hooks/ui/usePaymentMethodLabel";
+import { fmtBs } from "@/shared/utils/formatters";
 import type { Sale, CartItem, Payment, PaymentMethod } from "@/shared/types";
 
 interface Props {
@@ -26,11 +27,19 @@ export function RecentSaleCard({
   const { getMethodLabel } = usePaymentMethodLabel(paymentMethods);
   const { items, totalBs, totalUsd, payments, deliveryAmt } = useSaleTotals(sale);
 
+  // Obtener datos del encargo si existe
+  const orderData = sale.orders?.[0];
+  const isOrderAdvance = sale.order_id;
+
   return (
     <article className="group flex flex-col gap-3.5 p-2 bg-white rounded-3xl border border-zinc-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 bg-zinc-50 px-2 py-1.5 rounded-xl border border-zinc-100/50 shrink-0">
-          <Clock size={11} className="text-zinc-400" aria-hidden="true" />
+          {isOrderAdvance ? (
+            <Cake size={11} className="text-primary-500" aria-hidden="true" />
+          ) : (
+            <Clock size={11} className="text-zinc-400" aria-hidden="true" />
+          )}
           <time
             className="text-[10px] font-black text-zinc-600 tabular-nums uppercase tracking-tight"
             suppressHydrationWarning
@@ -70,6 +79,26 @@ export function RecentSaleCard({
             Encargo
           </span>
         )}
+
+        {/* Información del cliente si es un encargo */}
+        {isOrderAdvance && orderData && (
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-bold text-zinc-800">
+              {orderData.customer_name}
+            </span>
+            <div className="flex items-center gap-3 text-xs text-zinc-500">
+              <span className="flex items-center gap-1">
+                <Phone size={10} />
+                {orderData.customer_phone}
+              </span>
+              <span className="flex items-center gap-1">
+                <Calendar size={10} />
+                {orderData.delivery_date?.split("T")[0]}
+              </span>
+            </div>
+          </div>
+        )}
+
         <ul
           className="flex flex-wrap gap-1.5"
           aria-label="Productos en esta venta"
@@ -92,16 +121,17 @@ export function RecentSaleCard({
 
       <section className="flex flex-col gap-3 pt-3 border-t border-zinc-50 border-dashed">
         <div className="flex flex-col xs:flex-row justify-between items-start gap-3">
-          <div className="flex flex-col bg-primary-50/50 px-3 py-2 rounded-xl border border-primary-100/50 w-full xs:w-auto min-w-[100px]">
+          <div className={`flex flex-col px-3 py-2 rounded-xl border w-full xs:w-auto min-w-[100px] ${
+            isOrderAdvance
+              ? "bg-primary-50 border-primary-100"
+              : "bg-primary-50/50 border-primary-100/50"
+          }`}>
             <h3 className="text-[8px] font-black uppercase text-primary-400 tracking-widest mb-0.5">
               Total
             </h3>
             <div className="flex flex-col">
               <span className="text-base font-black text-primary-600 leading-tight tabular-nums">
-                Bs.{" "}
-                {totalBs.toLocaleString("es-VE", {
-                  minimumFractionDigits: 2,
-                })}
+                Bs. {fmtBs(totalBs)}
               </span>
               <span className="text-[9px] font-bold text-primary-400/80 tabular-nums leading-none">
                 ${Math.max(0, totalUsd).toFixed(2)} USD
@@ -138,7 +168,7 @@ export function RecentSaleCard({
                         <span className="text-[10px] font-black text-primary-600 tabular-nums">
                           {p.currency === "USD"
                             ? `$${amtRef.toFixed(2)}`
-                            : `Bs. ${amtBs.toLocaleString("es-VE", { minimumFractionDigits: 2 })}`}
+                            : `Bs. ${fmtBs(amtBs)}`}
                         </span>
                       </div>
                     </li>
@@ -169,10 +199,7 @@ export function RecentSaleCard({
                 {sale.delivery_name || "Delivery"}
               </span>
               <span className="text-[10px] font-bold text-green-600 tabular-nums leading-none">
-                +Bs.{" "}
-                {Number(deliveryAmt).toLocaleString("es-VE", {
-                  minimumFractionDigits: 2,
-                })}
+                +Bs. {fmtBs(Number(deliveryAmt))}
               </span>
             </div>
           </div>

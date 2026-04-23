@@ -169,6 +169,7 @@ export function OrderStep2Form({
               getExtra={(p) => `${p.price} ${p.currency}`}
               maxHeight="max-h-[200px]"
               triggerRef={productTriggerRef}
+              widthMultiplier={2.5}
             />
           </div>
 

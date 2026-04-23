@@ -3,8 +3,9 @@ import type { CartItem, Payment } from "@/shared/types";
 
 export const salesApi = {
   // 1. Obtener ventas recientes
-  async getRecentSales(sessionId: string, storeId: string) {
-    const { data, error } = await supabase
+  async getRecentSales(sessionId: string, _storeId: string) {
+    // Traemos todas las ventas no archivadas de esta sesión
+    const { data: salesData, error: salesError } = await supabase
       .from("sales")
       .select(
         `
@@ -14,12 +15,34 @@ export const salesApi = {
         `,
       )
       .eq("session_id", sessionId)
-      .eq("store_id", storeId)
       .eq("is_archived", false)
       .order("created_at", { ascending: false });
 
-    if (error) throw error;
-    return data;
+    if (salesError) throw salesError;
+
+    // Si no hay ventas, retornar vacío
+    if (!salesData || salesData.length === 0) return [];
+
+    // Para cada venta que tenga order_id, traer los datos del encargo
+    const salesWithOrders = await Promise.all(
+      salesData.map(async (sale) => {
+        if (!sale.order_id) return sale;
+
+        // Buscar el encargo relacionado
+        const { data: orderData } = await supabase
+          .from("orders")
+          .select("customer_name, customer_phone, delivery_date, delivery_hour")
+          .eq("id", sale.order_id)
+          .single();
+
+        return {
+          ...sale,
+          orders: orderData ? [orderData] : [],
+        };
+      })
+    );
+
+    return salesWithOrders;
   },
 
   // 2. Crear una venta

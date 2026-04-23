@@ -48,6 +48,7 @@ export function useOrders(sessionId: string | null, storeId: string | null) {
         .insert([
           {
             session_id: sessionId,
+            store_id: storeId, // Añadir store_id
             total_bs: totalBs,
             total_usd: totalUsd,
             tasa_bcv: tasa,

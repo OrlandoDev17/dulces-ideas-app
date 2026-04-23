@@ -1,8 +1,7 @@
 import { Calendar, Clock, User } from "lucide-react";
 import { OrderInput } from "./OrderInput";
-import { OrderSelect } from "./OrderSelect";
 import { OrderDatePicker } from "./OrderDatePicker";
-import { CLIENT_FORM_FIELDS, TIME_SLOTS } from "@/shared/config/orders";
+import { CLIENT_FORM_FIELDS } from "@/shared/config/orders";
 import { motion } from "motion/react";
 
 interface OrderStep1FormProps {
@@ -30,6 +29,7 @@ export function OrderStep1Form({
   deliveryTime,
   setDeliveryTime,
 }: OrderStep1FormProps) {
+
   return (
     <motion.div
       key="step1"
@@ -86,15 +86,21 @@ export function OrderStep1Form({
               icon={Calendar}
               placeholder="Seleccionar fecha"
             />
-            <OrderSelect
-              label="Hora Aproximada"
-              value={deliveryTime}
-              onSelect={setDeliveryTime}
-              options={TIME_SLOTS}
-              getLabel={(op) => op}
-              icon={Clock}
-              placeholder="Seleccionar hora"
-            />
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-bold text-primary-700 uppercase tracking-wide">
+                Hora Aproximada
+              </span>
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  value={deliveryTime}
+                  onChange={(e) => setDeliveryTime(e.target.value)}
+                  placeholder="Ej. 2:30 pm"
+                  className="w-full px-4 py-2 pl-10 pr-4 border border-primary-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white text-sm text-foreground"
+                />
+                <Clock className="size-5 text-gray-700 absolute top-1/2 -translate-y-1/2 left-3 pointer-events-none" />
+              </div>
+            </div>
           </div>
         </section>
       </div>

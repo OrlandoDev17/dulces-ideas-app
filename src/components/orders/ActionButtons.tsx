@@ -1,5 +1,6 @@
 import React from "react";
-import { DollarSign, ChevronRight, CheckCircle } from "lucide-react";
+import { DollarSign, CheckCircle, PackageCheck } from "lucide-react";
+import { motion } from "motion/react";
 
 type OrderStatus = "pending" | "paid" | "delivered" | "cancelled";
 
@@ -18,37 +19,48 @@ export function ActionButtons({ order, onPay, onDeliver }: Props) {
   const { status, id } = order;
 
   return (
-    <div className="flex gap-2 ml-auto">
+    <div className="flex gap-3">
       {status === "pending" && (
-        <button
-          onClick={() => onPay(id)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition-colors active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-400"
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onPay(id);
+          }}
+          className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-blue-50 text-blue-600 rounded-2xl text-sm font-bold hover:bg-blue-100 transition-colors border border-blue-200 shadow-sm hover:shadow-md"
           aria-label="Completar pago"
         >
-          Completar Pago
-          <DollarSign size={14} />
-        </button>
+          <DollarSign size={18} />
+          <span>Completar Pago</span>
+        </motion.button>
       )}
 
       {(status === "paid" || status === "pending") && (
-        <button
-          onClick={() => onDeliver(id)}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-xl text-xs font-bold hover:bg-primary-600 transition-colors active:scale-95 shadow-md shadow-primary-500/20 focus-visible:ring-2 focus-visible:ring-primary-400"
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDeliver(id);
+          }}
+          className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-primary-500 text-white rounded-2xl text-sm font-bold hover:bg-primary-600 transition-colors shadow-lg shadow-primary-500/30 border border-primary-400 hover:shadow-xl"
           aria-label="Marcar como entregado"
         >
-          Entregar
-          <ChevronRight size={14} />
-        </button>
+          <span>Entregar</span>
+          <PackageCheck size={18} />
+        </motion.button>
       )}
 
       {status === "delivered" && (
-        <div
-          className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 rounded-xl text-xs font-bold"
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-emerald-50 text-emerald-600 rounded-2xl text-sm font-bold border border-emerald-200 shadow-sm"
           aria-label="Entregado"
         >
-          Entregado
-          <CheckCircle size={14} />
-        </div>
+          <CheckCircle size={18} />
+          <span>Entregado</span>
+        </motion.div>
       )}
     </div>
   );

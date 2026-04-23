@@ -77,6 +77,12 @@ export interface Sale {
   total_bs?: number;
   total_usd?: number;
   created_at?: string;
+  orders?: {
+    customer_name: string;
+    customer_phone: string;
+    delivery_date: string;
+    delivery_hour: string;
+  }[];
 }
 
 export interface OrderPayment {
