@@ -26,7 +26,6 @@ import { ConfirmActionModal } from "@/components/common/ConfirmActionModal";
    Constantes
 ======================================== */
 const STATUS_TABS = [
-  { value: "all", label: "Todas" },
   { value: "pending", label: "Pendientes" },
   { value: "paid", label: "Pagadas" },
   { value: "delivered", label: "Entregadas" },
@@ -38,7 +37,7 @@ const STATUS_TABS = [
 export default function OrdersPage() {
   /* ---- Estado ---- */
   const [isOpen, setIsOpen] = useState(false);
-  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("pending");
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isDeliverModalOpen, setIsDeliverModalOpen] = useState(false);
@@ -129,10 +128,16 @@ export default function OrdersPage() {
   };
 
   /* ---- Filtros ---- */
-  const filteredOrders =
-    filterStatus === "all"
-      ? activeOrders || []
-      : (activeOrders || []).filter((o: any) => o.status === filterStatus);
+  const filteredOrders = (activeOrders || [])
+    .filter((o: any) => {
+      if (filterStatus === "pending") {
+        return o.status === "pending" || o.status === "paid";
+      }
+      return o.status === filterStatus;
+    })
+    .sort((a: any, b: any) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
 
   /* ========================================
      Render

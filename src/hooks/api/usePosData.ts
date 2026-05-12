@@ -7,11 +7,11 @@ export function usePosData() {
 
   // Productos globales
   const productsQuery = useQuery({
-    queryKey: ["products"], // Llave simple, ya que no cambia por tienda
+    queryKey: ["products"],
     queryFn: () => productsApi.getProductsByCategory(),
     enabled: !!activeStore?.id,
-    staleTime: 0, // 30 min (el catálogo no cambia seguido)
-    gcTime: 0,
+    staleTime: 1000 * 60 * 5, // 5 min
+    gcTime: 1000 * 60 * 30, // 30 min
   });
 
   // Métodos de pago globales
@@ -19,8 +19,8 @@ export function usePosData() {
     queryKey: ["payment_methods"],
     queryFn: () => productsApi.getPaymentMethods(),
     enabled: !!activeStore?.id,
-    staleTime: 0,
-    gcTime: 0,
+    staleTime: 1000 * 60 * 5, // 5 min
+    gcTime: 1000 * 60 * 30, // 30 min
   });
 
   return {

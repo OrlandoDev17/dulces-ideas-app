@@ -20,7 +20,7 @@ export function useAnalytics(range: "7d" | "30d") {
   } = useQuery({
     queryKey: ["analytics", range],
     queryFn: () => analyticsApi.getSalesData(range, activeStore?.id || ""),
-    staleTime: 0,
+    staleTime: 1000 * 60, // 1 min
     enabled: !!activeStore?.id,
   });
 

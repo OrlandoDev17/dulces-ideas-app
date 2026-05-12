@@ -17,14 +17,16 @@ import { motion, AnimatePresence } from "motion/react";
 import { Cake } from "lucide-react";
 
 export function RootLayout({ children }: { children: ReactNode }) {
-  // 1. Creamos el QueryClient con configuraciones de cache agresivas para offline
+  // 1. Creamos el QueryClient optimizado para frescura sin perder rendimiento
   const [queryClient] = useState(
     () =>
       new QueryClient({
         defaultOptions: {
           queries: {
-            gcTime: 1000 * 60 * 60 * 24,
-            staleTime: 1000 * 60 * 5,
+            gcTime: 1000 * 60 * 10, // 10 min - cache se limpia después
+            staleTime: 1000 * 30, // 30 seg - datos se consideran stale rápidamente
+            refetchOnWindowFocus: true, // Refresca al volver a la app/pestaña
+            refetchOnMount: "if-stale", // Refresca al montar si hay datos stale
           },
         },
       }),

@@ -113,15 +113,50 @@ export function useOrders(sessionId: string | null, storeId: string | null) {
     },
   });
 
-  // --- MUTATION: Eliminar pedido (borrado lógico) ---
+  // --- MUTATION: Eliminar pedido (borrado en cascada) ---
   const deleteOrder = useMutation({
     mutationFn: async (orderId: string) => {
+      // 1. Obtener sales asociadas al pedido
+      const { data: sales } = await supabase
+        .from("sales")
+        .select("id")
+        .eq("order_id", orderId);
+
+      // 2. Si hay sales, borrar sale_payments y sales
+      if (sales?.length) {
+        const saleIds = sales.map((s) => s.id);
+        await supabase
+          .from("sale_payments")
+          .delete()
+          .in("sale_id", saleIds);
+        await supabase
+          .from("sales")
+          .delete()
+          .in("id", saleIds);
+      }
+
+      // 3. Borrar order_payments
+      await supabase
+        .from("order_payments")
+        .delete()
+        .eq("order_id", orderId);
+
+      // 4. Borrar order_items
+      await supabase
+        .from("order_items")
+        .delete()
+        .eq("order_id", orderId);
+
+      // 5. Borrar el pedido
       await supabase
         .from("orders")
-        .update({ is_archived: true, status: "cancelled" })
+        .delete()
         .eq("id", orderId);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["orders"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["sales"] });
+    },
   });
 
   const createOrder = useMutation({
