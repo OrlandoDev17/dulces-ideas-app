@@ -26,7 +26,6 @@ export function RootLayout({ children }: { children: ReactNode }) {
             gcTime: 1000 * 60 * 10, // 10 min - cache se limpia después
             staleTime: 1000 * 30, // 30 seg - datos se consideran stale rápidamente
             refetchOnWindowFocus: true, // Refresca al volver a la app/pestaña
-            refetchOnMount: "if-stale", // Refresca al montar si hay datos stale
           },
         },
       }),
