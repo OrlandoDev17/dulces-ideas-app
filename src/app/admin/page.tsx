@@ -14,33 +14,36 @@ import { Button } from "@/components/common/Button";
 import { Loader2 } from "lucide-react";
 import { BentoGrid } from "@/components/admin/BentoGrid";
 import { useAnalytics } from "@/hooks/api/useAnalytics";
+import { usePosData } from "@/hooks/api/usePosData";
+import { exportAdminReportToPDF } from "@/services/pdfService";
+import { useStore } from "@/context/StoreContext";
+import { useSessions } from "@/hooks/api/useSessions";
 
 export default function AdminPage() {
   const [selectedOption, setSelectedOption] = useState<{
     label: string;
-    value: "7d" | "30d";
+    value: "7d" | "30d" | "thisMonth";
   }>({
     label: "Últimos 7 días",
     value: "7d",
   });
 
   const OPTIONS = [
-    {
-      label: "Últimos 7 días",
-      value: "7d",
-    },
-    {
-      label: "Últimos 30 días",
-      value: "30d",
-    },
+    { label: "Últimos 7 días", value: "7d" },
+    { label: "Últimos 30 días", value: "30d" },
+    { label: "Este Mes", value: "thisMonth" },
   ];
 
   const handleSelectedOption = (option: {
     label: string;
-    value: "7d" | "30d";
+    value: "7d" | "30d" | "thisMonth";
   }) => {
     setSelectedOption(option);
   };
+
+  const { productCategories } = usePosData();
+  const { activeStore } = useStore();
+  const { activeSessionId } = useSessions();
 
   const {
     chartData,
@@ -51,7 +54,23 @@ export default function AdminPage() {
     topProducts,
     paymentMethods,
     dateRange,
+    ordersStats,
   } = useAnalytics(selectedOption.value);
+
+  const handleExportPDF = () => {
+    exportAdminReportToPDF({
+      selectedOption,
+      dateRange: dateRange || { start: new Date(), end: new Date() },
+      totals,
+      totalsByCurrency,
+      paymentMethods,
+      topProducts,
+      ordersStats,
+      productCategories,
+      storeName: activeStore?.name || "Tienda",
+      sessionName: activeSessionId || "",
+    });
+  };
 
   return (
     <motion.div
@@ -97,7 +116,7 @@ export default function AdminPage() {
               </motion.li>
             ))}
             <motion.li variants={fadeUp}>
-              <Button style="primary" onClick={() => {}} className="rounded-lg">
+              <Button style="primary" onClick={handleExportPDF} className="rounded-lg">
                 Exportar PDF
               </Button>
             </motion.li>

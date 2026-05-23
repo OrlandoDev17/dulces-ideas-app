@@ -2,6 +2,8 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Sale, PointClosing, Category } from "../shared/types";
 import { formatVenezuelaDate, getVenezuelaTime } from "./FechaYHora";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 /**
  * Busca el nombre de un producto por su ID dentro de las categorías de productos.
@@ -273,4 +275,158 @@ export const exportSalesToPDF = (
   });
 
   doc.save(`Cierre_Caja_${fechaArchivo}.pdf`);
+};
+
+// =========================================================================
+//  Reporte de Administración (Analytics)
+// =========================================================================
+
+interface AdminReportData {
+  selectedOption: { label: string; value: string };
+  dateRange: { start: Date; end: Date };
+  totals: { bs: number; usd: number; count: number };
+  totalsByCurrency: { bs: number; usd: number; bsEqUsd: number };
+  paymentMethods: { name: string; value: number }[];
+  topProducts: { id: string; units: number }[];
+  ordersStats: { total: number; paid: number };
+  productCategories: Category[];
+  storeName: string;
+  sessionName: string;
+}
+
+export const exportAdminReportToPDF = ({
+  selectedOption,
+  dateRange,
+  totals,
+  totalsByCurrency,
+  paymentMethods,
+  topProducts,
+  ordersStats,
+  productCategories,
+  storeName,
+}: AdminReportData) => {
+  const doc = new jsPDF();
+  const now = getVenezuelaTime();
+  const fechaHoy = formatVenezuelaDate(now);
+  const horaActual = now.toLocaleTimeString("es-VE", {
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true,
+  });
+  const fechaArchivo = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+  const PRIMARY: [number, number, number] = [139, 109, 97];
+
+  const fmtBs = (n: number) =>
+    `Bs. ${n.toLocaleString("es-VE", { minimumFractionDigits: 2 })}`;
+  const fmtUsd = (n: number) => `$${n.toFixed(2)}`;
+
+  const dateRangeText = `${format(dateRange.start, "d MMM", { locale: es })} - ${format(dateRange.end, "d MMM yyyy", { locale: es })}`;
+  const totalBsEq = totalsByCurrency.bs + totalsByCurrency.usd * (totalsByCurrency.bs / (totalsByCurrency.bsEqUsd || 1));
+
+  // --- CABECERA ---
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  doc.setTextColor(40, 40, 40);
+  doc.text("Reporte de Administración", 14, 25);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(100, 100, 100);
+  doc.text(`${storeName} — ${selectedOption.label}`, 14, 33);
+  doc.text(`${dateRangeText} — ${fechaHoy} ${horaActual}`, 14, 40);
+
+  // --- RESUMEN DE VENTAS ---
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.setTextColor(60, 60, 60);
+  doc.text("Resumen de Ventas", 14, 52);
+
+  autoTable(doc, {
+    startY: 57,
+    head: [["Concepto", "Monto"]],
+    body: [
+      ["Ventas Realizadas", `${totals.count} ventas`],
+      ["Ingresos en Bolívares", fmtBs(totalsByCurrency.bs)],
+      ["Ingresos en Divisas", fmtUsd(totalsByCurrency.usd)],
+      ["Total Combinado (Bs)", fmtBs(totalBsEq)],
+    ],
+    theme: "grid",
+    headStyles: { fillColor: PRIMARY, textColor: [255, 255, 255] },
+    styles: { fontSize: 10, cellPadding: 4 },
+    columnStyles: { 0: { fontStyle: "bold", cellWidth: 80 }, 1: { halign: "right" } },
+    margin: { left: 14, right: 14 },
+  });
+
+  let currentY = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 15;
+
+  // --- MÉTODOS DE PAGO ---
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.setTextColor(60, 60, 60);
+  doc.text("Distribución de Métodos de Pago", 14, currentY);
+
+  const pmTotal = paymentMethods.reduce((acc, p) => acc + p.value, 0);
+
+  autoTable(doc, {
+    startY: currentY + 5,
+    head: [["Método", "Monto", "%"]],
+    body: paymentMethods.map((pm) => [
+      pm.name,
+      fmtBs(pm.value),
+      pmTotal > 0 ? `${((pm.value / pmTotal) * 100).toFixed(1)}%` : "0%",
+    ]),
+    theme: "grid",
+    headStyles: { fillColor: PRIMARY, textColor: [255, 255, 255] },
+    styles: { fontSize: 10, cellPadding: 4 },
+    columnStyles: { 0: { fontStyle: "bold" }, 1: { halign: "right" }, 2: { halign: "right" } },
+    margin: { left: 14, right: 14 },
+  });
+
+  currentY = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 15;
+
+  // --- ENCARGOS ---
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.setTextColor(60, 60, 60);
+  doc.text("Encargos", 14, currentY);
+
+  autoTable(doc, {
+    startY: currentY + 5,
+    head: [["Concepto", "Cantidad"]],
+    body: [
+      ["Encargos Realizados", `${ordersStats.total}`],
+      ["Encargos Pagados / Entregados", `${ordersStats.paid}`],
+    ],
+    theme: "grid",
+    headStyles: { fillColor: PRIMARY, textColor: [255, 255, 255] },
+    styles: { fontSize: 10, cellPadding: 4 },
+    columnStyles: { 0: { fontStyle: "bold", cellWidth: 80 }, 1: { halign: "right" } },
+    margin: { left: 14, right: 14 },
+  });
+
+  currentY = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 15;
+
+  // --- TOP PRODUCTOS ---
+  if (topProducts.length > 0) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(60, 60, 60);
+    doc.text("Top Productos Más Vendidos", 14, currentY);
+
+    autoTable(doc, {
+      startY: currentY + 5,
+      head: [["#", "Producto", "Unidades"]],
+      body: topProducts.map((p, i) => [
+        `${i + 1}`,
+        getProductName(p.id, productCategories),
+        `${p.units} u.`,
+      ]),
+      theme: "grid",
+      headStyles: { fillColor: PRIMARY, textColor: [255, 255, 255] },
+      styles: { fontSize: 10, cellPadding: 4 },
+      columnStyles: { 0: { halign: "center", cellWidth: 15 }, 1: { fontStyle: "bold" }, 2: { halign: "right" } },
+      margin: { left: 14, right: 14 },
+    });
+  }
+
+  doc.save(`Reporte_Admin_${selectedOption.value}_${fechaArchivo}.pdf`);
 };

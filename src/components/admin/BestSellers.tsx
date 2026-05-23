@@ -17,7 +17,7 @@ interface TopProduct {
 
 interface BestSellersProps {
   topProducts: TopProduct[];
-  selectedOption: { label: string; value: "7d" | "30d" };
+  selectedOption: { label: string; value: "7d" | "30d" | "thisMonth" };
 }
 
 interface RankStyle {

@@ -17,12 +17,12 @@ interface BentoGridProps {
   };
   selectedOption: {
     label: string;
-    value: "7d" | "30d";
+    value: "7d" | "30d" | "thisMonth";
   };
   percentageChange: number;
   topProducts: any[];
   paymentMethods: any[];
-  range: "7d" | "30d";
+  range: "7d" | "30d" | "thisMonth";
   dateRange: { start: Date; end: Date } | null;
 }
 

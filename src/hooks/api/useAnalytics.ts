@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery } from "@tanstack/react-query";
-import { analyticsApi } from "@/api/analytics";
+import { analyticsApi, type AnalyticsRange } from "@/api/analytics";
 import { useMemo } from "react";
-import { format, subDays } from "date-fns";
+import { format, subDays, startOfMonth, subMonths, endOfMonth } from "date-fns";
 import { es } from "date-fns/locale";
 import { useStore } from "@/context/StoreContext";
 import { productsApi } from "@/api/products";
 import { useTasaBCV } from "@/hooks/ui/useTasaBCV";
 
-export function useAnalytics(range: "7d" | "30d") {
+export function useAnalytics(range: AnalyticsRange) {
   const { activeStore } = useStore();
   const { tasa } = useTasaBCV();
 
@@ -34,9 +34,20 @@ export function useAnalytics(range: "7d" | "30d") {
     staleTime: 1000 * 60 * 60, // 1 hora
   });
 
+  // 1.2 Traemos estadísticas de órdenes
+  const {
+    data: ordersStats = { total: 0, paid: 0 },
+  } = useQuery({
+    queryKey: ["analytics_orders", range],
+    queryFn: () => analyticsApi.getOrdersStats(range, activeStore?.id || ""),
+    staleTime: 1000 * 60,
+    enabled: !!activeStore?.id,
+  });
+
   const isLoading = isLoadingSales || isLoadingMethods;
 
   const processedData = useMemo(() => {
+    const now = new Date();
 
     if (!sales.length)
       return {
@@ -46,23 +57,41 @@ export function useAnalytics(range: "7d" | "30d") {
         topProducts: [],
         paymentMethods: [],
         percentageChange: 0,
+        ordersStats,
+        dateRange: range === "thisMonth"
+          ? { start: startOfMonth(now), end: now }
+          : null,
       };
 
-    const daysLimit = range === "7d" ? 7 : 30;
-    const now = new Date();
-    const cutoffDate = subDays(now, daysLimit);
+    let currentPeriodSales: any[] = [];
+    let previousPeriodSales: any[] = [];
 
-    const currentPeriodSales: any[] = [];
-    const previousPeriodSales: any[] = [];
+    if (range === "thisMonth") {
+      const monthStart = startOfMonth(now);
+      const prevMonthStart = subMonths(monthStart, 1);
+      const prevMonthEnd = endOfMonth(prevMonthStart);
 
-    sales.forEach((sale: any) => {
-      const saleDate = new Date(sale.created_at);
-      if (saleDate >= cutoffDate) {
-        currentPeriodSales.push(sale);
-      } else {
-        previousPeriodSales.push(sale);
-      }
-    });
+      sales.forEach((sale: any) => {
+        const saleDate = new Date(sale.created_at);
+        if (saleDate >= monthStart) {
+          currentPeriodSales.push(sale);
+        } else if (saleDate >= prevMonthStart && saleDate <= prevMonthEnd) {
+          previousPeriodSales.push(sale);
+        }
+      });
+    } else {
+      const daysLimit = range === "7d" ? 7 : 30;
+      const cutoffDate = subDays(now, daysLimit);
+
+      sales.forEach((sale: any) => {
+        const saleDate = new Date(sale.created_at);
+        if (saleDate >= cutoffDate) {
+          currentPeriodSales.push(sale);
+        } else {
+          previousPeriodSales.push(sale);
+        }
+      });
+    }
 
     const paymentMethodCurrencyMap: Record<string, "VES" | "USD"> = {};
     globalPaymentMethods.forEach((pm: any) => {
@@ -154,12 +183,14 @@ export function useAnalytics(range: "7d" | "30d") {
       };
     });
 
-    const dateRange = currentPeriodSales.length > 0
-      ? {
-          start: new Date(Math.min(...currentPeriodSales.map((s: any) => new Date(s.created_at).getTime()))),
-          end: new Date(Math.max(...currentPeriodSales.map((s: any) => new Date(s.created_at).getTime()))),
-        }
-      : null;
+    const dateRange = range === "thisMonth"
+      ? { start: startOfMonth(now), end: now }
+      : currentPeriodSales.length > 0
+        ? {
+            start: new Date(Math.min(...currentPeriodSales.map((s: any) => new Date(s.created_at).getTime()))),
+            end: new Date(Math.max(...currentPeriodSales.map((s: any) => new Date(s.created_at).getTime()))),
+          }
+        : null;
 
     return {
       chartData,
@@ -169,12 +200,14 @@ export function useAnalytics(range: "7d" | "30d") {
       paymentMethods,
       percentageChange,
       dateRange,
+      ordersStats,
     };
-  }, [sales, globalPaymentMethods, tasa, range]);
+  }, [sales, globalPaymentMethods, tasa, range, ordersStats]);
 
   return {
     ...processedData,
     isLoading,
     error,
+    ordersStats,
   };
 }

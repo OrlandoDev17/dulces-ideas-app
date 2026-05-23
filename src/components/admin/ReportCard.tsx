@@ -25,7 +25,7 @@ interface ReportCardProps {
   };
   selectedOption: {
     label: string;
-    value: "7d" | "30d";
+    value: "7d" | "30d" | "thisMonth";
   };
   percentageChange: number;
   dateRange: { start: Date; end: Date } | null;
@@ -95,9 +95,11 @@ export function ReportCard({
           </span>
           <span className="text-xs font-medium text-slate-400">
             vs.{" "}
-            {selectedOption.label === "Últimos 7 días"
+            {selectedOption.value === "7d"
               ? "Semana anterior"
-              : "Mes anterior"}
+              : selectedOption.value === "30d"
+                ? "Mes anterior"
+                : "Mes anterior"}
           </span>
         </div>
       </header>
