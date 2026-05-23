@@ -12,6 +12,8 @@ interface OrderItem {
 
 interface Props {
   orders: OrderItem[] | undefined;
+  selectedDate?: string | null;
+  onSelectDate?: (date: string | null) => void;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -22,7 +24,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 const STATUS_ORDER = ["pending", "paid", "delivered"];
 
-export function OrderCalendar({ orders }: Props) {
+export function OrderCalendar({ orders, selectedDate, onSelectDate }: Props) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const { calendarData } = useOrderCalendar(orders, currentMonth);
 
@@ -95,18 +97,21 @@ export function OrderCalendar({ orders }: Props) {
           const isToday = dayData.date === new Date().toISOString().split("T")[0];
 
           return (
-            <div
+            <button
               key={dayData.date}
+              onClick={() => onSelectDate?.(selectedDate === dayData.date ? null : dayData.date)}
               className={`
-                relative aspect-square flex items-center justify-center text-sm rounded-xl transition-all font-semibold
-                ${hasOrders ? "bg-zinc-100 text-zinc-700" : "text-zinc-300"}
-                ${isToday ? "ring-2 ring-primary-300 ring-inset" : ""}
+                relative aspect-square flex items-center justify-center text-sm rounded-xl transition-all font-semibold cursor-pointer
+                ${hasOrders ? "bg-zinc-100 text-zinc-700 hover:bg-zinc-200" : "text-zinc-300"}
+                ${isToday ? "ring-2 ring-inset" : ""}
+                ${isToday && selectedDate !== dayData.date ? "ring-primary-300" : ""}
+                ${selectedDate === dayData.date ? "ring-2 ring-inset ring-primary-500 bg-primary-500 text-white" : ""}
               `}
             >
               {dayNum}
 
               {/* Puntos de estado */}
-              {hasOrders && (
+              {hasOrders && selectedDate !== dayData.date && (
                 <div className="absolute -bottom-1 flex gap-0.5">
                   {STATUS_ORDER.map((status) => {
                     const count = dayData.byStatus[status as keyof typeof dayData.byStatus];
@@ -120,7 +125,7 @@ export function OrderCalendar({ orders }: Props) {
                   })}
                 </div>
               )}
-            </div>
+            </button>
           );
         })}
       </div>

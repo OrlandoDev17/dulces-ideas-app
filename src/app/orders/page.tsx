@@ -13,7 +13,7 @@ import { usePosData } from "@/hooks/api/usePosData";
 import { getVenezuelaTime, formatVenezuelaDate } from "@/services/FechaYHora";
 import { motion, AnimatePresence } from "motion/react";
 import { staggerContainer, slideInLeft } from "@/lib/animations";
-import { Cake, Loader2, PackageCheck } from "lucide-react";
+import { Cake, Loader2, PackageCheck, Calendar, X } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { EmptyOrders } from "@/components/orders/EmptyOrders";
 import { AddOrderModal } from "@/components/orders/AddOrderModal";
@@ -38,6 +38,7 @@ export default function OrdersPage() {
   /* ---- Estado ---- */
   const [isOpen, setIsOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("pending");
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isDeliverModalOpen, setIsDeliverModalOpen] = useState(false);
@@ -52,7 +53,7 @@ export default function OrdersPage() {
   const storeId = activeStore?.id || null;
   const sessionId = activeSessionId;
   const { activeOrders, deleteOrder, completeOrderPayment, deliverOrder } =
-    useOrders(sessionId, storeId);
+    useOrders(sessionId, storeId, tasa);
 
   const fechaHoy = formatVenezuelaDate(getVenezuelaTime());
 
@@ -135,8 +136,13 @@ export default function OrdersPage() {
       }
       return o.status === filterStatus;
     })
-    .sort((a: any, b: any) => 
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    .filter((o: any) => {
+      if (!selectedDate) return true;
+      const orderDate = o.delivery_date?.split("T")[0];
+      return orderDate === selectedDate;
+    })
+    .sort((a: any, b: any) =>
+      new Date(a.delivery_date).getTime() - new Date(b.delivery_date).getTime()
     );
 
   /* ========================================
@@ -180,7 +186,6 @@ export default function OrdersPage() {
           {/* ---- Panel Izquierdo: Filtros + Cards ---- */}
           <div className="flex-1 flex flex-col gap-6">
             {/* Filtros de estado */}
-
             <div className="flex flex-wrap items-center gap-2">
               {STATUS_TABS.map((tab) => {
                 const isSelected = filterStatus === tab.value;
@@ -201,6 +206,22 @@ export default function OrdersPage() {
                 );
               })}
             </div>
+
+            {/* Filtro de fecha activo */}
+            {selectedDate && (
+              <div className="flex items-center gap-2 text-sm text-primary-600 bg-primary-50 px-3 py-2 rounded-xl">
+                <Calendar size={14} />
+                <span className="font-medium">
+                  Encargos para: {formatVenezuelaDate(new Date(selectedDate + "T12:00:00"))}
+                </span>
+                <button
+                  onClick={() => setSelectedDate(null)}
+                  className="ml-1 hover:text-primary-800 transition-all"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            )}
 
             {/* Lista de Encargos */}
             <AnimatePresence mode="popLayout">
@@ -232,7 +253,11 @@ export default function OrdersPage() {
           {/* ---- Panel Derecho: Calendario ---- */}
           <aside className="lg:w-72 shrink-0">
             <motion.div variants={slideInLeft} className="sticky top-6">
-              <OrderCalendar orders={activeOrders} />
+              <OrderCalendar
+                orders={activeOrders}
+                selectedDate={selectedDate}
+                onSelectDate={setSelectedDate}
+              />
             </motion.div>
           </aside>
         </section>
