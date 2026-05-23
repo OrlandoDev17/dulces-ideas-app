@@ -2,11 +2,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/shared/config/supabase";
 
-export function useOrders(sessionId: string | null, storeId: string | null) {
+export function useOrders(
+  sessionId: string | null,
+  storeId: string | null,
+  tasa?: number,
+) {
   const queryClient = useQueryClient();
 
   const { data: activeOrders } = useQuery({
-    queryKey: ["orders", "active", storeId, sessionId],
+    queryKey: ["orders", "active", storeId, sessionId, tasa],
     queryFn: async () => {
       if (!storeId || !sessionId) return [];
       const { data, error } = await supabase
@@ -17,6 +21,29 @@ export function useOrders(sessionId: string | null, storeId: string | null) {
         .eq("store_id", storeId)
         .eq("session_id", sessionId);
       if (error) throw error;
+
+      // Auto-corregir pedidos "pending" que ya están >= 95% pagados
+      if (tasa && tasa > 0 && data) {
+        const toFix = data.filter((o: any) => {
+          if (o.status !== "pending") return false;
+          const paidUsd =
+            o.order_payments?.reduce((acc: number, p: any) => {
+              return acc + (p.currency?.toLowerCase() === "usd" ? p.amount_ref : p.amount_bs / tasa);
+            }, 0) || 0;
+          return o.total_amount_usd > 0 && paidUsd / o.total_amount_usd >= 0.95;
+        });
+
+        if (toFix.length > 0) {
+          await supabase
+            .from("orders")
+            .update({ status: "paid" })
+            .in("id", toFix.map((o: any) => o.id));
+          toFix.forEach((o: any) => {
+            o.status = "paid";
+          });
+        }
+      }
+
       return data;
     },
     enabled: !!storeId && !!sessionId,
@@ -88,11 +115,32 @@ export function useOrders(sessionId: string | null, storeId: string | null) {
         .insert(salePaymentsInsert);
       if (spError) throw spError;
 
-      // 4. Actualizar estado del pedido a 'paid'
-      await supabase
+      // 4. Calcular cobertura de pago y actualizar estado
+      const { data: order } = await supabase
         .from("orders")
-        .update({ status: "paid" })
-        .eq("id", orderId);
+        .select("total_amount_usd, order_payments (*)")
+        .eq("id", orderId)
+        .single();
+
+      if (order) {
+        const totalPaidUsd =
+          order.order_payments?.reduce((acc: number, p: any) => {
+            return (
+              acc +
+              (p.currency?.toLowerCase() === "usd"
+                ? p.amount_ref
+                : p.amount_bs / tasa)
+            );
+          }, 0) || 0;
+
+        const coverage = totalPaidUsd / order.total_amount_usd;
+        if (coverage >= 0.95) {
+          await supabase
+            .from("orders")
+            .update({ status: "paid" })
+            .eq("id", orderId);
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
@@ -255,6 +303,23 @@ export function useOrders(sessionId: string | null, storeId: string | null) {
           .from("sale_payments")
           .insert(salePayments);
         if (spError) throw spError;
+
+        // D. Calcular cobertura y actualizar estado si aplica
+        const totalPaidUsd = orderData.payments.reduce(
+          (acc: number, p: any) =>
+            acc +
+            (p.currency?.toLowerCase() === "usd"
+              ? p.amountRef
+              : p.amountBs / orderData.tasa_bcv),
+          0,
+        );
+        const coverage = totalPaidUsd / order.total_amount_usd;
+        if (coverage >= 0.95) {
+          await supabase
+            .from("orders")
+            .update({ status: "paid" })
+            .eq("id", order.id);
+        }
       }
 
       return order;
