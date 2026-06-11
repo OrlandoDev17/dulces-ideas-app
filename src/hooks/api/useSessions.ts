@@ -31,10 +31,21 @@ export function useSessions() {
     },
   });
 
+  const deleteSessionMutation = useMutation({
+    mutationFn: (sessionId: string) => sessionsApi.deleteSession(sessionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+      queryClient.invalidateQueries({ queryKey: ["sales"] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
+
   return {
     sessions,
     isLoading,
     activeSessionId: sessions[0]?.id || null,
     createSession: createSessionMutation.mutateAsync,
+    deleteSession: deleteSessionMutation.mutateAsync,
+    isDeleting: deleteSessionMutation.isPending,
   };
 }

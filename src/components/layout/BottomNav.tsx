@@ -6,17 +6,19 @@ import { usePathname } from "next/navigation";
 import { useSessions } from "@/hooks/api/useSessions";
 import { useSession } from "@/context/SessionContext";
 import { useState } from "react";
-import { Plus, Store, Loader2, X } from "lucide-react";
+import { Plus, Store, Loader2, X, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { CreateSessionModal } from "./CreateSessionModal";
+import { ConfirmDeleteModal } from "../common/ConfirmDeleteModal";
 import { Button } from "../common/Button";
 
 export function BottomNav() {
   const path = usePathname();
-  const { sessions, isLoading, createSession } = useSessions();
+  const { sessions, isLoading, createSession, deleteSession, isDeleting } = useSessions();
   const { currentSessionId, setCurrentSessionId } = useSession();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const currentSession = sessions.find((s) => s.id === currentSessionId);
 
@@ -33,6 +35,18 @@ export function BottomNav() {
       setIsDrawerOpen(false);
     } catch {
       throw new Error("Error al crear la sesion");
+    }
+  };
+
+  const handleDeleteSession = async () => {
+    if (!currentSessionId) return;
+    try {
+      await deleteSession(currentSessionId);
+      setCurrentSessionId(null);
+      setIsDeleteModalOpen(false);
+      setIsDrawerOpen(false);
+    } catch {
+      alert("Error al eliminar la sesión");
     }
   };
 
@@ -116,16 +130,18 @@ export function BottomNav() {
                   </div>
                 ) : (
                   sessions.map((session) => (
-                    <button
+                    <div
                       key={session.id}
-                      onClick={() => handleSelectSession(session.id!)}
                       className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 border-2 ${
                         currentSessionId === session.id
                           ? "bg-primary-50 border-primary-500 text-primary-900"
                           : "bg-white border-zinc-100 text-zinc-500 hover:border-primary-200"
                       }`}
                     >
-                      <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => handleSelectSession(session.id!)}
+                        className="flex items-center gap-3 flex-1"
+                      >
                         <div
                           className={`size-10 flex items-center justify-center rounded-xl transition-colors ${
                             currentSessionId === session.id
@@ -138,13 +154,27 @@ export function BottomNav() {
                         <span className="font-bold tracking-tight">
                           {session.name}
                         </span>
+                      </button>
+                      <div className="flex items-center gap-2">
+                        {currentSessionId === session.id && (
+                          <div className="px-3 py-1 bg-primary-600 text-white text-[10px] font-black uppercase rounded-full">
+                            Activa
+                          </div>
+                        )}
+                        {sessions.length > 1 && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCurrentSessionId(session.id!);
+                              setIsDeleteModalOpen(true);
+                            }}
+                            className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                          >
+                            <Trash2 className="size-4" />
+                          </button>
+                        )}
                       </div>
-                      {currentSessionId === session.id && (
-                        <div className="px-3 py-1 bg-primary-600 text-white text-[10px] font-black uppercase rounded-full">
-                          Activa
-                        </div>
-                      )}
-                    </button>
+                    </div>
                   ))
                 )}
               </div>
@@ -166,6 +196,15 @@ export function BottomNav() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onConfirm={handleCreateSession}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteSession}
+        title="¿Eliminar Sesión?"
+        message="Esta acción eliminará permanentemente TODOS los datos de esta sesión incluyendo ventas, encargos y cierres. No se podrá recuperar."
+        isPending={isDeleting}
       />
     </>
   );

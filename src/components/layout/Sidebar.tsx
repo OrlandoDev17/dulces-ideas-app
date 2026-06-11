@@ -11,10 +11,11 @@ import { Button } from "@/components/common/Button";
 import { DropdownButton } from "@/components/common/DropdownButton";
 import { OptionDropdown } from "@/components/common/OptionDropdown";
 import { CreateSessionModal } from "@/components/layout/CreateSessionModal";
+import { ConfirmDeleteModal } from "@/components/common/ConfirmDeleteModal";
 // Constants
 import { NAV_LINKS } from "@/shared/config/constants";
 // Icons
-import { CakeSlice, Loader, LogOut, Plus, Store } from "lucide-react";
+import { CakeSlice, Loader, LogOut, Plus, Store, Trash2 } from "lucide-react";
 // Types
 import { Session } from "@/shared/types";
 // Context
@@ -24,13 +25,14 @@ export function Sidebar() {
   // Estados
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // Pathname
   const path = usePathname();
 
   // 1. Integracion de React Query
-  const { sessions, isLoading, createSession } = useSessions();
-  const { currentSessionId, setCurrentSessionId } = useSession();
+  const { sessions, isLoading, createSession, deleteSession, isDeleting } = useSessions();
+  const { currentSessionId, setCurrentSessionId, isLoading: isSessionLoading } = useSession();
   const { logoutFromStore, activeStore } = useStore();
 
   const currentSession =
@@ -38,11 +40,11 @@ export function Sidebar() {
 
   // 2. Persistencia local de la sesion seleccionada
   useEffect(() => {
-    if (!currentSessionId && sessions.length > 0) {
-      // Si no hay nada seleccionado, tomamos la primera por defecto
+    // Solo setear sesión por defecto si SessionContext ya terminó de cargar
+    if (!isSessionLoading && !currentSessionId && sessions.length > 0) {
       setCurrentSessionId(sessions[0].id || null);
     }
-  }, [sessions, currentSessionId, setCurrentSessionId]);
+  }, [sessions, currentSessionId, setCurrentSessionId, isSessionLoading]);
 
   const handleSelectSession = (session: Session) => {
     setCurrentSessionId(session.id || null);
@@ -56,6 +58,17 @@ export function Sidebar() {
       setIsModalOpen(false);
     } catch {
       throw new Error("Error al crear la sesion");
+    }
+  };
+
+  const handleDeleteSession = async () => {
+    if (!currentSessionId) return;
+    try {
+      await deleteSession(currentSessionId);
+      setCurrentSessionId(null);
+      setIsDeleteModalOpen(false);
+    } catch {
+      alert("Error al eliminar la sesión");
     }
   };
 
@@ -139,6 +152,16 @@ export function Sidebar() {
           <span>Nueva Sesión</span>
         </Button>
 
+        {currentSessionId && (
+          <button
+            onClick={() => setIsDeleteModalOpen(true)}
+            className="flex items-center justify-center gap-2 p-3 w-full text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-300 font-bold text-sm border-2 border-transparent hover:border-red-100"
+          >
+            <Trash2 className="size-4" />
+            <span>Eliminar Sesión</span>
+          </button>
+        )}
+
         <button
           onClick={logoutFromStore}
           className="flex items-center justify-center gap-2 p-3 w-full text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-300 font-bold text-sm border-2 border-transparent hover:border-red-100"
@@ -152,6 +175,15 @@ export function Sidebar() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onConfirm={handleCreateSession}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteSession}
+        title="¿Eliminar Sesión?"
+        message="Esta acción eliminará permanentemente TODOS los datos de esta sesión incluyendo ventas, encargos y cierres. No se podrá recuperar."
+        isPending={isDeleting}
       />
     </aside>
   );
