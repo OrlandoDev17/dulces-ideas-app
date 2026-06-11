@@ -17,7 +17,7 @@ import { useAnalytics } from "@/hooks/api/useAnalytics";
 import { usePosData } from "@/hooks/api/usePosData";
 import { exportAdminReportToPDF } from "@/services/pdfService";
 import { useStore } from "@/context/StoreContext";
-import { useSessions } from "@/hooks/api/useSessions";
+import { useSession } from "@/context/SessionContext";
 
 export default function AdminPage() {
   const [selectedOption, setSelectedOption] = useState<{
@@ -43,7 +43,7 @@ export default function AdminPage() {
 
   const { productCategories } = usePosData();
   const { activeStore } = useStore();
-  const { activeSessionId } = useSessions();
+  const { currentSessionId } = useSession();
 
   const {
     chartData,
@@ -68,7 +68,7 @@ export default function AdminPage() {
       ordersStats,
       productCategories,
       storeName: activeStore?.name || "Tienda",
-      sessionName: activeSessionId || "",
+      sessionName: currentSessionId || "",
     });
   };
 

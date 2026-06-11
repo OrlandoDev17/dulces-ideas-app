@@ -7,7 +7,7 @@ import { OrderStep2Form } from "./add-orders/OrderStep2Form";
 import { usePosData } from "@/hooks/api/usePosData";
 import { useOrderForm } from "@/hooks/ui/useOrderForm";
 import { useTasaBCV } from "@/hooks/ui/useTasaBCV";
-import { useSessions } from "@/hooks/api/useSessions";
+import { useSession } from "@/context/SessionContext";
 import { OrderStep3Summary } from "./add-orders/OrderStep3Summary";
 
 interface AddOrderModalProps {
@@ -16,9 +16,8 @@ interface AddOrderModalProps {
 }
 
 export function AddOrderModal({ isOpen, onClose }: AddOrderModalProps) {
-  const { sessions } = useSessions();
-  const activeSessionId = sessions?.[0]?.id || "";
-  const { state, actions } = useOrderForm(activeSessionId);
+  const { currentSessionId } = useSession();
+  const { state, actions } = useOrderForm(currentSessionId);
 
   const { productCategories, paymentMethods } = usePosData();
   const { tasa } = useTasaBCV();

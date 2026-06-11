@@ -7,7 +7,7 @@
 import { useState } from "react";
 import { useOrders } from "@/hooks/api/useOrders";
 import { useTasaBCV } from "@/hooks/ui/useTasaBCV";
-import { useSessions } from "@/hooks/api/useSessions";
+import { useSession } from "@/context/SessionContext";
 import { useStore } from "@/context/StoreContext";
 import { usePosData } from "@/hooks/api/usePosData";
 import { getVenezuelaTime, formatVenezuelaDate } from "@/services/FechaYHora";
@@ -47,11 +47,11 @@ export default function OrdersPage() {
 
   /* ---- Hooks ---- */
   const { activeStore } = useStore();
-  const { activeSessionId } = useSessions();
+  const { currentSessionId } = useSession();
   const { tasa } = useTasaBCV();
   const { paymentMethods } = usePosData();
   const storeId = activeStore?.id || null;
-  const sessionId = activeSessionId;
+  const sessionId = currentSessionId;
   const { activeOrders, deleteOrder, completeOrderPayment, deliverOrder } =
     useOrders(sessionId, storeId, tasa);
 
