@@ -130,3 +130,16 @@ export interface PaymentMethod {
   name: string;
   currency: "VES" | "USD";
 }
+
+export type ProductCategory = "Postres / Porciones" | "Tortas Completas" | "Bebidas";
+
+export interface InventoryProduct {
+  id: string;
+  name: string;
+  price: number;
+  currency: "USD" | "VES";
+  category: ProductCategory;
+  store_id: string;
+  is_active: boolean;
+  created_at: string;
+}
