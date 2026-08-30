@@ -12,10 +12,11 @@ import { DropdownButton } from "@/components/common/DropdownButton";
 import { OptionDropdown } from "@/components/common/OptionDropdown";
 import { CreateSessionModal } from "@/components/layout/CreateSessionModal";
 import { ConfirmDeleteModal } from "@/components/common/ConfirmDeleteModal";
+import { CurrencyConverterModal } from "@/components/common/CurrencyConverterModal";
 // Constants
 import { NAV_LINKS } from "@/shared/config/constants";
 // Icons
-import { CakeSlice, Loader, LogOut, Plus, Store, Trash2 } from "lucide-react";
+import { ArrowUpDown, CakeSlice, Loader, LogOut, Plus, Store, Trash2 } from "lucide-react";
 // Types
 import { Session } from "@/shared/types";
 // Context
@@ -26,6 +27,7 @@ export function Sidebar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isConverterOpen, setIsConverterOpen] = useState(false);
 
   // Pathname
   const path = usePathname();
@@ -152,6 +154,14 @@ export function Sidebar() {
           <span>Nueva Sesión</span>
         </Button>
 
+        <button
+          onClick={() => setIsConverterOpen(true)}
+          className="flex items-center justify-center gap-2 p-3 w-full text-zinc-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all duration-300 font-bold text-sm border-2 border-transparent hover:border-primary-100"
+        >
+          <ArrowUpDown className="size-4" />
+          <span>Calculadora Divisas</span>
+        </button>
+
         {currentSessionId && (
           <button
             onClick={() => setIsDeleteModalOpen(true)}
@@ -184,6 +194,11 @@ export function Sidebar() {
         title="¿Eliminar Sesión?"
         message="Esta acción eliminará permanentemente TODOS los datos de esta sesión incluyendo ventas, encargos y cierres. No se podrá recuperar."
         isPending={isDeleting}
+      />
+
+      <CurrencyConverterModal
+        isOpen={isConverterOpen}
+        onClose={() => setIsConverterOpen(false)}
       />
     </aside>
   );
