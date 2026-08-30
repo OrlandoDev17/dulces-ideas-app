@@ -2,6 +2,7 @@ import { Sale, PointClosing } from "@/shared/types";
 import { Calculator, Bike, Info, History, Trash2 } from "lucide-react";
 import { useMemo, useSyncExternalStore } from "react";
 import { fmtBs, fmtUSD } from "@/shared/utils/formatters";
+import { useTasaBCV } from "@/hooks/ui/useTasaBCV";
 
 interface Props {
   sales: Sale[];
@@ -20,6 +21,8 @@ export function FinancialSummary({
   onAddCierre,
   onDeleteCierre,
 }: Props) {
+  const { tasa } = useTasaBCV();
+
   // Hook para evitar errores de hidratación sin disparar cascadas de renderizado
   const isMounted = useSyncExternalStore(
     () => () => {},
@@ -208,6 +211,11 @@ export function FinancialSummary({
               <span className="text-lg md:text-2xl font-black tabular-nums">
                 Bs. {fmtBs(totals.totalBs)}
               </span>
+              {tasa > 0 && (
+                <span className="text-[10px] font-medium text-white/50 tabular-nums">
+                  ≈ ${fmtUSD(totals.totalBs / tasa)} USD
+                </span>
+              )}
             </div>
 
             <button
