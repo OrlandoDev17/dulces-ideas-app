@@ -28,7 +28,7 @@ export const TORTAS_COMPLETAS = [
   { id: 210, name: "Oreo 2kg", price: 28, currency: "USD" },
   { id: 211, name: "Pie 2kg", price: 35, currency: "USD" },
   { id: 212, name: "3 Leches 1.5kg", price: 25, currency: "USD" },
-  { id: 212, name: "3 Leches 3kg", price: 45, currency: "USD" },
+  { id: 219, name: "3 Leches 3kg", price: 45, currency: "USD" },
   { id: 213, name: "Beso de Angel 2kg", price: 30, currency: "USD" },
   { id: 214, name: "Beso de Angel 4kg", price: 58, currency: "USD" },
   { id: 215, name: "Red Velvet 1kg", price: 25, currency: "USD" },
