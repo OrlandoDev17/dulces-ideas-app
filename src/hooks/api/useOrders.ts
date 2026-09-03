@@ -235,7 +235,7 @@ export function useOrders(
       // 2. Insertar Items
       const itemsToInsert = orderData.items.map((item: any) => ({
         order_id: order.id,
-        product_id: parseInt(item.id), // Aseguramos que sea número
+        product_id: item.id,
         quantity: item.quantity,
         price_at_moment: item.price,
       }));
@@ -262,6 +262,7 @@ export function useOrders(
           .insert([
             {
               session_id: sessionId,
+              store_id: storeId,
               total_bs: totalBs,
               total_usd: totalUsd,
               tasa_bcv: orderData.tasa_bcv,

@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { fmtBs } from "@/shared/utils/formatters";
 
 interface OrderItem {
-  product_id: number;
+  product_id: string | number;
   quantity: number;
   price_at_moment: number;
 }
