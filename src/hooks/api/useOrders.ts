@@ -236,6 +236,7 @@ export function useOrders(
       const itemsToInsert = orderData.items.map((item: any) => ({
         order_id: order.id,
         product_id: item.id,
+        product_name: item.name || null,
         quantity: item.quantity,
         price_at_moment: item.price,
       }));

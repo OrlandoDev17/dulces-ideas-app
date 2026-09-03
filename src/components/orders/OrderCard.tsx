@@ -16,6 +16,7 @@ import { fmtBs } from "@/shared/utils/formatters";
 
 interface OrderItem {
   product_id: string | number;
+  product_name?: string;
   quantity: number;
   price_at_moment: number;
 }
@@ -88,10 +89,12 @@ export function OrderCard({
   const productsList =
     order.order_items
       ?.map((item) => {
-        const product = allProducts.find(
-          (p) => String(p.id) === String(item.product_id),
-        );
-        return `${item.quantity}x ${product?.name || "Producto"}`;
+        const productName =
+          item.product_name ||
+          allProducts.find((p) => String(p.id) === String(item.product_id))
+            ?.name ||
+          "Producto";
+        return `${item.quantity}x ${productName}`;
       })
       .join(", ") || "Sin productos";
 
@@ -197,9 +200,12 @@ export function OrderCard({
                   </span>
                   <div className="bg-zinc-50 rounded-2xl p-4 space-y-3 shadow-sm border border-zinc-100">
                     {order.order_items.map((item, idx) => {
-                      const product = allProducts.find(
-                        (p) => String(p.id) === String(item.product_id),
-                      );
+                      const productName =
+                        item.product_name ||
+                        allProducts.find(
+                          (p) => String(p.id) === String(item.product_id),
+                        )?.name ||
+                        "Producto";
                       return (
                         <div
                           key={idx}
@@ -209,7 +215,7 @@ export function OrderCard({
                             <span className="font-bold text-primary-600">
                               {item.quantity}x{" "}
                             </span>
-                            {product?.name || "Producto"}
+                            {productName}
                           </span>
                           <span className="font-bold text-zinc-600">
                             ${(item.price_at_moment * item.quantity).toFixed(2)}
