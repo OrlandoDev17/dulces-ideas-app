@@ -82,14 +82,15 @@ export function useOrderForm(sessionId: string | null) {
       delivery_hour: deliveryTime,
       description: description,
       items: cart.map((item) => ({
-        id: item.product_id, // Este es el ID numérico de la tabla products
+        id: item.product_id,
+        name: item.name,
         quantity: item.quantity,
         price: item.price,
       })),
       total_amount_bs: totalBs,
       total_amount_usd: totalUsd,
       tasa_bcv: tasa,
-      payments: payments, // Viene como [ { methodId, amountBs, ... } ]
+      payments: payments,
     };
   };
 
