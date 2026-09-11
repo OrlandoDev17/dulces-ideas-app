@@ -1,4 +1,4 @@
-import { Cake, CakeSlice, CupSoda, Package, Store } from "lucide-react";
+import { Cake, CakeSlice, CupSoda, LayoutDashboard, Package, Store } from "lucide-react";
 import type { NavLink, ProductSelector } from "@/shared/types";
 import { BEBIDAS, POSTRES, TORTAS_COMPLETAS } from "@/lib/Mock";
 
@@ -20,6 +20,12 @@ export const NAV_LINKS: NavLink[] = [
     label: "Inventario",
     href: "/inventory",
     icon: Package,
+  },
+  {
+    id: "admin",
+    label: "Reportes",
+    href: "/admin",
+    icon: LayoutDashboard,
   },
 ];
 

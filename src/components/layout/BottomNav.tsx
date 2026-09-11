@@ -12,6 +12,10 @@ import { CreateSessionModal } from "./CreateSessionModal";
 import { ConfirmDeleteModal } from "../common/ConfirmDeleteModal";
 import { Button } from "../common/Button";
 
+// Solo mostrar 3 links principales en mobile, el admin va al drawer
+const MOBILE_NAV_LINKS = NAV_LINKS.filter((l) => l.id !== "admin");
+const ADMIN_LINK = NAV_LINKS.find((l) => l.id === "admin");
+
 export function BottomNav() {
   const path = usePathname();
   const { sessions, isLoading, createSession, deleteSession, isDeleting } = useSessions();
@@ -19,8 +23,6 @@ export function BottomNav() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
-  const currentSession = sessions.find((s) => s.id === currentSessionId);
 
   const handleSelectSession = (id: string) => {
     setCurrentSessionId(id);
@@ -53,7 +55,7 @@ export function BottomNav() {
   return (
     <>
       <nav className="md:hidden fixed bottom-2 left-1/2 -translate-x-1/2 w-[90%] h-16 z-80 bg-white/80 backdrop-blur-xl border-2 border-primary-500 rounded-2xl flex justify-around items-center shadow-2xl shadow-primary/20 p-2">
-        {NAV_LINKS.map(({ id, label, href, icon: Icon }) => (
+        {MOBILE_NAV_LINKS.map(({ id, label, href, icon: Icon }) => (
           <Link
             className={`flex flex-col items-center justify-center gap-1 w-full h-full rounded-xl transition-all duration-300 ${
               path === href
@@ -80,7 +82,7 @@ export function BottomNav() {
         >
           <Store className="size-6" />
           <span className="text-[10px] font-bold uppercase tracking-wider truncate px-1">
-            {currentSession?.name || "Sesión"}
+            Mas
           </span>
         </button>
       </nav>
@@ -178,6 +180,22 @@ export function BottomNav() {
                   ))
                 )}
               </div>
+
+              {/* Admin link en drawer */}
+              {ADMIN_LINK && (
+                <Link
+                  href={ADMIN_LINK.href}
+                  onClick={() => setIsDrawerOpen(false)}
+                  className={`flex items-center gap-3 p-3 rounded-xl mb-3 transition-all ${
+                    path === ADMIN_LINK.href
+                      ? "bg-primary-100 text-primary-700"
+                      : "text-zinc-500 hover:bg-zinc-50"
+                  }`}
+                >
+                  <ADMIN_LINK.icon className="size-5" />
+                  <span className="font-semibold text-sm">{ADMIN_LINK.label}</span>
+                </Link>
+              )}
 
               <Button
                 style="primary"
