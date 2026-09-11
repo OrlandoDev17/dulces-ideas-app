@@ -2,150 +2,123 @@
 import { useQuery } from "@tanstack/react-query";
 import { analyticsApi, type AnalyticsRange } from "@/api/analytics";
 import { useMemo } from "react";
-import { format, subDays, startOfMonth, subMonths, endOfMonth } from "date-fns";
-import { es } from "date-fns/locale";
+import { subDays, startOfWeek } from "date-fns";
 import { useStore } from "@/context/StoreContext";
-import { productsApi } from "@/api/products";
 import { useTasaBCV } from "@/hooks/ui/useTasaBCV";
+
+export interface ProductSale {
+  id: string;
+  name: string;
+  units: number;
+  revenue: number;
+}
 
 export function useAnalytics(range: AnalyticsRange) {
   const { activeStore } = useStore();
   const { tasa } = useTasaBCV();
 
-  // 1. Traemos la data cruda de ventas
   const {
     data: sales = [],
     isLoading: isLoadingSales,
     error,
   } = useQuery({
-    queryKey: ["analytics", range],
+    queryKey: ["analytics", range, activeStore?.id],
     queryFn: () => analyticsApi.getSalesData(range, activeStore?.id || ""),
-    staleTime: 1000 * 60, // 1 min
+    staleTime: 1000 * 10,
+    refetchOnWindowFocus: true,
     enabled: !!activeStore?.id,
   });
 
-  // 1.1 Traemos metodos de pago
   const {
-    data: globalPaymentMethods = [],
-    isLoading: isLoadingMethods,
+    data: orderItems = [],
+    isLoading: isLoadingOrders,
   } = useQuery({
-    queryKey: ["payment_methods_analytics"],
-    queryFn: () => productsApi.getPaymentMethods(),
-    staleTime: 1000 * 60 * 60, // 1 hora
+    queryKey: ["analytics_order_items", range, activeStore?.id],
+    queryFn: () => analyticsApi.getOrderItems(range, activeStore?.id || ""),
+    staleTime: 1000 * 10,
+    refetchOnWindowFocus: true,
+    enabled: !!activeStore?.id,
   });
 
-  // 1.2 Traemos estadísticas de órdenes
   const {
     data: ordersStats = { total: 0, paid: 0 },
   } = useQuery({
-    queryKey: ["analytics_orders", range],
+    queryKey: ["analytics_orders", range, activeStore?.id],
     queryFn: () => analyticsApi.getOrdersStats(range, activeStore?.id || ""),
-    staleTime: 1000 * 60,
+    staleTime: 1000 * 10,
+    refetchOnWindowFocus: true,
     enabled: !!activeStore?.id,
   });
 
-  const isLoading = isLoadingSales || isLoadingMethods;
+  const isLoading = isLoadingSales || isLoadingOrders;
 
   const processedData = useMemo(() => {
     const now = new Date();
 
-    if (!sales.length)
+    if (!sales.length && !orderItems.length) {
+      const dateRange =
+        range === "thisWeek"
+          ? { start: startOfWeek(now, { weekStartsOn: 1 }), end: now }
+          : { start: subDays(now, 7), end: now };
+
       return {
-        chartData: [],
         totals: { bs: 0, usd: 0, count: 0 },
         totalsByCurrency: { bs: 0, usd: 0, bsEqUsd: 0 },
         topProducts: [],
-        paymentMethods: [],
         percentageChange: 0,
         ordersStats,
-        dateRange: range === "thisMonth"
-          ? { start: startOfMonth(now), end: now }
-          : null,
+        dateRange,
       };
+    }
 
-    let currentPeriodSales: any[] = [];
-    let previousPeriodSales: any[] = [];
+    // --- Periodo actual y anterior ---
+    const currentSales: any[] = [];
+    const previousSales: any[] = [];
 
-    if (range === "thisMonth") {
-      const monthStart = startOfMonth(now);
-      const prevMonthStart = subMonths(monthStart, 1);
-      const prevMonthEnd = endOfMonth(prevMonthStart);
+    if (range === "thisWeek") {
+      const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+      const prevWeekStart = subDays(weekStart, 7);
+      const prevWeekEnd = subDays(weekStart, 1);
 
       sales.forEach((sale: any) => {
-        const saleDate = new Date(sale.created_at);
-        if (saleDate >= monthStart) {
-          currentPeriodSales.push(sale);
-        } else if (saleDate >= prevMonthStart && saleDate <= prevMonthEnd) {
-          previousPeriodSales.push(sale);
+        const d = new Date(sale.created_at);
+        if (d >= weekStart) {
+          currentSales.push(sale);
+        } else if (d >= prevWeekStart && d <= prevWeekEnd) {
+          previousSales.push(sale);
         }
       });
     } else {
-      const daysLimit = range === "7d" ? 7 : 30;
-      const cutoffDate = subDays(now, daysLimit);
+      const cutoff = subDays(now, 7);
+      const prevCutoff = subDays(now, 14);
 
       sales.forEach((sale: any) => {
-        const saleDate = new Date(sale.created_at);
-        if (saleDate >= cutoffDate) {
-          currentPeriodSales.push(sale);
-        } else {
-          previousPeriodSales.push(sale);
+        const d = new Date(sale.created_at);
+        if (d >= cutoff) {
+          currentSales.push(sale);
+        } else if (d >= prevCutoff && d < cutoff) {
+          previousSales.push(sale);
         }
       });
     }
 
-    const paymentMethodCurrencyMap: Record<string, "VES" | "USD"> = {};
-    globalPaymentMethods.forEach((pm: any) => {
-      paymentMethodCurrencyMap[pm.id] = pm.currency;
-    });
-
-    // --- LOGICA PARA EL GRAFICO Y TOTALES POR MONEDA ---
-    const chartMap: Record<string, { bs: number; usd: number; count: number }> = {};
-    const productMap: Record<string, number> = {};
-    const paymentMap: Record<string, number> = {};
+    // --- Totales por moneda ---
     const totalsByCurrency = { bs: 0, usd: 0, bsEqUsd: 0 };
 
-    currentPeriodSales.forEach((sale: any) => {
-      const date = new Date(sale.created_at);
-      const label = format(date, "dd MMM", { locale: es });
-
-      if (!chartMap[label]) {
-        chartMap[label] = { bs: 0, usd: 0, count: 0 };
-      }
-      chartMap[label].count += 1;
-
-      sale.sale_items?.forEach((item: any) => {
-        const pid = String(item.product_id);
-        productMap[pid] = (productMap[pid] || 0) + item.quantity;
-      });
-
+    currentSales.forEach((sale: any) => {
       sale.sale_payments?.forEach((p: any) => {
-        paymentMap[p.method_id] = (paymentMap[p.method_id] || 0) + (p.amount_bs || 0);
-        
-        const currency = paymentMethodCurrencyMap[p.method_id] || "VES";
-        const usdValue = p.amount_ref || p.amount_usd || (p.amount_bs / (sale.total_bs / sale.total_usd)) || 0;
-        const bsValue = p.amount_bs || 0;
-
-        if (currency === "USD") {
-          totalsByCurrency.usd += usdValue;
-          chartMap[label].usd += usdValue;
+        const isUSD = p.currency === "USD";
+        if (isUSD) {
+          totalsByCurrency.usd += p.amount_ref || p.amount_bs || 0;
         } else {
-          totalsByCurrency.bs += bsValue;
-          chartMap[label].bs += bsValue;
+          totalsByCurrency.bs += p.amount_bs || 0;
         }
       });
     });
 
-    // Calcular la equivalencia en USD para la caja de Bs basándose en la tasa del día
     totalsByCurrency.bsEqUsd = tasa > 0 ? totalsByCurrency.bs / tasa : 0;
 
-    const chartData = Object.entries(chartMap).map(([date, data]) => ({
-      date,
-      Ingresos: data.bs,
-      IngresosUSD: data.usd,
-      Ventas: data.count,
-    }));
-
-    const totals = currentPeriodSales.reduce(
+    const totals = currentSales.reduce(
       (acc, s) => ({
         bs: acc.bs + (s.total_bs || 0),
         usd: acc.usd + (s.total_usd || 0),
@@ -154,7 +127,7 @@ export function useAnalytics(range: AnalyticsRange) {
       { bs: 0, usd: 0, count: 0 },
     );
 
-    const previousTotals = previousPeriodSales.reduce(
+    const previousTotals = previousSales.reduce(
       (acc, s) => ({
         bs: acc.bs + (s.total_bs || 0),
         usd: acc.usd + (s.total_usd || 0),
@@ -170,39 +143,63 @@ export function useAnalytics(range: AnalyticsRange) {
       percentageChange = 100;
     }
 
-    const topProducts = Object.entries(productMap)
-      .map(([id, units]) => ({ id, units }))
-      .sort((a, b) => b.units - a.units)
-      .slice(0, 5);
+    // --- Productos vendidos: sale_items + order_items ---
+    const productMap: Record<
+      string,
+      { name: string; units: number; revenue: number }
+    > = {};
 
-    const paymentMethods = Object.entries(paymentMap).map(([name, value]) => {
-      const pmLabel = globalPaymentMethods.find((m: any) => m.id === name)?.name || name;
-      return {
-        name: pmLabel,
-        value,
-      };
+    currentSales.forEach((sale: any) => {
+      sale.sale_items?.forEach((item: any) => {
+        const pid = String(item.product_id);
+        if (!productMap[pid]) {
+          productMap[pid] = { name: pid, units: 0, revenue: 0 };
+        }
+        productMap[pid].units += item.quantity || 0;
+        productMap[pid].revenue += item.price_at_moment
+          ? item.price_at_moment * (item.quantity || 0)
+          : 0;
+      });
     });
 
-    const dateRange = range === "thisMonth"
-      ? { start: startOfMonth(now), end: now }
-      : currentPeriodSales.length > 0
-        ? {
-            start: new Date(Math.min(...currentPeriodSales.map((s: any) => new Date(s.created_at).getTime()))),
-            end: new Date(Math.max(...currentPeriodSales.map((s: any) => new Date(s.created_at).getTime()))),
-          }
-        : null;
+    // Agregar items de encargos que estan en el mismo rango
+    orderItems.forEach((item: any) => {
+      const pid = String(item.product_id);
+      if (!productMap[pid]) {
+        productMap[pid] = {
+          name: item.product_name || pid,
+          units: 0,
+          revenue: 0,
+        };
+      }
+      productMap[pid].units += item.quantity || 0;
+      productMap[pid].revenue += item.price_at_moment
+        ? item.price_at_moment * (item.quantity || 0)
+        : 0;
+      // Usar product_name del order_item si esta disponible
+      if (item.product_name && productMap[pid].name === pid) {
+        productMap[pid].name = item.product_name;
+      }
+    });
+
+    const topProducts: ProductSale[] = Object.entries(productMap)
+      .map(([id, data]) => ({ id, ...data }))
+      .sort((a, b) => b.units - a.units);
+
+    const dateRange =
+      range === "thisWeek"
+        ? { start: startOfWeek(now, { weekStartsOn: 1 }), end: now }
+        : { start: subDays(now, 7), end: now };
 
     return {
-      chartData,
       totals,
       totalsByCurrency,
       topProducts,
-      paymentMethods,
       percentageChange,
-      dateRange,
       ordersStats,
+      dateRange,
     };
-  }, [sales, globalPaymentMethods, tasa, range, ordersStats]);
+  }, [sales, orderItems, tasa, range, ordersStats]);
 
   return {
     ...processedData,
