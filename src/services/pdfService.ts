@@ -1,7 +1,11 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { Sale, PointClosing, Category } from "../shared/types";
+import { Sale, PointClosing, Category, PaymentMethod } from "../shared/types";
 import { formatVenezuelaDate, getVenezuelaTime } from "./FechaYHora";
+import {
+  summarizeSalesByMethod,
+  isPagoMovilId,
+} from "../shared/utils/paymentAggregation";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -32,6 +36,7 @@ export const exportSalesToPDF = (
   sales: Sale[],
   cierres: PointClosing[] = [],
   productCategories: Category[] = [],
+  paymentMethods: PaymentMethod[] = [],
 ) => {
   const doc = new jsPDF();
   // Bug 1 Fix: usar hora de Venezuela (UTC-4) en vez de hora del servidor
@@ -65,80 +70,18 @@ export const exportSalesToPDF = (
   );
 
   // --- CÁLCULOS FINANCIEROS ---
-  let pmBs = 0;
-  let pvBs = 0;
-  let efBs = 0;
-  let usdTotal = 0;
+  // Fuente única de verdad compartida con el panel de ingresos diarios
+  const summary = summarizeSalesByMethod(sales, paymentMethods);
+
   let deliveryTotal = 0;
-
   sales.forEach((sale) => {
-    const payments = sale.sale_payments || [];
-    const totalBs = sale.total_bs || sale.totalBs || 0;
-    const totalUsd = sale.total_usd || sale.totalUsd || 0;
-    const deliveryAmt = sale.delivery_amount || sale.deliveryAmount || 0;
-    const tasa = sale.tasa_bcv || 1;
-
-    // Ingresos (Descontando Delivery si aplica)
-    if (payments.length > 0) {
-      let sPm = 0;
-      let sPv = 0;
-      let sEf = 0;
-      let sUsd = 0;
-
-      payments.forEach((p) => {
-        const mId = p.method_id || p.methodId;
-        const amtBs = p.amount_bs || p.amountBs || 0;
-        const amtRef = p.amount_ref || p.amountRef || 0;
-
-        if (mId === "pm") sPm += amtBs;
-        else if (mId === "punto" || mId === "pv") sPv += amtBs;
-        else if (mId === "ves" || mId === "bs") sEf += amtBs;
-        else if (mId === "usd") sUsd += amtRef;
-      });
-
-      // "No sumes el delivery nunca": Restamos el monto de delivery de los ingresos
-      // Prioridad: P. Móvil -> Punto -> Efectivo -> Divisas
-      let toSubtract = deliveryAmt;
-      if (toSubtract > 0) {
-        const subPm = Math.min(sPm, toSubtract);
-        sPm -= subPm;
-        toSubtract -= subPm;
-
-        const subPv = Math.min(sPv, toSubtract);
-        sPv -= subPv;
-        toSubtract -= subPv;
-
-        const subEf = Math.min(sEf, toSubtract);
-        sEf -= subEf;
-        toSubtract -= subEf;
-
-        if (toSubtract > 0 && sUsd > 0) {
-          const subUsd = Math.min(sUsd, toSubtract / tasa);
-          sUsd -= subUsd;
-        }
-      }
-
-      pmBs += sPm;
-      pvBs += sPv;
-      efBs += sEf;
-      usdTotal += sUsd;
-    } else {
-      const met = sale.method_id || sale.metodo;
-      const finalTotalBs = Math.max(0, totalBs - deliveryAmt);
-      const finalTotalUsd = Math.max(0, totalUsd - deliveryAmt / tasa);
-
-      if (met === "pm") pmBs += finalTotalBs;
-      if (met === "punto" || met === "pv") pvBs += finalTotalBs;
-      if (met === "ves" || met === "bs") efBs += finalTotalBs;
-      if (met === "usd") usdTotal += finalTotalUsd;
-    }
-
     if (sale.delivery) {
-      deliveryTotal += deliveryAmt;
+      deliveryTotal += sale.delivery_amount || sale.deliveryAmount || 0;
     }
   });
 
-  const totalBolivares = pmBs + pvBs + efBs;
+  const fmtBs = (n: number) =>
+    `Bs. ${n.toLocaleString("es-VE", { minimumFractionDigits: 2 })}`;
 
   // --- TABLA DE RESUMEN FINANCIERO ---
   doc.setFont("helvetica", "bold");
@@ -150,27 +93,22 @@ export const exportSalesToPDF = (
     startY: 53,
     head: [["Concepto", "Monto"]],
     body: [
-      [
-        "Ventas Bs (Pago Móvil)",
-        `Bs. ${pmBs.toLocaleString("es-VE", { minimumFractionDigits: 2 })}`,
-      ],
-      [
-        "Ventas Bs (Punto)",
-        `Bs. ${pvBs.toLocaleString("es-VE", { minimumFractionDigits: 2 })}`,
-      ],
-      [
-        "Ventas Bs (Efectivo)",
-        `Bs. ${efBs.toLocaleString("es-VE", { minimumFractionDigits: 2 })}`,
-      ],
-      [
-        "Total Ingresos Bolívares",
-        `Bs. ${totalBolivares.toLocaleString("es-VE", { minimumFractionDigits: 2 })}`,
-      ],
-      ["Total Crédito Divisas ($)", `$${usdTotal.toFixed(2)}`],
-      [
-        "Deudas Delivery (A pagar)",
-        `Bs. ${deliveryTotal.toLocaleString("es-VE", { minimumFractionDigits: 2 })}`,
-      ],
+      ...(summary.pmByAccount.length > 0
+        ? summary.pmByAccount.map((account) => [
+            account.accountId === "pm"
+              ? "Ventas Bs (Pago Móvil)"
+              : `Ventas Bs (Pago Móvil – ${account.label})`,
+            fmtBs(account.amountBs),
+          ])
+        : [["Ventas Bs (Pago Móvil)", fmtBs(0)]]),
+      ...(summary.pmByAccount.length > 1
+        ? [["Total Pago Móvil", fmtBs(summary.pmTotal)]]
+        : []),
+      ["Ventas Bs (Punto)", fmtBs(summary.pvBs)],
+      ["Ventas Bs (Efectivo)", fmtBs(summary.efBs)],
+      ["Total Ingresos Bolívares", fmtBs(summary.totalBs)],
+      ["Total Crédito Divisas ($)", `$${summary.usdTotal.toFixed(2)}`],
+      ["Deudas Delivery (A pagar)", fmtBs(deliveryTotal)],
     ],
     theme: "grid",
     headStyles: { fillColor: PRIMARY_BROWN, textColor: [255, 255, 255] },
@@ -248,7 +186,8 @@ export const exportSalesToPDF = (
         .join(", "),
       salePayments.length > 1
         ? "Mixto"
-        : salePayments[0]?.method_id === "pm" || sale.metodo === "pm"
+        : isPagoMovilId(salePayments[0]?.method_id) ||
+            isPagoMovilId(sale.metodo)
           ? "P. Móvil"
           : salePayments[0]?.method_id === "punto" || sale.metodo === "punto"
             ? "Punto"

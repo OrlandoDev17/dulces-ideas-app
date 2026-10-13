@@ -1,5 +1,6 @@
 import {
   Plus,
+  PlusCircle,
   Banknote,
   Smartphone,
   DollarSign,
@@ -7,8 +8,9 @@ import {
 } from "lucide-react";
 import { DropdownButton } from "@/components/common/DropdownButton";
 import { OptionDropdown } from "@/components/common/OptionDropdown";
+import { PaymentAccountModal } from "@/components/pos/PaymentAccountModal";
 import { PaymentMethod } from "@/shared/types";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 interface Props {
   amount: number | "";
@@ -53,6 +55,7 @@ export function PaymentForm({
   onAdd,
 }: Props) {
   const methodTriggerRef = useRef<HTMLDivElement>(null);
+  const [showAccountModal, setShowAccountModal] = useState(false);
 
   return (
     <section className="flex flex-col gap-3">
@@ -61,30 +64,42 @@ export function PaymentForm({
       </label>
       <div className="flex flex-col sm:flex-row gap-3">
         {/* Selector de Método */}
-        <div className="w-full sm:w-1/2 relative" ref={methodTriggerRef}>
-          <DropdownButton isOpen={isOpenMethod} setIsOpen={setIsOpenMethod}>
-            {getMethodIcon(selectedMethod.id)}
-            <span className="truncate">{selectedMethod.name}</span>
-          </DropdownButton>
-          <OptionDropdown
-            isOpen={isOpenMethod}
-            setIsOpen={setIsOpenMethod}
-            options={paymentOptions}
-            onSelect={setSelectedMethod}
-            getLabel={(opt) => opt.name}
-            getExtra={(opt) => (
-              <span
-                className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
-                  opt.currency === "USD"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-blue-100 text-blue-700"
-                }`}
-              >
-                {opt.currency}
-              </span>
-            )}
-            triggerRef={methodTriggerRef}
-          />
+        <div className="flex gap-2 items-stretch w-full sm:w-1/2">
+          <div className="relative flex-1 min-w-0" ref={methodTriggerRef}>
+            <DropdownButton isOpen={isOpenMethod} setIsOpen={setIsOpenMethod}>
+              {getMethodIcon(selectedMethod.id)}
+              <span className="truncate">{selectedMethod.name}</span>
+            </DropdownButton>
+            <OptionDropdown
+              isOpen={isOpenMethod}
+              setIsOpen={setIsOpenMethod}
+              options={paymentOptions}
+              onSelect={setSelectedMethod}
+              getLabel={(opt) => opt.name}
+              getExtra={(opt) => (
+                <span
+                  className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
+                    opt.currency === "USD"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-blue-100 text-blue-700"
+                  }`}
+                >
+                  {opt.currency}
+                </span>
+              )}
+              triggerRef={methodTriggerRef}
+            />
+          </div>
+
+          {/* Crear nueva cuenta de Pago Móvil al vuelo */}
+          <button
+            onClick={() => setShowAccountModal(true)}
+            title="Nueva cuenta Pago Móvil"
+            aria-label="Nueva cuenta Pago Móvil"
+            className="shrink-0 px-3 rounded-xl border-2 border-dashed border-primary-300 text-primary-500 hover:bg-primary-50 hover:border-primary-500 transition-all cursor-pointer active:scale-95"
+          >
+            <PlusCircle size={16} />
+          </button>
         </div>
 
         {/* Input de Monto y Botón Añadir */}
@@ -115,6 +130,12 @@ export function PaymentForm({
           </button>
         </div>
       </div>
+
+      <PaymentAccountModal
+        isOpen={showAccountModal}
+        onClose={() => setShowAccountModal(false)}
+        onCreated={(m) => setSelectedMethod(m)}
+      />
     </section>
   );
 }

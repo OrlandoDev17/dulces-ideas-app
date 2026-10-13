@@ -1,23 +1,26 @@
-import { Sale, PointClosing } from "@/shared/types";
+import { Sale, PointClosing, PaymentMethod } from "@/shared/types";
 import { Calculator, Bike, Info, History, Trash2 } from "lucide-react";
 import { useMemo, useSyncExternalStore } from "react";
 import { fmtBs, fmtUSD } from "@/shared/utils/formatters";
 import { useTasaBCV } from "@/hooks/ui/useTasaBCV";
+import { summarizeSalesByMethod } from "@/shared/utils/paymentAggregation";
 
 interface Props {
   sales: Sale[];
   cierres: PointClosing[];
+  paymentMethods: PaymentMethod[];
   onAddCierre: () => void;
   onDeleteCierre?: (id: string) => void;
 }
 
 /**
  * Paneles de resumen financiero para ventas (Ingresos) y cuentas por pagar (Delivery).
- * Muestra el desglose por método de pago y los montos totales del día.
+ * Muestra el desglose por método de pago (con cuentas de Pago Móvil) y los montos totales del día.
  */
 export function FinancialSummary({
   sales,
   cierres,
+  paymentMethods,
   onAddCierre,
   onDeleteCierre,
 }: Props) {
@@ -30,83 +33,18 @@ export function FinancialSummary({
     () => false,
   );
 
-  // Cálculos de ingresos por método
-  const totals = useMemo(() => {
-    let pmBs = 0;
-    let pvBs = 0;
-    let efBs = 0;
-    let usdTotal = 0;
+  // Cálculos de ingresos por método (fuente única en paymentAggregation)
+  const totals = useMemo(
+    () => summarizeSalesByMethod(sales, paymentMethods),
+    [sales, paymentMethods],
+  );
+
+  // Agrupación de Delivery (se muestra por repartidor pero no se suma al total de ingresos)
+  const delivery = useMemo(() => {
     let deliveryTotal = 0;
     const deliveryGrouped: Record<string, number> = {};
 
     sales.forEach((sale) => {
-      const payments = sale.sale_payments || [];
-      const totalBs = sale.total_bs || sale.totalBs || 0;
-      const totalUsd = sale.total_usd || sale.totalUsd || 0;
-      const deliveryAmt = sale.delivery_amount || sale.deliveryAmount || 0;
-
-      // Ingresos (Ajustados para no incluir delivery)
-      if (payments.length > 0) {
-        // Calculamos los montos de esta venta individualmente
-        let sPm = 0;
-        let sPv = 0;
-        let sEf = 0;
-        let sUsd = 0;
-
-        payments.forEach((p) => {
-          const mId = p.method_id || p.methodId;
-          const amtBs = p.amount_bs || p.amountBs || 0;
-          const amtRef = p.amount_ref || p.amountRef || 0;
-
-          if (mId === "pm") sPm += amtBs;
-          if (mId === "punto" || mId === "pv") sPv += amtBs;
-          if (mId === "ves" || mId === "bs") sEf += amtBs;
-          if (mId === "usd") sUsd += amtRef;
-        });
-
-        // "No sumes el delivery nunca": Restamos el monto de delivery de los ingresos en Bs
-        // Prioridad de resta: Pago Móvil -> Punto -> Efectivo -> Divisas
-        let toSubtract = deliveryAmt;
-        if (toSubtract > 0) {
-          const subPm = Math.min(sPm, toSubtract);
-          sPm -= subPm;
-          toSubtract -= subPm;
-
-          const subPv = Math.min(sPv, toSubtract);
-          sPv -= subPv;
-          toSubtract -= subPv;
-
-          const subEf = Math.min(sEf, toSubtract);
-          sEf -= subEf;
-          toSubtract -= subEf;
-
-          // Si aún falta restar (el delivery se pagó con divisas)
-          if (toSubtract > 0 && sUsd > 0) {
-            const tasa = sale.tasa_bcv || 1;
-            const subUsd = Math.min(sUsd, toSubtract / tasa);
-            sUsd -= subUsd;
-            // toSubtract -= subUsd * tasa; // Opcional, ya terminamos
-          }
-        }
-
-        pmBs += sPm;
-        pvBs += sPv;
-        efBs += sEf;
-        usdTotal += sUsd;
-      } else {
-        // Fallback para ventas sin desglose detallado
-        const met = sale.method_id || sale.metodo;
-        const tasa = sale.tasa_bcv || 1;
-        const finalTotalBs = Math.max(0, totalBs - deliveryAmt);
-        const finalTotalUsd = Math.max(0, totalUsd - deliveryAmt / tasa);
-
-        if (met === "pm") pmBs += finalTotalBs;
-        if (met === "punto" || met === "pv") pvBs += finalTotalBs;
-        if (met === "ves" || met === "bs") efBs += finalTotalBs;
-        if (met === "usd") usdTotal += finalTotalUsd;
-      }
-
-      // Agrupación de Delivery (se mantiene el desglose por persona pero no se sumará al total de ingresos)
       if (sale.delivery) {
         const name = sale.delivery_name || sale.deliveryName || "Delivery s/n";
         const amount = sale.delivery_amount || sale.deliveryAmount || 0;
@@ -115,7 +53,6 @@ export function FinancialSummary({
       }
     });
 
-    // Convertir el objeto agrupado a un array para el renderizado
     const deliverySummary = Object.entries(deliveryGrouped).map(
       ([name, total]) => ({
         name,
@@ -123,31 +60,18 @@ export function FinancialSummary({
       }),
     );
 
-    return {
-      pmBs,
-      pvBs,
-      efBs,
-      usdTotal,
-      deliveryTotal,
-      deliverySummary,
-      totalBs: pmBs + pvBs + efBs,
-    };
+    return { deliveryTotal, deliverySummary };
   }, [sales]);
 
-  const BOLIVARS_BOX = [
-    {
-      label: "Pago Móvil",
-      value: totals.pmBs,
-    },
-    {
-      label: "Punto",
-      value: totals.pvBs,
-    },
-    {
-      label: "Efectivo",
-      value: totals.efBs,
-    },
-  ];
+  // Filas de Pago Móvil: una por cuenta + total cuando hay más de una
+  const pmAccountRows = totals.pmByAccount.map((account) => ({
+    key: account.accountId,
+    label:
+      account.accountId === "pm"
+        ? "Pago Móvil"
+        : `Pago Móvil (${account.label})`,
+    value: account.amountBs,
+  }));
 
   if (!isMounted) return <FinancialSummarySkeleton />;
 
@@ -175,17 +99,48 @@ export function FinancialSummary({
               Caja Bolívares
             </span>
             <div className="flex flex-col gap-1.5">
-              {BOLIVARS_BOX.map((box) => (
-                <div
-                  key={box.label}
-                  className="flex justify-between text-[10px] md:text-sm font-medium"
-                >
-                  <span className="text-white/90">{box.label}:</span>
-                  <span className="font-black tabular-nums">
-                    {fmtBs(box.value)}
-                  </span>
+              {pmAccountRows.length > 0 ? (
+                <>
+                  {pmAccountRows.map((box) => (
+                    <div
+                      key={box.key}
+                      className="flex justify-between text-[10px] md:text-sm font-medium"
+                    >
+                      <span className="text-white/90">{box.label}:</span>
+                      <span className="font-black tabular-nums">
+                        {fmtBs(box.value)}
+                      </span>
+                    </div>
+                  ))}
+                  {pmAccountRows.length > 1 && (
+                    <div className="flex justify-between text-[10px] md:text-sm font-black border-t border-white/15 pt-1">
+                      <span>Total Pago Móvil:</span>
+                      <span className="tabular-nums">
+                        {fmtBs(totals.pmTotal)}
+                      </span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex justify-between text-[10px] md:text-sm font-medium">
+                  <span className="text-white/90">Pago Móvil:</span>
+                  <span className="font-black tabular-nums">{fmtBs(0)}</span>
                 </div>
-              ))}
+              )}
+
+              <div className="flex justify-between text-[10px] md:text-sm font-medium">
+                <span className="text-white/90">Punto:</span>
+                <span className="font-black tabular-nums">
+                  {fmtBs(totals.pvBs)}
+                </span>
+              </div>
+
+              <div className="flex justify-between text-[10px] md:text-sm font-medium">
+                <span className="text-white/90">Efectivo:</span>
+                <span className="font-black tabular-nums">
+                  {fmtBs(totals.efBs)}
+                </span>
+              </div>
             </div>
           </section>
 
@@ -279,9 +234,9 @@ export function FinancialSummary({
         </header>
 
         <div className="flex flex-col gap-3 min-h-[100px]">
-          {totals.deliverySummary.length > 0 ? (
+          {delivery.deliverySummary.length > 0 ? (
             <ul className="flex flex-col gap-2">
-              {totals.deliverySummary.map((item, index) => (
+              {delivery.deliverySummary.map((item, index) => (
                 <li
                   key={`delivery-${index}`}
                   className="flex justify-between items-center text-sm"

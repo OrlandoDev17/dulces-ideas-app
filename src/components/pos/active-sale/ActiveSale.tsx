@@ -5,10 +5,11 @@ import { useState, useMemo, ChangeEvent } from "react";
 // Motion
 import { motion, AnimatePresence } from "motion/react";
 // Icons
-import { CreditCard, ShoppingBag, User, DollarSign } from "lucide-react";
+import { CreditCard, ShoppingBag, User, DollarSign, PlusCircle } from "lucide-react";
 // Components
 import { OptionDropdown } from "@/components/common/OptionDropdown";
 import { MixedPaymentModal } from "../MixedPaymentModal";
+import { PaymentAccountModal } from "../PaymentAccountModal";
 import { ProductList } from "./ProductList";
 import { TotalToPay } from "./TotalToPay";
 import { DropdownButton } from "@/components/common/DropdownButton";
@@ -38,6 +39,7 @@ export function ActiveSale({
   // Estados
   const [isOpenMetodo, setIsOpenMetodo] = useState(false);
   const [showMixedModal, setShowMixedModal] = useState(false);
+  const [showAccountModal, setShowAccountModal] = useState(false);
   const [isDelivery, setIsDelivery] = useState(false);
   const [deliveryName, setDeliveryName] = useState("");
   const [deliveryAmount, setDeliveryAmount] = useState<number | "">("");
@@ -218,31 +220,43 @@ export function ActiveSale({
           {/* Selectores y Opciones */}
           <div className="flex flex-col gap-4">
             {/* Selector de Pago */}
-            <div className={`relative ${isOpenMetodo ? "z-30" : "z-10"}`}>
-              <DropdownButton isOpen={isOpenMetodo} setIsOpen={setIsOpenMetodo}>
-                <CreditCard size={18} className="text-primary-500" />
-                {metodoSelected?.name || "Seleccionar pago…"}
-              </DropdownButton>
+            <div className="flex gap-2 items-stretch">
+              <div className={`relative flex-1 min-w-0 ${isOpenMetodo ? "z-30" : "z-10"}`}>
+                <DropdownButton isOpen={isOpenMetodo} setIsOpen={setIsOpenMetodo}>
+                  <CreditCard size={18} className="text-primary-500" />
+                  {metodoSelected?.name || "Seleccionar pago…"}
+                </DropdownButton>
 
-              <OptionDropdown
-                isOpen={isOpenMetodo}
-                setIsOpen={setIsOpenMetodo}
-                options={paymentMethods}
-                onSelect={(m: PaymentMethod) => setMetodoSelected(m)}
-                getLabel={(m: PaymentMethod) => m.name}
-                getExtra={(m: PaymentMethod) => (
-                  <span
-                    className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
-                      m.currency === "USD"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-blue-100 text-blue-700"
-                    }`}
-                  >
-                    {m.currency}
-                  </span>
-                )}
-                className="mt-2 w-full min-w-[200px]"
-              />
+                <OptionDropdown
+                  isOpen={isOpenMetodo}
+                  setIsOpen={setIsOpenMetodo}
+                  options={paymentMethods}
+                  onSelect={(m: PaymentMethod) => setMetodoSelected(m)}
+                  getLabel={(m: PaymentMethod) => m.name}
+                  getExtra={(m: PaymentMethod) => (
+                    <span
+                      className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
+                        m.currency === "USD"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-blue-100 text-blue-700"
+                      }`}
+                    >
+                      {m.currency}
+                    </span>
+                  )}
+                  className="mt-2 w-full min-w-[200px]"
+                />
+              </div>
+
+              {/* Crear nueva cuenta de Pago Móvil al vuelo */}
+              <button
+                onClick={() => setShowAccountModal(true)}
+                title="Nueva cuenta Pago Móvil"
+                aria-label="Nueva cuenta Pago Móvil"
+                className="shrink-0 px-3.5 rounded-2xl border-2 border-dashed border-primary-300 text-primary-500 hover:bg-primary-50 hover:border-primary-500 transition-all cursor-pointer active:scale-95"
+              >
+                <PlusCircle size={18} />
+              </button>
             </div>
 
             {/* Delivery Toggle y Datos */}
@@ -272,6 +286,12 @@ export function ActiveSale({
           onConfirm={confirmMixedPayment}
         />
       )}
+
+      <PaymentAccountModal
+        isOpen={showAccountModal}
+        onClose={() => setShowAccountModal(false)}
+        onCreated={(m: PaymentMethod) => setMetodoSelected(m)}
+      />
     </AnimatePresence>
   );
 }

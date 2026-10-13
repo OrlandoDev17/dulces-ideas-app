@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import type { Sale, Payment } from "@/shared/types";
+import type { Sale } from "@/shared/types";
 import { roundTo2 } from "@/shared/utils/formatters";
+import { isPagoMovilId } from "@/shared/utils/paymentAggregation";
 
 /**
  * Hook para cálculos de totales de una venta.
@@ -24,32 +25,32 @@ export function useSaleTotals(sale: Sale) {
     const netPayments = rawPayments.map((p) => ({ ...p }));
     let toSubtract = deliveryAmt;
 
-    // Prioridad: PM -> Punto -> Efectivo -> USD
-    const methods = [
-      ["pm"],
-      ["punto", "pv"],
-      ["ves", "bs"],
-      ["usd"],
+    // Prioridad: PM (cualquier cuenta) -> Punto -> Efectivo -> USD
+    const groups = [
+      (mId?: string | null) => isPagoMovilId(mId),
+      (mId?: string | null) => mId === "punto" || mId === "pv",
+      (mId?: string | null) => mId === "ves" || mId === "bs",
+      (mId?: string | null) => mId === "usd",
     ];
 
-    for (const group of methods) {
+    for (const group of groups) {
       if (toSubtract <= 0) break;
       for (const p of netPayments) {
         const mId = p.method_id || p.methodId;
-        if (group.includes(mId || "")) {
-          if (p.currency === "USD" || mId === "usd") {
-            const currentRef = p.amount_ref || p.amountRef || 0;
-            const subUsd = Math.min(currentRef, toSubtract / tasa);
-            p.amount_ref = currentRef - subUsd;
-            p.amountRef = p.amount_ref;
-            toSubtract -= subUsd * tasa;
-          } else {
-            const currentBs = p.amount_bs || p.amountBs || 0;
-            const subBs = Math.min(currentBs, toSubtract);
-            p.amount_bs = currentBs - subBs;
-            p.amountBs = p.amount_bs;
-            toSubtract -= subBs;
-          }
+        if (!group(mId)) continue;
+
+        if (p.currency === "USD" || mId === "usd") {
+          const currentRef = p.amount_ref || p.amountRef || 0;
+          const subUsd = Math.min(currentRef, toSubtract / tasa);
+          p.amount_ref = currentRef - subUsd;
+          p.amountRef = p.amount_ref;
+          toSubtract -= subUsd * tasa;
+        } else {
+          const currentBs = p.amount_bs || p.amountBs || 0;
+          const subBs = Math.min(currentBs, toSubtract);
+          p.amount_bs = currentBs - subBs;
+          p.amountBs = p.amount_bs;
+          toSubtract -= subBs;
         }
       }
     }

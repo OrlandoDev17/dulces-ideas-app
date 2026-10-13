@@ -1,5 +1,5 @@
 import { supabase } from "@/shared/config/supabase";
-import type { InventoryProduct, ProductCategory } from "@/shared/types";
+import type { InventoryProduct, PaymentMethod } from "@/shared/types";
 
 export const productsApi = {
   async getProductsByCategory() {
@@ -32,6 +32,43 @@ export const productsApi = {
 
     if (error) throw error;
     return data;
+  },
+
+  /**
+   * Crea una nueva cuenta de Pago Móvil como un método de pago
+   * con id `pm_<slug>` y nombre "Bs - Pago Móvil (Nombre)".
+   */
+  async createPaymentAccount(name: string): Promise<PaymentMethod> {
+    const cleanName = name.trim();
+    const slugBase =
+      cleanName
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "") || "cuenta";
+
+    let id = `pm_${slugBase}`;
+
+    // Evitar colisión con cuentas existentes
+    const { data: existing } = await supabase
+      .from("payment_methods")
+      .select("id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (existing) {
+      id = `${id}_${Date.now().toString(36)}`;
+    }
+
+    const { data, error } = await supabase
+      .from("payment_methods")
+      .insert([{ id, name: `Bs - Pago Móvil (${cleanName})`, currency: "VES" }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as PaymentMethod;
   },
 
   // --- Inventario CRUD ---

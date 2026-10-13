@@ -32,6 +32,7 @@ import { fadeUp, staggerContainer, slideInLeft } from "@/lib/animations";
 // Types
 import { CartItem, Payment, Product, Sale } from "@/shared/types";
 // Utils
+import { isPagoMovilId } from "@/shared/utils/paymentAggregation";
 
 export default function VentasPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -176,7 +177,7 @@ export default function VentasPage() {
             const amountUsd = p.amount_ref || p.amountRef || 0;
 
             if (
-              methodId === "pm" ||
+              isPagoMovilId(methodId) ||
               methodId === "bs" ||
               methodId === "ves" ||
               methodId === "pv" ||
@@ -283,6 +284,7 @@ export default function VentasPage() {
           <FinancialSummary
             sales={recentSales || []}
             cierres={cierres || []}
+            paymentMethods={currentPaymentMethods}
             onAddCierre={() => setShowCierreModal(true)}
             onDeleteCierre={deleteCierre}
           />

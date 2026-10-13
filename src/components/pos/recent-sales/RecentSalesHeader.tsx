@@ -22,7 +22,7 @@ export function RecentSalesHeader({
   handleEndDay,
 }: Props) {
   // Bug 2 Fix: obtener categorías de productos para resolver nombres en el PDF
-  const { productCategories } = usePosData();
+  const { productCategories, paymentMethods } = usePosData();
 
   return (
     <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 gap-6">
@@ -51,7 +51,12 @@ export function RecentSalesHeader({
         <Button
           style="primary"
           onClick={() =>
-            exportSalesToPDF(sales, cierres, productCategories ?? [])
+            exportSalesToPDF(
+              sales,
+              cierres,
+              productCategories ?? [],
+              paymentMethods ?? [],
+            )
           }
           disabled={sales.length === 0}
           className="flex-1 sm:flex-none h-full px-4 rounded-2xl shadow-lg shadow-primary-500/20 text-xs font-black uppercase tracking-wider"
