@@ -2,18 +2,15 @@
 
 import { useCallback } from "react";
 import type { PaymentMethod } from "@/shared/types";
+import { getShortMethodLabel } from "@/shared/utils/paymentAggregation";
 
 /**
- * Hook para obtener el nombre formateado de un método de pago.
- * Ejemplo: "Punto de Venta" -> "Punto"
+ * Hook para obtener el nombre corto de un método de pago.
+ * Ejemplo: "Bs - Pago Móvil (Johnnie)" -> "PM Johnnie", "Punto de Venta" -> "Punto"
  */
 export function usePaymentMethodLabel(paymentMethods: PaymentMethod[]) {
   const getMethodLabel = useCallback(
-    (id: string): string => {
-      const method = paymentMethods?.find((m) => m.id === id);
-      if (!method) return id;
-      return method.name.replace(/Punto de Venta/gi, "Punto");
-    },
+    (id: string): string => getShortMethodLabel(id, paymentMethods),
     [paymentMethods],
   );
 

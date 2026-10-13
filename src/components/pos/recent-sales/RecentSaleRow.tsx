@@ -1,10 +1,13 @@
 "use client";
 
+import { useMemo } from "react";
 import { Clock, CreditCard, MapPin, Pencil, Trash2, Phone, Calendar, Cake } from "lucide-react";
 import { useProductName } from "@/hooks/ui/useProductName";
 import { useSaleTotals } from "@/hooks/ui/useSaleTotals";
 import { usePaymentMethodLabel } from "@/hooks/ui/usePaymentMethodLabel";
 import { fmtBs } from "@/shared/utils/formatters";
+import { getFullMethodName } from "@/shared/utils/paymentAggregation";
+import { PaymentBadge } from "./PaymentBadge";
 import type { PaymentMethod, Sale, CartItem, Payment } from "@/shared/types";
 
 interface Props {
@@ -27,6 +30,19 @@ export function RecentSaleRow({
   const { getProductName } = useProductName();
   const { getMethodLabel } = usePaymentMethodLabel(paymentMethods);
   const { items, totalBs, totalUsd, payments, deliveryAmt } = useSaleTotals(sale);
+
+  // Pagos válidos y tope de badges visibles para que la fila no crezca
+  const { shownPayments, hiddenPayments } = useMemo(() => {
+    const validPayments = payments.filter((p) => {
+      const amtBs = p.amount_bs || p.amountBs || 0;
+      const amtRef = p.amount_ref || p.amountRef || 0;
+      return amtBs > 0 || amtRef > 0;
+    });
+    return {
+      shownPayments: validPayments.slice(0, 3),
+      hiddenPayments: validPayments.slice(3),
+    };
+  }, [payments]);
 
   // Obtener datos del encargo si existe
   const orderData = sale.orders?.[0];
@@ -117,44 +133,46 @@ export function RecentSaleRow({
       <div className="flex flex-wrap gap-1.5 items-center">
         {payments.length > 0 ? (
           <>
-            {payments.map((p: Payment, pIndex: number) => {
-              const amtBs = p.amount_bs || p.amountBs || 0;
-              const amtRef = p.amount_ref || p.amountRef || 0;
-
-              if (amtBs <= 0 && amtRef <= 0) return null;
-
-              return (
-                <div
-                  key={`${sale.id}-pay-${pIndex}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-50 border-[1.5px] border-primary-200 rounded-full shadow-sm hover:scale-[1.02] transition-transform"
-                >
-                  <CreditCard
-                    size={14}
-                    className="text-primary-800"
-                    strokeWidth={2.5}
-                    aria-hidden="true"
-                  />
-                  <span className="font-black text-primary-900 text-[11px] uppercase tracking-wide mt-0.5">
-                    {getMethodLabel(p.method_id || p.methodId)}:
-                  </span>
-                  <span className="font-black text-primary-600 text-[11px] tabular-nums mt-0.5">
-                    {p.currency === "USD"
-                      ? `$${amtRef.toFixed(2)}`
-                      : `Bs. ${fmtBs(amtBs)}`}
-                  </span>
-                </div>
-              );
-            })}
+            {shownPayments.map((p: Payment, pIndex: number) => (
+              <PaymentBadge
+                key={`${sale.id}-pay-${pIndex}`}
+                methodId={p.method_id || p.methodId || ""}
+                amountBs={p.amount_bs || p.amountBs || 0}
+                amountRef={p.amount_ref || p.amountRef || 0}
+                currency={p.currency}
+                paymentMethods={paymentMethods}
+              />
+            ))}
+            {hiddenPayments.length > 0 && (
+              <span
+                className="inline-flex items-center px-2.5 py-1 bg-primary-100/70 border border-primary-200 rounded-full text-[10px] font-black text-primary-700 tabular-nums cursor-help shrink-0"
+                title={hiddenPayments
+                  .map(
+                    (p) =>
+                      `${getMethodLabel(p.method_id || p.methodId)}: ${
+                        p.currency === "USD"
+                          ? `$${(p.amount_ref || p.amountRef || 0).toFixed(2)}`
+                          : `Bs. ${fmtBs(p.amount_bs || p.amountBs || 0)}`
+                      }`,
+                  )
+                  .join("\n")}
+              >
+                +{hiddenPayments.length}
+              </span>
+            )}
           </>
         ) : (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-50 border-[1.5px] border-primary-200 rounded-full shadow-sm text-primary-900 text-[11px] font-black uppercase tracking-wide">
+          <span
+            className="inline-flex items-center gap-1.5 pl-2 pr-2.5 py-1 bg-primary-50 border-[1.5px] border-primary-200 rounded-full shadow-sm text-primary-900 text-[10px] font-black uppercase tracking-wide max-w-full min-w-0"
+            title={getFullMethodName(sale.metodo || "", paymentMethods)}
+          >
             <CreditCard
-              size={14}
-              className="text-primary-800"
+              size={12}
+              className="text-primary-800 shrink-0"
               strokeWidth={2.5}
               aria-hidden="true"
             />
-            <span className="mt-0.5">
+            <span className="truncate min-w-0">
               {getMethodLabel(sale.metodo || "N/A")}
             </span>
           </span>

@@ -1,11 +1,11 @@
 "use client";
 
-import { Clock, CreditCard, MapPin, Pencil, Trash2, Phone, Calendar, Cake } from "lucide-react";
+import { Clock, MapPin, Pencil, Trash2, Phone, Calendar, Cake } from "lucide-react";
 import { useProductName } from "@/hooks/ui/useProductName";
 import { useSaleTotals } from "@/hooks/ui/useSaleTotals";
-import { usePaymentMethodLabel } from "@/hooks/ui/usePaymentMethodLabel";
 import { fmtBs } from "@/shared/utils/formatters";
-import type { Sale, CartItem, Payment, PaymentMethod } from "@/shared/types";
+import { PaymentBadge } from "./PaymentBadge";
+import type { Sale, CartItem, PaymentMethod } from "@/shared/types";
 
 interface Props {
   sale: Sale;
@@ -24,7 +24,6 @@ export function RecentSaleCard({
   onDelete,
 }: Props) {
   const { getProductName } = useProductName();
-  const { getMethodLabel } = usePaymentMethodLabel(paymentMethods);
   const { items, totalBs, totalUsd, payments, deliveryAmt } = useSaleTotals(sale);
 
   // Obtener datos del encargo si existe
@@ -145,35 +144,23 @@ export function RecentSaleCard({
             </h3>
             <ul className="flex flex-col gap-1">
               {payments.length > 0 ? (
-                payments.map((p: Payment, pIndex: number) => {
-                  const amtBs = p.amount_bs || p.amountBs || 0;
-                  const amtRef = p.amount_ref || p.amountRef || 0;
-
-                  if (amtBs <= 0 && amtRef <= 0) return null;
-
-                  return (
-                    <li
+                payments
+                  .filter((p) => {
+                    const amtBs = p.amount_bs || p.amountBs || 0;
+                    const amtRef = p.amount_ref || p.amountRef || 0;
+                    return amtBs > 0 || amtRef > 0;
+                  })
+                  .map((p, pIndex) => (
+                    <PaymentBadge
                       key={`${sale.id}-pay-${pIndex}`}
-                      className="flex items-center justify-between gap-2 px-2 py-1.5 bg-zinc-50/30 border border-zinc-100/50 rounded-xl group/pay"
-                    >
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <CreditCard
-                          size={10}
-                          className="text-zinc-300 group-hover/pay:text-primary-500 shrink-0"
-                          aria-hidden="true"
-                        />
-                        <span className="text-[10px] font-black text-zinc-700 uppercase truncate">
-                          {getMethodLabel(p.method_id || p.methodId)}:
-                        </span>
-                        <span className="text-[10px] font-black text-primary-600 tabular-nums">
-                          {p.currency === "USD"
-                            ? `$${amtRef.toFixed(2)}`
-                            : `Bs. ${fmtBs(amtBs)}`}
-                        </span>
-                      </div>
-                    </li>
-                  );
-                })
+                      variant="row"
+                      methodId={p.method_id || p.methodId || ""}
+                      amountBs={p.amount_bs || p.amountBs || 0}
+                      amountRef={p.amount_ref || p.amountRef || 0}
+                      currency={p.currency}
+                      paymentMethods={paymentMethods}
+                    />
+                  ))
               ) : (
                 <li className="text-[9px] text-zinc-300 italic">Sin pagos</li>
               )}
