@@ -271,11 +271,15 @@ export default function OrdersPage() {
       {selectedOrder && (
         <MixedPaymentModal
           isOpen={isPaymentModalOpen}
-          onClose={() => setIsPaymentModalOpen(false)}
+          onClose={() => {
+            setIsPaymentModalOpen(false);
+            setSelectedOrder(null);
+          }}
           totalToPayBs={calculateRemainingBs(selectedOrder)}
           tasa={tasa}
           paymentMethods={paymentMethods || []}
           onConfirm={onConfirmPayment}
+          allowPartial
         />
       )}
 

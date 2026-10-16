@@ -10,6 +10,7 @@ export const useMixedPayment = (
   tasa: number,
   paymentMethods: PaymentMethod[],
   onConfirm: (payments: Payment[]) => void,
+  allowPartial = false,
 ) => {
   const [payments, setPayments] = useState<Payment[]>([]);
 
@@ -45,6 +46,14 @@ export const useMixedPayment = (
   const remainingBs = totalToPayBs - totalRegisteredBs;
   // Margen de tolerancia para precisiones de punto flotante
   const isComplete = Math.abs(remainingBs) < 100;
+
+  // Criterio de confirmación:
+  // - Modo estricto (POS): debe cubrirse el total (tolerancia de 100 Bs).
+  // - Modo parcial (encargos): basta con registrar algún pago sin sobrepasar
+  //   el saldo pendiente (misma tolerancia de 100 Bs).
+  const canConfirm = allowPartial
+    ? payments.length > 0 && remainingBs >= -100
+    : isComplete;
 
   /**
    * Agrega un nuevo pago a la lista realizando las conversiones necesarias.
@@ -89,10 +98,11 @@ export const useMixedPayment = (
   };
 
   /**
-   * Ejecuta el callback de confirmación si el monto está completo.
+   * Ejecuta el callback de confirmación si el pago es válido
+   * (total cubierto o, en modo parcial, un abono sin sobrepasar el saldo).
    */
   const confirm = () => {
-    if (isComplete) {
+    if (canConfirm) {
       onConfirm(payments);
     }
   };
@@ -109,6 +119,7 @@ export const useMixedPayment = (
     totalRegisteredBs,
     remainingBs,
     isComplete,
+    canConfirm,
     addPayment,
     removePayment,
     confirm,

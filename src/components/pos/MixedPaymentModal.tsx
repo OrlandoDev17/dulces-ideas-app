@@ -16,6 +16,11 @@ interface Props {
   paymentMethods: PaymentMethod[];
   onConfirm: (payments: Payment[]) => void;
   isOpen?: boolean;
+  /**
+   * Permite confirmar un abono parcial (encargos) sin cubrir el saldo total.
+   * Por defecto `false`: el POS exige cubrir el monto completo.
+   */
+  allowPartial?: boolean;
 }
 
 /**
@@ -28,6 +33,7 @@ export function MixedPaymentModal({
   paymentMethods,
   onConfirm,
   isOpen = true,
+  allowPartial = false,
 }: Props) {
   // Extraemos toda la lógica del hook personalizado
   const {
@@ -41,17 +47,28 @@ export function MixedPaymentModal({
     paymentOptions,
     remainingBs,
     isComplete,
+    canConfirm,
     addPayment,
     removePayment,
     confirm,
-  } = useMixedPayment(totalToPayBs, tasa, paymentMethods, onConfirm);
+  } = useMixedPayment(
+    totalToPayBs,
+    tasa,
+    paymentMethods,
+    onConfirm,
+    allowPartial,
+  );
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Pago Mixto"
-      description="Registra múltiples métodos de pago para esta orden"
+      title={allowPartial ? "Registrar Abono" : "Pago Mixto"}
+      description={
+        allowPartial
+          ? "Puedes abonar una parte o el saldo total del encargo"
+          : "Registra múltiples métodos de pago para esta orden"
+      }
       footer={
         <div className="flex gap-3 mt-4">
           <Button style="secondary" onClick={onClose} className="w-1/3 py-4">
@@ -60,11 +77,11 @@ export function MixedPaymentModal({
           <Button
             style="primary"
             onClick={confirm}
-            disabled={!isComplete}
+            disabled={!canConfirm}
             className="w-2/3 py-4"
           >
-            Confirmar Pagos
-            {isComplete ? (
+            {allowPartial ? "Confirmar Abono" : "Confirmar Pagos"}
+            {canConfirm ? (
               <CheckCircle2 size={18} />
             ) : (
               <AlertCircle size={18} />
@@ -80,6 +97,7 @@ export function MixedPaymentModal({
           remainingBs={remainingBs}
           isComplete={isComplete}
           tasa={tasa}
+          allowPartial={allowPartial}
         />
 
         {/* Formulario de entrada (solo si no está completo) */}
