@@ -29,10 +29,10 @@ export function ActionButtons({ order, onPay, onDeliver }: Props) {
             onPay(id);
           }}
           className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-blue-50 text-blue-600 rounded-2xl text-sm font-bold hover:bg-blue-100 transition-colors border border-blue-200 shadow-sm hover:shadow-md"
-          aria-label="Completar pago"
+          aria-label="Abonar"
         >
           <DollarSign size={18} />
-          <span>Completar Pago</span>
+          <span>Abonar</span>
         </motion.button>
       )}
 
